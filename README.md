@@ -16,7 +16,7 @@ _AI-driven Java refactoring pipeline powered by multi-agent LLM orchestration._
 <br>
 
 <div align="center">
-  <img src="screenshots/UI.png" width="800" alt="Horizon AI Screenshot">
+  <img src="public/UI.png" width="800" alt="Horizon AI Screenshot">
 </div>
 
 <br>
