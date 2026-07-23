@@ -87,7 +87,7 @@ export function SetupSection() {
           </div>
           
           {/* Tech Tags */}
-          <div className="px-6 py-4 border-t border-border/20 bg-[#121214]/50 flex flex-wrap gap-3">
+          <div className="px-6 py-4 border-t border-border/20 bg-[#121214]/50 flex flex-wrap justify-center gap-3">
              {["Docker-ready", "Local-first", "Pre-built models", "No telemetry"].map((tag, i) => (
                <span key={i} className="font-mono text-[10px] px-3 py-1 rounded-full border border-border/50 text-foreground/60">
                  {tag}
