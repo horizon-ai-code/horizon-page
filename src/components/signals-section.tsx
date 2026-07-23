@@ -9,29 +9,34 @@ gsap.registerPlugin(ScrollTrigger)
 
 const signals = [
   {
-    date: "2025.06.10",
-    title: "Signal Field",
-    note: "New interface paradigm for ambient computing environments.",
+    date: "Lizard / Halstead Analyzer",
+    title: "Baseline",
+    note: "Establishes cyclomatic complexity and structural signatures of the original code.",
   },
   {
-    date: "2025.05.28",
-    title: "Silent Agent",
-    note: "Orchestration layer for autonomous design systems.",
+    date: "Planner Agent (Qwen2.5-Coder 3B)",
+    title: "Strategy",
+    note: "Classifies refactoring intent and synthesizes an AST modification plan.",
   },
   {
-    date: "2025.05.15",
-    title: "Noir Grid",
-    note: "Typographic system for editorial interfaces.",
+    date: "Generator Agent (Qwen2.5-Coder 3B)",
+    title: "Execution",
+    note: "Applies mutations sequentially or single-shot, generating multiple scored variants.",
   },
   {
-    date: "2025.04.30",
-    title: "Project Lattice",
-    note: "Structural framework for adaptive layouts.",
+    date: "javalang AST Validator",
+    title: "Validation",
+    note: "Runs syntax, complexity-gate, and boundary checks to catch unintended side effects.",
   },
   {
-    date: "2025.04.12",
-    title: "Echo Chamber",
-    note: "Audio-visual synthesis in browser environments.",
+    date: "Judge Agent (Llama-3.2 3B)",
+    title: "Adjudication",
+    note: "Audits the change for semantic correctness and overrides hallucinated diffs.",
+  },
+  {
+    date: "Insights & Save",
+    title: "Finalization",
+    note: "Cleans up, persists results, and extracts developer-facing insights.",
   },
 ]
 
@@ -135,8 +140,8 @@ export function SignalsSection() {
 
       {/* Section header */}
       <div ref={headerRef} className="mb-16 pr-6 md:pr-12">
-        <span className="font-mono text-[10px] uppercase tracking-[0.3em] text-accent">01 / Signals</span>
-        <h2 className="mt-4 font-[var(--font-bebas)] text-5xl md:text-7xl tracking-tight">WHAT&apos;S NEW</h2>
+        <span className="font-mono text-[10px] uppercase tracking-[0.3em] text-accent">01 / Pipeline</span>
+        <h2 className="mt-4 font-[var(--font-bebas)] text-5xl md:text-7xl tracking-tight">PIPELINE PHASES</h2>
       </div>
 
       {/* Horizontal scroll container */}

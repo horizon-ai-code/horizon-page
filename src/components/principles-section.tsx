@@ -16,37 +16,37 @@ export function PrinciplesSection() {
     {
       number: "01",
       titleParts: [
-        { text: "INTERFACE", highlight: true },
-        { text: " MINIMALISM", highlight: false },
+        { text: "FULLY ", highlight: true },
+        { text: "LOCAL", highlight: false },
       ],
-      description: "Reduce until only the essential remains. Every element earns its place.",
+      description: "Zero cloud dependency. Runs fully local using quantized GGUF models.",
       align: "left",
     },
     {
       number: "02",
       titleParts: [
-        { text: "SYSTEMS", highlight: true },
-        { text: " OVER SCREENS", highlight: false },
+        { text: "DETERMINISTIC ", highlight: true },
+        { text: "OUTPUTS", highlight: false },
       ],
-      description: "Design behaviors, not just layouts. Build logic that scales.",
+      description: "Grammar-constrained generation (GBNF) forces structural JSON alignment, backed by deep syntactic and semantic validation.",
       align: "right",
     },
     {
       number: "03",
       titleParts: [
-        { text: "CONTROLLED ", highlight: false },
-        { text: "TENSION", highlight: true },
+        { text: "FEEDBACK ", highlight: true },
+        { text: "LOOPS", highlight: false },
       ],
-      description: "Balance between restraint and expression. Confidence without excess.",
+      description: "Graceful failure logic. Failed phases accumulate structured feedback to guide the next retry instead of failing silently.",
       align: "left",
     },
     {
       number: "04",
       titleParts: [
-        { text: "SIGNAL ", highlight: false },
-        { text: "CLARITY", highlight: true },
+        { text: "SERIALIZED ", highlight: true },
+        { text: "EXECUTION", highlight: false },
       ],
-      description: "Communication that cuts through noise. Precision in every interaction.",
+      description: "Single concurrency execution. Heavy model operations are serialized to prevent VRAM overflow on consumer hardware.",
       align: "right",
     },
   ]
@@ -94,7 +94,7 @@ export function PrinciplesSection() {
       {/* Section header */}
       <div ref={headerRef} className="mb-24">
         <span className="font-mono text-[10px] uppercase tracking-[0.3em] text-accent">03 / Principles</span>
-        <h2 className="mt-4 font-[var(--font-bebas)] text-5xl md:text-7xl tracking-tight">HOW WE WORK</h2>
+        <h2 className="mt-4 font-[var(--font-bebas)] text-5xl md:text-7xl tracking-tight">ARCHITECTURE</h2>
       </div>
 
       {/* Staggered principles */}
