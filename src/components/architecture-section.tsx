@@ -3,6 +3,7 @@
 import { useRef, useEffect } from "react"
 import { TextHighlighter } from "@/components/text-highlighter"
 import { HorizonGlow } from "@/components/horizon-glow"
+import { cn } from "@/lib/utils"
 import gsap from "gsap"
 import { ScrollTrigger } from "gsap/ScrollTrigger"
 
@@ -130,8 +131,14 @@ export function ArchitectureSection() {
               {principle.description}
             </p>
 
-            {/* Decorative line */}
-            <div className={`mt-8 h-[1px] bg-border w-24 md:w-48 ${principle.align === "right" ? "mr-0" : "ml-0"}`} />
+            {/* Glowing Horizon Line */}
+            <div className={cn(
+              "relative mt-8 h-[1px] bg-gradient-to-r from-transparent via-cyan-400/50 to-transparent w-48 md:w-80",
+              principle.align === "right" ? "mr-0" : "ml-0"
+            )}>
+              <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-20 h-4 bg-cyan-400/30 blur-sm rounded-full" />
+              <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-1.5 h-1.5 bg-white rounded-full shadow-[0_0_8px_3px_rgba(34,211,238,0.7)]" />
+            </div>
           </article>
         ))}
       </div>
