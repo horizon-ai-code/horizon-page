@@ -21,7 +21,7 @@ const teamMembers: TeamMember[] = [
     role: "Project Lead",
     description: "Orchestrates overall direction, multi-agent workflows, and coordination across the refactoring pipeline to align local agent orchestration with system goals.",
     imageSrc: "/ian.png",
-    siteUrl: "#",
+    siteUrl: "https://github.com/blueztian",
   },
   {
     id: "joshua",
