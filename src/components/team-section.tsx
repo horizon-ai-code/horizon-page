@@ -166,9 +166,10 @@ export function TeamSection() {
                 }}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="mt-6 inline-flex items-center gap-1.5 font-[var(--font-mono)] text-xs text-[var(--accent)] hover:underline tracking-wider"
+                className="group mt-6 inline-flex items-center gap-1 font-[var(--font-mono)] text-xs text-[var(--accent)] tracking-wider"
               >
-                View portfolio ›
+                <span className="group-hover:underline">View portfolio</span>
+                <span className="inline-block transition-transform duration-300 group-hover:translate-x-1">›</span>
               </a>
             </motion.div>
           </AnimatePresence>
