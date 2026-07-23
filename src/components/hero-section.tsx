@@ -49,7 +49,7 @@ export function HeroSection() {
           <div className="relative">
             <SplitFlapDisplay 
               text="HORIZON AI" 
-              className="font-[var(--font-bebas)] text-[clamp(2rem,11vw,10rem)] flex-wrap justify-center leading-[0.85] tracking-tight text-foreground w-full"
+              className="font-[var(--font-bebas)] text-[clamp(1.5rem,7vw,10rem)] whitespace-nowrap leading-[0.85] tracking-tight text-foreground w-full"
               speed={80}
             />
             <div className="mt-4">
