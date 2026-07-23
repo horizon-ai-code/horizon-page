@@ -10,6 +10,7 @@ import gsap from "gsap"
 type TeamMember = {
   id: string
   role: string
+  name: string
   description: string
   imageSrc: string
   siteUrl: string
@@ -20,6 +21,7 @@ const teamMembers: TeamMember[] = [
   {
     id: "christian",
     role: "Project Lead",
+    name: "Christian Balinado",
     description: "Orchestrates overall direction, multi-agent workflows, and coordination across the refactoring pipeline to align local agent orchestration with system goals.",
     imageSrc: "/ian.png",
     siteUrl: "https://github.com/blueztian",
@@ -28,6 +30,7 @@ const teamMembers: TeamMember[] = [
   {
     id: "joshua",
     role: "Full Stack / Lead Developer",
+    name: "Joshua Lopez",
     description: "Engineers the core multi-agent execution services, state management, and real-time WebSocket telemetry communication layer that drives Horizon's pipelines.",
     imageSrc: "/joshua.png",
     siteUrl: "https://www.pugario.tech/",
@@ -36,6 +39,7 @@ const teamMembers: TeamMember[] = [
   {
     id: "jericho",
     role: "Frontend Developer",
+    name: "Jericho Varde",
     description: "Designs the premium JetBrains-inspired UI, orchestrating the dynamic FlowGrid visual timelines, Glassbox Terminal console feeds, and metric display layouts.",
     imageSrc: "/vardz.png",
     siteUrl: "https://www.vardz.dev/",
@@ -44,6 +48,7 @@ const teamMembers: TeamMember[] = [
   {
     id: "andrew",
     role: "Quality Assurance Manager",
+    name: "Andrew Dejito",
     description: "Develops semantic validation tests and runs syntax error monitors, ensuring AST verification and complexity metrics are strictly maintained throughout the refactoring pipeline.",
     imageSrc: "/andrew.png",
     siteUrl: "https://github.com/andrewdejito",
@@ -251,16 +256,16 @@ function TeamCard({
       {/* Responsive Image with Graceful Initials Fallback */}
       <CardImage 
         src={member.imageSrc} 
-        alt={member.role} 
-        initials={member.role.split(" ").map((w) => w[0]).join("").toUpperCase()} 
+        alt={member.name} 
+        initials={member.name.split(" ").map((w) => w[0]).join("").toUpperCase()} 
         objectPosition={member.objectPosition}
       />
 
-      {/* Role overlay text on the left side of the image (horizontal scramble transition on view) */}
+      {/* Developer name overlay text on the left side of the image (horizontal scramble transition on view) */}
       {activeIndex === index && (
         <div className="absolute left-6 md:left-10 top-1/2 -translate-y-1/2 z-15 select-none pointer-events-none max-w-[160px] md:max-w-[220px] text-left">
           <TextScramble 
-            text={member.role} 
+            text={member.name} 
             className="font-[var(--font-display)] text-2xl md:text-[2.25rem] font-bold text-[#393b40] tracking-tight leading-[1.05] uppercase"
           />
         </div>
