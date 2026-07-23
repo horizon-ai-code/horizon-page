@@ -185,11 +185,12 @@ export function TeamSection() {
                 initials={member.role.split(" ").map(w => w[0]).join("").toUpperCase()} 
               />
 
-              {/* Centered Link Overlay Button */}
+              {/* Centered Hover Pill (Visit Site) */}
               <div 
-                className="absolute z-20 w-14 h-14 bg-white/10 backdrop-blur-md rounded-full border border-white/20 flex items-center justify-center text-white shadow-lg group-hover:bg-white/20 group-hover:scale-110 group-hover:border-[var(--accent)]/55 transition-all duration-300"
+                className="absolute z-20 px-6 py-3 bg-white text-black font-sans text-xs font-bold rounded-full shadow-2xl flex items-center gap-2 opacity-0 scale-90 group-hover:opacity-100 group-hover:scale-100 transition-all duration-300 pointer-events-none"
               >
-                <ArrowUpRight className="w-5 h-5 text-white" />
+                <ArrowUpRight className="w-4 h-4 text-black stroke-[2.5px]" />
+                <span>Visit Site</span>
               </div>
             </a>
           ))}
