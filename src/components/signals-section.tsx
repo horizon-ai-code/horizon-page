@@ -1,6 +1,7 @@
 "use client"
 
 import { useRef, useState, useEffect } from "react"
+import { motion } from "framer-motion"
 import { cn } from "@/lib/utils"
 import gsap from "gsap"
 import { ScrollTrigger } from "gsap/ScrollTrigger"
@@ -44,7 +45,6 @@ export function SignalsSection() {
   const scrollRef = useRef<HTMLDivElement>(null)
   const sectionRef = useRef<HTMLElement>(null)
   const headerRef = useRef<HTMLDivElement>(null)
-  const cardsRef = useRef<HTMLDivElement>(null)
   const cursorRef = useRef<HTMLDivElement>(null)
   const [isHovering, setIsHovering] = useState(false)
 
@@ -82,7 +82,7 @@ export function SignalsSection() {
   }, [])
 
   useEffect(() => {
-    if (!sectionRef.current || !headerRef.current || !cardsRef.current) return
+    if (!sectionRef.current || !headerRef.current) return
 
     const ctx = gsap.context(() => {
       // Header slide in from left
@@ -101,26 +101,6 @@ export function SignalsSection() {
           },
         },
       )
-
-      const cards = cardsRef.current?.querySelectorAll("article")
-      if (cards) {
-        gsap.fromTo(
-          cards,
-          { x: -100, opacity: 0 },
-          {
-            x: 0,
-            opacity: 1,
-            duration: 0.8,
-            stagger: 0.2,
-            ease: "power3.out",
-            scrollTrigger: {
-              trigger: cardsRef.current,
-              start: "top 90%",
-              toggleActions: "play none none reverse",
-            },
-          },
-        )
-      }
     }, sectionRef)
 
     return () => ctx.revert()
@@ -144,18 +124,32 @@ export function SignalsSection() {
         <h2 className="mt-4 font-[var(--font-bebas)] text-5xl md:text-7xl tracking-tight">PIPELINE PHASES</h2>
       </div>
 
-      {/* Horizontal scroll container */}
-      <div
-        ref={(el) => {
-          scrollRef.current = el
-          cardsRef.current = el
-        }}
-        className="flex gap-8 overflow-x-auto pb-8 pr-12 scrollbar-hide"
-        style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
-      >
-        {signals.map((signal, index) => (
-          <SignalCard key={index} signal={signal} index={index} />
-        ))}
+      {/* Infinite Carousel container */}
+      <div className="relative overflow-hidden w-full pb-8">
+        {/* Optional gradients for smooth fade edges */}
+        <div className="absolute left-0 top-0 bottom-0 w-8 md:w-24 bg-gradient-to-r from-background to-transparent z-10 pointer-events-none" />
+        <div className="absolute right-0 top-0 bottom-0 w-8 md:w-24 bg-gradient-to-l from-background to-transparent z-10 pointer-events-none" />
+        
+        <motion.div
+          className="flex w-max"
+          animate={{ x: ["0%", "-50%"] }}
+          transition={{
+            duration: 40,
+            ease: "linear",
+            repeat: Infinity,
+          }}
+        >
+          <div className="flex gap-8 pr-8">
+            {signals.map((signal, index) => (
+              <SignalCard key={`first-${index}`} signal={signal} index={index} />
+            ))}
+          </div>
+          <div className="flex gap-8 pr-8">
+            {signals.map((signal, index) => (
+              <SignalCard key={`second-${index}`} signal={signal} index={index} />
+            ))}
+          </div>
+        </motion.div>
       </div>
     </section>
   )
