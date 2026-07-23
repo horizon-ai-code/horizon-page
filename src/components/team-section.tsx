@@ -4,7 +4,7 @@ import { useRef, useState, useEffect } from "react"
 import { Play } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { HorizonGlow } from "@/components/horizon-glow"
-import { TextScramble } from "@/components/text-scramble"
+import { ScrambleText } from "@/components/text-scramble"
 import gsap from "gsap"
 
 type TeamMember = {
@@ -145,7 +145,8 @@ export function TeamSection() {
         <div className="md:col-span-8 flex flex-col items-start min-h-[160px]">
           <h3 className="font-[var(--font-display)] text-2xl md:text-3xl font-medium tracking-tight text-[var(--foreground)] flex flex-wrap items-center gap-x-2">
             <span>{teamMembers[activeIndex].role} —</span>
-            <TextScramble 
+            <ScrambleText 
+              key={teamMembers[activeIndex].name}
               text={teamMembers[activeIndex].name} 
               className="text-[var(--muted-foreground)] font-light"
             />
@@ -268,7 +269,8 @@ function TeamCard({
       {/* Developer name overlay text on the left side of the image (horizontal scramble transition on view) */}
       {activeIndex === index && (
         <div className="absolute left-6 md:left-10 top-1/2 -translate-y-1/2 z-15 select-none pointer-events-none max-w-[160px] md:max-w-[220px] text-left">
-          <TextScramble 
+          <ScrambleText 
+            key={member.name}
             text={member.name} 
             className="font-[var(--font-display)] text-2xl md:text-[2.25rem] font-bold text-[#393b40] tracking-tight leading-[1.05] uppercase"
           />
