@@ -168,7 +168,7 @@ export function TeamSection() {
                 rel="noopener noreferrer"
                 className="group mt-6 inline-flex items-center gap-1 font-[var(--font-mono)] text-xs text-[var(--accent)] tracking-wider"
               >
-                <span className="group-hover:underline">View portfolio</span>
+                <span>View portfolio</span>
                 <span className="inline-block transition-transform duration-300 group-hover:translate-x-1">›</span>
               </a>
             </motion.div>
