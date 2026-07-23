@@ -6,6 +6,7 @@ import { cn } from "@/lib/utils"
 import { HorizonGlow } from "@/components/horizon-glow"
 import { ScrambleText } from "@/components/text-scramble"
 import gsap from "gsap"
+import { motion, AnimatePresence } from "framer-motion"
 
 type TeamMember = {
   id: string
@@ -25,7 +26,7 @@ const teamMembers: TeamMember[] = [
     description: "Orchestrates overall direction, multi-agent workflows, and coordination across the refactoring pipeline to align local agent orchestration with system goals.",
     imageSrc: "/ian.png",
     siteUrl: "https://github.com/blueztian",
-    objectPosition: "85% center", // Shift Ian leftwards to add padding on the right side
+    objectPosition: "90% center", // Shift Ian leftwards to add padding on the right side
   },
   {
     id: "joshua",
@@ -142,24 +143,35 @@ export function TeamSection() {
       {/* Synced Caption Panel below the row */}
       <div className="mt-12 px-6 md:px-28 grid grid-cols-1 md:grid-cols-12 gap-8 items-start">
         {/* Caption Info Block */}
-        <div className="md:col-span-8 flex flex-col items-start min-h-[160px]">
-          <h3 className="font-[var(--font-display)] text-2xl md:text-3xl font-medium tracking-tight text-[var(--foreground)]">
-            {teamMembers[activeIndex].role}
-          </h3>
-          <p className="mt-4 font-[var(--font-sans)] text-sm md:text-base text-[var(--muted-foreground)] leading-relaxed max-w-2xl transition-all duration-300">
-            {teamMembers[activeIndex].description}
-          </p>
-          <a
-            href={teamMembers[activeIndex].siteUrl}
-            onClick={(e) => {
-              if (teamMembers[activeIndex].siteUrl === "#") e.preventDefault()
-            }}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="mt-6 inline-flex items-center gap-1.5 font-[var(--font-mono)] text-xs text-[var(--accent)] hover:underline tracking-wider"
-          >
-            View portfolio ›
-          </a>
+        <div className="md:col-span-8 flex flex-col items-start min-h-[180px]">
+          <AnimatePresence mode="wait">
+            <motion.div
+              key={activeIndex}
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -10 }}
+              transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
+              className="flex flex-col items-start"
+            >
+              <h3 className="font-[var(--font-display)] text-2xl md:text-3xl font-medium tracking-tight text-[var(--foreground)]">
+                {teamMembers[activeIndex].role}
+              </h3>
+              <p className="mt-4 font-[var(--font-sans)] text-sm md:text-base text-[var(--muted-foreground)] leading-relaxed max-w-2xl">
+                {teamMembers[activeIndex].description}
+              </p>
+              <a
+                href={teamMembers[activeIndex].siteUrl}
+                onClick={(e) => {
+                  if (teamMembers[activeIndex].siteUrl === "#") e.preventDefault()
+                }}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="mt-6 inline-flex items-center gap-1.5 font-[var(--font-mono)] text-xs text-[var(--accent)] hover:underline tracking-wider"
+              >
+                View portfolio ›
+              </a>
+            </motion.div>
+          </AnimatePresence>
         </div>
 
         {/* Carousel controls - Top-right of description block */}
