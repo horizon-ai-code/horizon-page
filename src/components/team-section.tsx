@@ -100,18 +100,25 @@ export function TeamSection() {
 
   const handleScroll = () => {
     if (scrollRef.current) {
-      const scrollLeft = scrollRef.current.scrollLeft
+      const { scrollLeft, clientWidth, scrollWidth } = scrollRef.current
       const card = scrollRef.current.querySelector(".snap-start")
       if (card) {
         const cardWidth = card.getBoundingClientRect().width + 24 // card width + gap
-        const index = Math.round(scrollLeft / cardWidth)
-        if (index !== activeIndex && index >= 0 && index < teamMembers.length) {
-          setActiveIndex(index)
+        
+        // If we are scrolled to the absolute end, snap to the last team member card
+        const isAtEnd = scrollLeft + clientWidth >= scrollWidth - 25
+        if (isAtEnd) {
+          setActiveIndex(teamMembers.length - 1)
+        } else {
+          const index = Math.round(scrollLeft / cardWidth)
+          if (index !== activeIndex && index >= 0 && index < teamMembers.length) {
+            setActiveIndex(index)
+          }
         }
       }
       setCanScrollLeft(scrollLeft > 10)
       setCanScrollRight(
-        scrollLeft + scrollRef.current.clientWidth < scrollRef.current.scrollWidth - 10
+        scrollLeft + clientWidth < scrollWidth - 25
       )
     }
   }
