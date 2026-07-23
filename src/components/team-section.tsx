@@ -27,7 +27,7 @@ const teamMembers: TeamMember[] = [
     id: "joshua",
     role: "Full Stack / Lead Developer",
     description: "Engineers the core multi-agent execution services, state management, and real-time WebSocket telemetry communication layer that drives Horizon's pipelines.",
-    imageSrc: "/team/joshua-placeholder.jpg",
+    imageSrc: "/joshua.png",
     siteUrl: "#",
   },
   {
