@@ -2,6 +2,7 @@
 
 import { useState, useRef, useEffect } from "react"
 import { cn } from "@/lib/utils"
+import { HorizonGlow } from "@/components/horizon-glow"
 import gsap from "gsap"
 import { ScrollTrigger } from "gsap/ScrollTrigger"
 
@@ -95,6 +96,7 @@ export function FeaturesSection() {
 
   return (
     <section ref={sectionRef} id="work" className="relative py-32 pl-6 md:pl-28 pr-6 md:pr-12">
+      <HorizonGlow glowPosition="top" glowColor="mixed" sparkleCount={5} showHorizonLine={false} />
       {/* Section header */}
       <div ref={headerRef} className="mb-16 flex items-end justify-between">
         <div>

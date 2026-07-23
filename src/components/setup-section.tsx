@@ -3,6 +3,7 @@
 import { useState } from "react"
 import { Check, Copy, Terminal } from "lucide-react"
 import { cn } from "@/lib/utils"
+import { HorizonGlow } from "@/components/horizon-glow"
 
 const commands = {
   gpu: "curl -sL https://raw.githubusercontent.com/horizon-ai-code/horizon/main/docker-compose.yml | docker compose -f - up -d",
@@ -21,6 +22,7 @@ export function SetupSection() {
 
   return (
     <section id="installation" className="relative py-32 pl-6 md:pl-28 pr-6 md:pr-12">
+      <HorizonGlow glowPosition="bottom" glowColor="cyan" sparkleCount={3} showHorizonLine={false} />
       {/* Section header */}
       <div className="mb-16">
         <span className="font-mono text-[10px] uppercase tracking-[0.3em] text-accent">01 / Setup</span>

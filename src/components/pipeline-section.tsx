@@ -3,6 +3,7 @@
 import { useRef, useState, useEffect } from "react"
 import { motion } from "framer-motion"
 import { cn } from "@/lib/utils"
+import { HorizonGlow } from "@/components/horizon-glow"
 import gsap from "gsap"
 import { ScrollTrigger } from "gsap/ScrollTrigger"
 
@@ -108,6 +109,7 @@ export function PipelineSection() {
 
   return (
     <section id="signals" ref={sectionRef} className="relative py-32 pl-6 md:pl-28">
+      <HorizonGlow glowPosition="center" glowColor="blue" sparkleCount={4} showHorizonLine={true} />
       <div
         ref={cursorRef}
         className={cn(

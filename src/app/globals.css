@@ -138,3 +138,17 @@
   background: oklch(0.650 0.173 262.72);
   color: oklch(0.239 0.006 271.17);
 }
+
+@keyframes horizon-sparkle {
+  0% {
+    transform: translate(-50%, -50%) scale(0.5) rotate(0deg);
+    opacity: 0.1;
+  }
+  50% {
+    opacity: 0.8;
+  }
+  100% {
+    transform: translate(-50%, -50%) scale(1.15) rotate(90deg);
+    opacity: 0.2;
+  }
+}
