@@ -93,7 +93,7 @@ export function ArchitectureSection() {
 
   return (
     <section ref={sectionRef} id="principles" className="relative py-32 pl-6 md:pl-28 pr-6 md:pr-12">
-      <HorizonGlow glowPosition="center" glowColor="cyan" sparkleCount={5} showHorizonLine={false} />
+      <HorizonGlow glowPosition="center" glowColor="cyan" sparkleCount={15} showHorizonLine={false} />
       {/* Section header */}
       <div ref={headerRef} className="mb-24">
         <span className="font-mono text-[10px] uppercase tracking-[0.3em] text-accent">04 / Principles</span>

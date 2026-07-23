@@ -59,7 +59,7 @@ export function FooterSection() {
       id="colophon"
       className="relative py-32 pl-6 md:pl-28 pr-6 md:pr-12 border-t border-border/30 bg-[#0d0d0f]/20"
     >
-      <HorizonGlow glowPosition="bottom" glowColor="mixed" sparkleCount={4} showHorizonLine={false} />
+      <HorizonGlow glowPosition="bottom" glowColor="mixed" sparkleCount={15} showHorizonLine={false} />
 
       <div ref={gridRef} className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-8">
         {/* Left Brand Panel */}

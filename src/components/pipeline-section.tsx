@@ -109,7 +109,7 @@ export function PipelineSection() {
 
   return (
     <section id="signals" ref={sectionRef} className="relative py-32 pl-6 md:pl-28">
-      <HorizonGlow glowPosition="center" glowColor="blue" sparkleCount={4} showHorizonLine={true} />
+      <HorizonGlow glowPosition="center" glowColor="blue" sparkleCount={15} showHorizonLine={true} />
       <div
         ref={cursorRef}
         className={cn(

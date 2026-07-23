@@ -22,7 +22,7 @@ export function SetupSection() {
 
   return (
     <section id="installation" className="relative py-32 pl-6 md:pl-28 pr-6 md:pr-12">
-      <HorizonGlow glowPosition="bottom" glowColor="cyan" sparkleCount={3} showHorizonLine={false} />
+      <HorizonGlow glowPosition="bottom" glowColor="cyan" sparkleCount={15} showHorizonLine={false} />
       {/* Section header */}
       <div className="mb-16">
         <span className="font-mono text-[10px] uppercase tracking-[0.3em] text-accent">01 / Setup</span>

@@ -37,7 +37,7 @@ export function HeroSection() {
     <SplitFlapAudioProvider>
       <section ref={sectionRef} id="hero" className="relative min-h-screen flex flex-col justify-center overflow-hidden bg-background px-6 md:px-28">
         <NoiseOverlay opacity={0.03} />
-        <HorizonGlow glowPosition="center" glowColor="mixed" sparkleCount={6} showHorizonLine={true} />
+        <HorizonGlow glowPosition="center" glowColor="mixed" sparkleCount={15} showHorizonLine={true} />
 
         {/* Main content */}
         <div ref={contentRef} className="w-full">
