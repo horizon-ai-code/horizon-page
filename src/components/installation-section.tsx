@@ -21,7 +21,7 @@ export function InstallationSection() {
 
   return (
     <section id="installation" className="relative py-32 pl-6 md:pl-28 pr-6 md:pr-12">
-      <div className="max-w-4xl">
+      <div className="max-w-6xl">
         
         {/* Section header */}
         <div className="mb-16">
