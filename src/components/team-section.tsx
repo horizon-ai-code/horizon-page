@@ -4,6 +4,7 @@ import { useRef, useState, useEffect } from "react"
 import { Play } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { HorizonGlow } from "@/components/horizon-glow"
+import { TextScramble } from "@/components/text-scramble"
 import gsap from "gsap"
 
 type TeamMember = {
@@ -24,7 +25,7 @@ const teamMembers: TeamMember[] = [
   },
   {
     id: "joshua",
-    role: "Full Stack Developer",
+    role: "Full Stack / Lead Developer",
     description: "Engineers the core multi-agent execution services, state management, and real-time WebSocket telemetry communication layer that drives Horizon's pipelines.",
     imageSrc: "/team/joshua-placeholder.jpg",
     siteUrl: "#",
@@ -248,6 +249,19 @@ function TeamCard({
         alt={member.role} 
         initials={member.role.split(" ").map((w) => w[0]).join("").toUpperCase()} 
       />
+
+      {/* Role overlay text on the left side of the image (scramble transition on view) */}
+      {activeIndex === index && (
+        <div 
+          className="absolute left-6 top-1/2 -translate-y-1/2 z-15 select-none pointer-events-none" 
+          style={{ writingMode: 'vertical-lr', transform: 'translateY(-50%) rotate(180deg)' }}
+        >
+          <TextScramble 
+            text={member.role.toUpperCase()} 
+            className="font-mono text-[9px] md:text-[10px] tracking-[0.3em] text-black font-bold uppercase"
+          />
+        </div>
+      )}
 
       {/* Centered Hover Pill (Visit Site) following the pointer */}
       <div
