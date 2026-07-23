@@ -114,31 +114,34 @@ export function ArchitectureSection() {
               {principle.number} / {principle.titleParts[0].text.split(" ")[0]}
             </span>
 
-            <h3 className="font-[var(--font-inter)] text-4xl md:text-6xl lg:text-8xl tracking-tight leading-none">
-              {principle.titleParts.map((part, i) =>
-                part.highlight ? (
-                  <TextHighlighter key={i} parallaxSpeed={0.6}>
-                    {part.text}
-                  </TextHighlighter>
-                ) : (
-                  <span key={i}>{part.text}</span>
-                ),
-              )}
-            </h3>
+            {/* Title & Underline wrapper */}
+            <div className={cn(
+              "w-fit flex flex-col",
+              principle.align === "right" ? "items-end" : "items-start"
+            )}>
+              <h3 className="font-[var(--font-inter)] text-4xl md:text-6xl lg:text-8xl tracking-tight leading-none">
+                {principle.titleParts.map((part, i) =>
+                  part.highlight ? (
+                    <TextHighlighter key={i} parallaxSpeed={0.6}>
+                      {part.text}
+                    </TextHighlighter>
+                  ) : (
+                    <span key={i}>{part.text}</span>
+                  ),
+                )}
+              </h3>
+
+              {/* Glowing Horizon Line */}
+              <div className="relative mt-6 mb-6 h-[1px] bg-gradient-to-r from-transparent via-cyan-400/50 to-transparent w-full">
+                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-20 h-4 bg-cyan-400/30 blur-sm rounded-full" />
+                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-1.5 h-1.5 bg-white rounded-full shadow-[0_0_8px_3px_rgba(34,211,238,0.7)]" />
+              </div>
+            </div>
 
             {/* Description */}
-            <p className="mt-6 max-w-md font-mono text-sm text-muted-foreground leading-relaxed">
+            <p className="max-w-md font-mono text-sm text-muted-foreground leading-relaxed">
               {principle.description}
             </p>
-
-            {/* Glowing Horizon Line */}
-            <div className={cn(
-              "relative mt-8 h-[1px] bg-gradient-to-r from-transparent via-cyan-400/50 to-transparent w-48 md:w-80",
-              principle.align === "right" ? "mr-0" : "ml-0"
-            )}>
-              <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-20 h-4 bg-cyan-400/30 blur-sm rounded-full" />
-              <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-1.5 h-1.5 bg-white rounded-full shadow-[0_0_8px_3px_rgba(34,211,238,0.7)]" />
-            </div>
           </article>
         ))}
       </div>
