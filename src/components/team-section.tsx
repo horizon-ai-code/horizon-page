@@ -1,7 +1,7 @@
 "use client"
 
 import { useRef, useState, useEffect } from "react"
-import { ArrowUpRight } from "lucide-react"
+import { Play } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { HorizonGlow } from "@/components/horizon-glow"
 import gsap from "gsap"
@@ -11,7 +11,7 @@ type TeamMember = {
   role: string
   description: string
   imageSrc: string
-  detailsLink: string
+  siteUrl: string
 }
 
 const teamMembers: TeamMember[] = [
@@ -20,73 +20,36 @@ const teamMembers: TeamMember[] = [
     role: "Project Lead",
     description: "Orchestrates overall direction, multi-agent workflows, and coordination across the refactoring pipeline to align local agent orchestration with system goals.",
     imageSrc: "/team/christian-placeholder.jpg",
-    detailsLink: "https://github.com/blueztian",
+    siteUrl: "#",
   },
   {
     id: "joshua",
     role: "Full Stack Developer",
     description: "Engineers the core multi-agent execution services, state management, and real-time WebSocket telemetry communication layer that drives Horizon's pipelines.",
     imageSrc: "/team/joshua-placeholder.jpg",
-    detailsLink: "https://www.pugario.tech/",
+    siteUrl: "#",
   },
   {
     id: "jericho",
     role: "Frontend Developer",
     description: "Designs the premium JetBrains-inspired UI, orchestrating the dynamic FlowGrid visual timelines, Glassbox Terminal console feeds, and metric display layouts.",
     imageSrc: "/vardz.png",
-    detailsLink: "https://www.vardz.dev/",
+    siteUrl: "https://www.vardz.dev/",
   },
   {
     id: "andrew",
     role: "Quality Assurance",
     description: "Develops semantic validation tests and runs syntax error monitors, ensuring AST verification and complexity metrics are strictly maintained throughout the refactoring pipeline.",
     imageSrc: "/team/andrew-placeholder.jpg",
-    detailsLink: "https://github.com/andrewdejito",
+    siteUrl: "#",
   },
 ]
 
 export function TeamSection() {
-  const sectionRef = useRef<HTMLElement>(null)
   const scrollRef = useRef<HTMLDivElement>(null)
-  const cursorRef = useRef<HTMLDivElement>(null)
-  const [isHovering, setIsHovering] = useState(false)
   const [activeIndex, setActiveIndex] = useState(0)
   const [canScrollLeft, setCanScrollLeft] = useState(false)
   const [canScrollRight, setCanScrollRight] = useState(true)
-
-  // Custom cursor tracking logic reused from pipeline-section
-  useEffect(() => {
-    if (!sectionRef.current || !cursorRef.current) return
-
-    const section = sectionRef.current
-    const cursor = cursorRef.current
-
-    const handleMouseMove = (e: MouseEvent) => {
-      const rect = section.getBoundingClientRect()
-      const x = e.clientX - rect.left
-      const y = e.clientY - rect.top
-
-      gsap.to(cursor, {
-        x: x,
-        y: y,
-        duration: 0.5,
-        ease: "power3.out",
-      })
-    }
-
-    const handleMouseEnter = () => setIsHovering(true)
-    const handleMouseLeave = () => setIsHovering(false)
-
-    section.addEventListener("mousemove", handleMouseMove)
-    section.addEventListener("mouseenter", handleMouseEnter)
-    section.addEventListener("mouseleave", handleMouseLeave)
-
-    return () => {
-      section.removeEventListener("mousemove", handleMouseMove)
-      section.removeEventListener("mouseenter", handleMouseEnter)
-      section.removeEventListener("mouseleave", handleMouseLeave)
-    }
-  }, [])
 
   const handleScroll = () => {
     if (scrollRef.current) {
@@ -130,23 +93,11 @@ export function TeamSection() {
 
   return (
     <section 
-      ref={sectionRef}
       id="team" 
       className="relative py-32 border-t border-[var(--border)] overflow-hidden bg-[var(--background)]"
     >
       {/* Background glow and sparkles */}
       <HorizonGlow glowPosition="center" glowColor="mixed" sparkleCount={5} showHorizonLine={false} />
-
-      {/* GSAP Custom Pointer Tracker */}
-      <div
-        ref={cursorRef}
-        className={cn(
-          "pointer-events-none absolute top-0 left-0 -translate-x-1/2 -translate-y-1/2 z-50",
-          "w-12 h-12 rounded-full border-2 border-[var(--accent)] bg-[var(--accent)]/10",
-          "transition-opacity duration-300",
-          isHovering ? "opacity-100" : "opacity-0"
-        )}
-      />
 
       {/* Section Header */}
       <div className="mb-16 px-6 md:px-28">
@@ -165,34 +116,12 @@ export function TeamSection() {
           style={{ scrollbarWidth: "none" }}
         >
           {teamMembers.map((member, index) => (
-            <a
-              key={member.id}
-              href={member.detailsLink}
-              target="_blank"
-              rel="noopener noreferrer"
-              className={cn(
-                "flex-shrink-0 w-[80vw] sm:w-[50vw] md:w-[42vw] aspect-[16/9] snap-start group relative rounded-[2rem] bg-[var(--card)] border border-[var(--border)]/65 overflow-hidden flex items-center justify-center transition-all duration-500 shadow-xl cursor-pointer block",
-                activeIndex === index ? "border-[var(--accent)]/60 scale-[1.01]" : "opacity-75 hover:opacity-90"
-              )}
-            >
-              {/* Subtle tech mesh grid in background */}
-              <div className="absolute inset-0 grid-bg opacity-5" />
-
-              {/* Responsive Image with Graceful Initials Fallback */}
-              <CardImage 
-                src={member.imageSrc} 
-                alt={member.role} 
-                initials={member.role.split(" ").map(w => w[0]).join("").toUpperCase()} 
-              />
-
-              {/* Centered Hover Pill (Visit Site) */}
-              <div 
-                className="absolute z-20 px-6 py-3 bg-white text-black font-sans text-xs font-bold rounded-full shadow-2xl flex items-center gap-2 opacity-0 scale-90 group-hover:opacity-100 group-hover:scale-100 transition-all duration-300 pointer-events-none"
-              >
-                <ArrowUpRight className="w-4 h-4 text-black stroke-[2.5px]" />
-                <span>Visit Site</span>
-              </div>
-            </a>
+            <TeamCard 
+              key={member.id} 
+              member={member} 
+              index={index} 
+              activeIndex={activeIndex} 
+            />
           ))}
           {/* Spacer to allow the last card to scroll to the most left */}
           <div className="flex-shrink-0 w-[20vw] sm:w-[50vw] md:w-[58vw]" />
@@ -210,7 +139,10 @@ export function TeamSection() {
             {teamMembers[activeIndex].description}
           </p>
           <a
-            href={teamMembers[activeIndex].detailsLink}
+            href={teamMembers[activeIndex].siteUrl}
+            onClick={(e) => {
+              if (teamMembers[activeIndex].siteUrl === "#") e.preventDefault()
+            }}
             target="_blank"
             rel="noopener noreferrer"
             className="mt-6 inline-flex items-center gap-1.5 font-[var(--font-mono)] text-xs text-[var(--accent)] hover:underline tracking-wider"
@@ -246,6 +178,89 @@ export function TeamSection() {
         </div>
       </div>
     </section>
+  )
+}
+
+function TeamCard({
+  member,
+  index,
+  activeIndex,
+}: {
+  member: TeamMember
+  index: number
+  activeIndex: number
+}) {
+  const containerRef = useRef<HTMLAnchorElement>(null)
+  const pillRef = useRef<HTMLDivElement>(null)
+  const [isHovered, setIsHovered] = useState(false)
+
+  useEffect(() => {
+    if (!containerRef.current || !pillRef.current) return
+
+    const container = containerRef.current
+    const pill = pillRef.current
+
+    const handleMouseMove = (e: MouseEvent) => {
+      const rect = container.getBoundingClientRect()
+      const x = e.clientX - rect.left
+      const y = e.clientY - rect.top
+
+      // Animate custom cursor pill to follow mouse position with GSAP easing lag
+      gsap.to(pill, {
+        x: x,
+        y: y,
+        duration: 0.4,
+        ease: "power2.out",
+        overwrite: "auto",
+      })
+    }
+
+    container.addEventListener("mousemove", handleMouseMove)
+    return () => {
+      container.removeEventListener("mousemove", handleMouseMove)
+    }
+  }, [isHovered])
+
+  return (
+    <a
+      ref={containerRef}
+      href={member.siteUrl}
+      onClick={(e) => {
+        if (member.siteUrl === "#") e.preventDefault()
+      }}
+      target="_blank"
+      rel="noopener noreferrer"
+      aria-label={`Visit ${member.role}'s site`}
+      onMouseEnter={() => setIsHovered(true)}
+      onMouseLeave={() => setIsHovered(false)}
+      className={cn(
+        "flex-shrink-0 w-[80vw] sm:w-[50vw] md:w-[42vw] aspect-[16/9] snap-start group relative rounded-[2rem] bg-[var(--card)] border border-[var(--border)]/65 overflow-hidden flex items-center justify-center transition-all duration-500 shadow-xl",
+        activeIndex === index ? "border-[var(--accent)]/60 scale-[1.01]" : "opacity-75 hover:opacity-90",
+        isHovered && "cursor-none" // Hide default cursor inside image container boundary
+      )}
+    >
+      {/* Subtle tech mesh grid in background */}
+      <div className="absolute inset-0 grid-bg opacity-5 pointer-events-none" />
+
+      {/* Responsive Image with Graceful Initials Fallback */}
+      <CardImage 
+        src={member.imageSrc} 
+        alt={member.role} 
+        initials={member.role.split(" ").map((w) => w[0]).join("").toUpperCase()} 
+      />
+
+      {/* Centered Hover Pill (Visit Site) following the pointer */}
+      <div
+        ref={pillRef}
+        className={cn(
+          "absolute top-0 left-0 -translate-x-1/2 -translate-y-1/2 z-20 px-5 py-2.5 bg-white text-black font-sans text-[11px] font-bold rounded-full shadow-2xl flex items-center gap-2 pointer-events-none transition-opacity duration-300",
+          isHovered ? "opacity-100" : "opacity-0 pointer-events-none"
+        )}
+      >
+        <Play className="w-3 h-3 fill-black text-black" />
+        <span>Visit Site</span>
+      </div>
+    </a>
   )
 }
 
