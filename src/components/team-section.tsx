@@ -60,8 +60,6 @@ const teamMembers: TeamMember[] = [
 export function TeamSection() {
   const scrollRef = useRef<HTMLDivElement>(null)
   const [activeIndex, setActiveIndex] = useState(0)
-  const [canScrollLeft, setCanScrollLeft] = useState(false)
-  const [canScrollRight, setCanScrollRight] = useState(true)
 
   const handleScroll = () => {
     if (scrollRef.current) {
@@ -81,10 +79,6 @@ export function TeamSection() {
           }
         }
       }
-      setCanScrollLeft(scrollLeft > 10)
-      setCanScrollRight(
-        scrollLeft + clientWidth < scrollWidth - 25
-      )
     }
   }
 
@@ -180,10 +174,10 @@ export function TeamSection() {
           <div className="flex items-center bg-[#2b2d30] rounded-full p-1 shadow-2xl border border-[var(--border)]/80">
             <button
               onClick={() => scroll("left")}
-              disabled={!canScrollLeft}
+              disabled={activeIndex === 0}
               className={cn(
                 "w-10 h-10 rounded-full flex items-center justify-center text-[var(--foreground)] font-semibold text-lg transition-all duration-300",
-                canScrollLeft ? "opacity-100 hover:bg-white/5" : "opacity-25 cursor-not-allowed"
+                activeIndex > 0 ? "opacity-100 hover:bg-white/5" : "opacity-25 cursor-not-allowed"
               )}
               aria-label="Scroll left"
             >
@@ -192,10 +186,10 @@ export function TeamSection() {
             <div className="w-[1px] h-4 bg-[var(--border)]/80" />
             <button
               onClick={() => scroll("right")}
-              disabled={!canScrollRight}
+              disabled={activeIndex === teamMembers.length - 1}
               className={cn(
                 "w-10 h-10 rounded-full flex items-center justify-center text-[var(--foreground)] font-semibold text-lg transition-all duration-300",
-                canScrollRight ? "opacity-100 hover:bg-white/5" : "opacity-25 cursor-not-allowed"
+                activeIndex < teamMembers.length - 1 ? "opacity-100 hover:bg-white/5" : "opacity-25 cursor-not-allowed"
               )}
               aria-label="Scroll right"
             >
