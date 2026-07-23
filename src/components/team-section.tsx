@@ -177,25 +177,25 @@ export function TeamSection() {
 
         {/* Carousel controls - Single integrated pill capsule */}
         <div className="md:col-span-4 flex justify-end items-center">
-          <div className="flex items-center bg-white rounded-full p-1 shadow-2xl border border-white/25">
+          <div className="flex items-center bg-[#2b2d30] rounded-full p-1 shadow-2xl border border-[var(--border)]/80">
             <button
               onClick={() => scroll("left")}
               disabled={!canScrollLeft}
               className={cn(
-                "w-10 h-10 rounded-full flex items-center justify-center text-black font-semibold text-lg transition-all duration-300",
-                canScrollLeft ? "opacity-100 hover:bg-black/10" : "opacity-25 cursor-not-allowed"
+                "w-10 h-10 rounded-full flex items-center justify-center text-[var(--foreground)] font-semibold text-lg transition-all duration-300",
+                canScrollLeft ? "opacity-100 hover:bg-white/5" : "opacity-25 cursor-not-allowed"
               )}
               aria-label="Scroll left"
             >
               ‹
             </button>
-            <div className="w-[1px] h-4 bg-black/10" />
+            <div className="w-[1px] h-4 bg-[var(--border)]/80" />
             <button
               onClick={() => scroll("right")}
               disabled={!canScrollRight}
               className={cn(
-                "w-10 h-10 rounded-full flex items-center justify-center text-black font-semibold text-lg transition-all duration-300",
-                canScrollRight ? "opacity-100 hover:bg-black/10" : "opacity-25 cursor-not-allowed"
+                "w-10 h-10 rounded-full flex items-center justify-center text-[var(--foreground)] font-semibold text-lg transition-all duration-300",
+                canScrollRight ? "opacity-100 hover:bg-white/5" : "opacity-25 cursor-not-allowed"
               )}
               aria-label="Scroll right"
             >
