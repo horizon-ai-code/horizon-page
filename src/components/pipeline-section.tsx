@@ -165,13 +165,13 @@ function SignalCard({
   return (
     <article
       className={cn(
-        "group relative flex-shrink-0 w-80",
+        "group relative flex-shrink-0 w-80 h-[280px]",
         "transition-transform duration-500 ease-out",
         "hover:-translate-y-2",
       )}
     >
       {/* Card with paper texture effect */}
-      <div className="relative bg-card border border-border/50 md:border-t md:border-l md:border-r-0 md:border-b-0 p-8 overflow-hidden">
+      <div className="relative bg-card border border-border/50 md:border-t md:border-l md:border-r-0 md:border-b-0 p-8 overflow-hidden h-full">
         {/* Top torn edge effect */}
         <div className="absolute -top-px left-0 right-0 h-px bg-gradient-to-r from-transparent via-border/40 to-transparent z-20" />
 
