@@ -20,7 +20,7 @@ const teamMembers: TeamMember[] = [
     id: "christian",
     role: "Project Lead",
     description: "Orchestrates overall direction, multi-agent workflows, and coordination across the refactoring pipeline to align local agent orchestration with system goals.",
-    imageSrc: "/team/christian-placeholder.jpg",
+    imageSrc: "/ian.png",
     siteUrl: "#",
   },
   {
@@ -28,7 +28,7 @@ const teamMembers: TeamMember[] = [
     role: "Full Stack / Lead Developer",
     description: "Engineers the core multi-agent execution services, state management, and real-time WebSocket telemetry communication layer that drives Horizon's pipelines.",
     imageSrc: "/joshua.png",
-    siteUrl: "#",
+    siteUrl: "https://www.pugario.tech/",
   },
   {
     id: "jericho",
