@@ -182,11 +182,13 @@ function SignalCard({
         <div className="absolute -top-px left-0 right-0 h-px bg-gradient-to-r from-transparent via-border/40 to-transparent" />
 
         {/* Issue number - editorial style */}
-        <div className="flex items-baseline justify-between mb-8">
-          <span className="font-mono text-[10px] uppercase tracking-[0.3em] text-muted-foreground">
+        <div className="flex items-start justify-between mb-8 gap-4">
+          <span className="font-mono text-[10px] uppercase tracking-[0.3em] text-foreground/80 whitespace-nowrap">
             No. {String(index + 1).padStart(2, "0")}
           </span>
-          <time className="font-mono text-[10px] text-muted-foreground/60">{signal.date}</time>
+          <span className="font-mono text-[10px] text-foreground/70 text-right">
+            {signal.date}
+          </span>
         </div>
 
         {/* Title */}
@@ -198,7 +200,7 @@ function SignalCard({
         <div className="w-12 h-px bg-accent/60 mb-6 group-hover:w-full transition-all duration-500" />
 
         {/* Description */}
-        <p className="font-mono text-xs text-muted-foreground leading-relaxed">{signal.note}</p>
+        <p className="font-mono text-xs text-foreground/70 leading-relaxed">{signal.note}</p>
 
         {/* Bottom right corner fold effect */}
         <div className="absolute bottom-0 right-0 w-6 h-6 overflow-hidden">
