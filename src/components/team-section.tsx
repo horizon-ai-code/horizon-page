@@ -1,7 +1,7 @@
 "use client"
 
 import { useRef, useState, useEffect } from "react"
-import { Play } from "lucide-react"
+import { ArrowUpRight } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { HorizonGlow } from "@/components/horizon-glow"
 import gsap from "gsap"
@@ -9,10 +9,8 @@ import gsap from "gsap"
 type TeamMember = {
   id: string
   role: string
-  name: string
   description: string
   imageSrc: string
-  initials: string
   detailsLink: string
 }
 
@@ -20,38 +18,30 @@ const teamMembers: TeamMember[] = [
   {
     id: "christian",
     role: "Project Lead",
-    name: "Christian Balinado",
     description: "Orchestrates overall direction, multi-agent workflows, and coordination across the refactoring pipeline to align local agent orchestration with system goals.",
     imageSrc: "/team/christian-placeholder.jpg",
-    initials: "CB",
-    detailsLink: "#",
+    detailsLink: "https://github.com/blueztian",
   },
   {
     id: "joshua",
     role: "Full Stack Developer",
-    name: "Joshua Lopez",
     description: "Engineers the core multi-agent execution services, state management, and real-time WebSocket telemetry communication layer that drives Horizon's pipelines.",
     imageSrc: "/team/joshua-placeholder.jpg",
-    initials: "JL",
-    detailsLink: "#",
+    detailsLink: "https://www.pugario.tech/",
   },
   {
     id: "jericho",
     role: "Frontend Developer",
-    name: "Jericho Varde",
     description: "Designs the premium JetBrains-inspired UI, orchestrating the dynamic FlowGrid visual timelines, Glassbox Terminal console feeds, and metric display layouts.",
     imageSrc: "/vardz.png",
-    initials: "JV",
-    detailsLink: "#",
+    detailsLink: "https://www.vardz.dev/",
   },
   {
     id: "andrew",
     role: "Quality Assurance",
-    name: "Andrew Dejito",
     description: "Develops semantic validation tests and runs syntax error monitors, ensuring AST verification and complexity metrics are strictly maintained throughout the refactoring pipeline.",
     imageSrc: "/team/andrew-placeholder.jpg",
-    initials: "AD",
-    detailsLink: "#",
+    detailsLink: "https://github.com/andrewdejito",
   },
 ]
 
@@ -175,10 +165,13 @@ export function TeamSection() {
           style={{ scrollbarWidth: "none" }}
         >
           {teamMembers.map((member, index) => (
-            <div
+            <a
               key={member.id}
+              href={member.detailsLink}
+              target="_blank"
+              rel="noopener noreferrer"
               className={cn(
-                "flex-shrink-0 w-[80vw] sm:w-[50vw] md:w-[42vw] aspect-[16/9] snap-start group relative rounded-[2rem] bg-[var(--card)] border border-[var(--border)]/65 overflow-hidden flex items-center justify-center transition-all duration-500 shadow-xl",
+                "flex-shrink-0 w-[80vw] sm:w-[50vw] md:w-[42vw] aspect-[16/9] snap-start group relative rounded-[2rem] bg-[var(--card)] border border-[var(--border)]/65 overflow-hidden flex items-center justify-center transition-all duration-500 shadow-xl cursor-pointer block",
                 activeIndex === index ? "border-[var(--accent)]/60 scale-[1.01]" : "opacity-75 hover:opacity-90"
               )}
             >
@@ -186,16 +179,19 @@ export function TeamSection() {
               <div className="absolute inset-0 grid-bg opacity-5" />
 
               {/* Responsive Image with Graceful Initials Fallback */}
-              <CardImage src={member.imageSrc} alt={member.name} initials={member.initials} />
+              <CardImage 
+                src={member.imageSrc} 
+                alt={member.role} 
+                initials={member.role.split(" ").map(w => w[0]).join("").toUpperCase()} 
+              />
 
-              {/* Centered Play Button Overlay */}
-              <button 
-                className="absolute z-20 w-14 h-14 bg-white/10 backdrop-blur-md rounded-full border border-white/20 flex items-center justify-center text-[var(--foreground)] shadow-lg hover:bg-white/20 hover:scale-110 hover:border-[var(--accent)]/55 transition-all duration-300"
-                aria-label={`Play video intro for ${member.name}`}
+              {/* Centered Link Overlay Button */}
+              <div 
+                className="absolute z-20 w-14 h-14 bg-white/10 backdrop-blur-md rounded-full border border-white/20 flex items-center justify-center text-white shadow-lg group-hover:bg-white/20 group-hover:scale-110 group-hover:border-[var(--accent)]/55 transition-all duration-300"
               >
-                <Play className="w-5 h-5 fill-white text-white translate-x-0.5" />
-              </button>
-            </div>
+                <ArrowUpRight className="w-5 h-5 text-white" />
+              </div>
+            </a>
           ))}
           {/* Spacer to allow the last card to scroll to the most left */}
           <div className="flex-shrink-0 w-[20vw] sm:w-[50vw] md:w-[58vw]" />
@@ -207,16 +203,18 @@ export function TeamSection() {
         {/* Caption Info Block */}
         <div className="md:col-span-8 flex flex-col items-start min-h-[160px]">
           <h3 className="font-[var(--font-display)] text-2xl md:text-3xl font-medium tracking-tight text-[var(--foreground)]">
-            {teamMembers[activeIndex].role} — <span className="text-[var(--muted-foreground)] font-light">{teamMembers[activeIndex].name}</span>
+            {teamMembers[activeIndex].role}
           </h3>
           <p className="mt-4 font-[var(--font-sans)] text-sm md:text-base text-[var(--muted-foreground)] leading-relaxed max-w-2xl transition-all duration-300">
             {teamMembers[activeIndex].description}
           </p>
           <a
             href={teamMembers[activeIndex].detailsLink}
+            target="_blank"
+            rel="noopener noreferrer"
             className="mt-6 inline-flex items-center gap-1.5 font-[var(--font-mono)] text-xs text-[var(--accent)] hover:underline tracking-wider"
           >
-            View specs ›
+            View portfolio ›
           </a>
         </div>
 
