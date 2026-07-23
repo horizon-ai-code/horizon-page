@@ -33,7 +33,7 @@ export function InstallationSection() {
         </div>
 
         {/* Terminal Window */}
-        <div className="rounded-xl overflow-hidden border border-border/50 bg-[#0A0A0B] shadow-2xl relative group">
+        <div className="rounded-xl overflow-hidden border border-border/50 bg-[#0A0A0B] shadow-2xl relative group mx-auto">
           {/* Terminal Header */}
           <div className="flex items-center justify-between px-4 py-3 border-b border-border/30 bg-[#121214]">
             <div className="flex space-x-2">
