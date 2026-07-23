@@ -39,9 +39,9 @@ const teamMembers: TeamMember[] = [
   },
   {
     id: "andrew",
-    role: "Quality Assurance",
+    role: "Quality Assurance Manager",
     description: "Develops semantic validation tests and runs syntax error monitors, ensuring AST verification and complexity metrics are strictly maintained throughout the refactoring pipeline.",
-    imageSrc: "/team/andrew-placeholder.jpg",
+    imageSrc: "/andrew.png",
     siteUrl: "#",
   },
 ]
