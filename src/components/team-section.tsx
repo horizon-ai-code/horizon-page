@@ -1,169 +1,241 @@
 "use client"
 
 import { useRef, useState, useEffect } from "react"
-import { ChevronLeft, ChevronRight, Play } from "lucide-react"
+import { Play } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { HorizonGlow } from "@/components/horizon-glow"
+import gsap from "gsap"
 
-interface TeamMember {
+type TeamMember = {
+  id: string
   role: string
+  name: string
   description: string
+  imageSrc: string
+  initials: string
   detailsLink: string
 }
 
 const teamMembers: TeamMember[] = [
   {
+    id: "christian",
     role: "Project Lead",
-    description: "Orchestrates multi-agent pipelines and coordinates model-level GBNF grammar constraints to build a production-ready codebase.",
+    name: "Christian Balinado",
+    description: "Orchestrates overall direction, multi-agent workflows, and coordination across the refactoring pipeline to align local agent orchestration with system goals.",
+    imageSrc: "/team/christian-placeholder.jpg",
+    initials: "CB",
     detailsLink: "#",
   },
   {
-    role: "Full stack developer",
-    description: "Builds production-ready applications with confidence with thoroughly designed artifacts and comprehensive verification tests.",
+    id: "joshua",
+    role: "Full Stack Developer",
+    name: "Joshua Lopez",
+    description: "Engineers the core multi-agent execution services, state management, and real-time WebSocket telemetry communication layer that drives Horizon's pipelines.",
+    imageSrc: "/team/joshua-placeholder.jpg",
+    initials: "JL",
     detailsLink: "#",
   },
   {
-    role: "Frontend developer",
-    description: "Designs modern UI systems, premium dark modes, visual telemetry gauges, and smooth GPU-accelerated micro-animations.",
+    id: "jericho",
+    role: "Frontend Developer",
+    name: "Jericho Varde",
+    description: "Designs the premium JetBrains-inspired UI, orchestrating the dynamic FlowGrid visual timelines, Glassbox Terminal console feeds, and metric display layouts.",
+    imageSrc: "/team/jericho-placeholder.jpg",
+    initials: "JV",
     detailsLink: "#",
   },
   {
-    role: "Quality assurance",
-    description: "Ensures Java AST stability and runs regression benchmarks, validating syntax errors and preventing class boundary drift.",
+    id: "andrew",
+    role: "Quality Assurance",
+    name: "Andrew Dejito",
+    description: "Develops semantic validation tests and runs syntax error monitors, ensuring AST verification and complexity metrics are strictly maintained throughout the refactoring pipeline.",
+    imageSrc: "/team/andrew-placeholder.jpg",
+    initials: "AD",
     detailsLink: "#",
   },
 ]
 
 export function TeamSection() {
+  const sectionRef = useRef<HTMLElement>(null)
   const scrollRef = useRef<HTMLDivElement>(null)
+  const cursorRef = useRef<HTMLDivElement>(null)
+  const [isHovering, setIsHovering] = useState(false)
+  const [activeIndex, setActiveIndex] = useState(0)
   const [canScrollLeft, setCanScrollLeft] = useState(false)
   const [canScrollRight, setCanScrollRight] = useState(true)
 
-  const checkScroll = () => {
-    if (scrollRef.current) {
-      const { scrollLeft, scrollWidth, clientWidth } = scrollRef.current
-      setCanScrollLeft(scrollLeft > 5)
-      // Allow minor threshold gap
-      setCanScrollRight(scrollLeft + clientWidth < scrollWidth - 5)
-    }
-  }
-
+  // Custom cursor tracking logic reused from pipeline-section
   useEffect(() => {
-    const el = scrollRef.current
-    if (el) {
-      el.addEventListener("scroll", checkScroll)
-      // Initial check
-      checkScroll()
-      // Check on window resize
-      window.addEventListener("resize", checkScroll)
+    if (!sectionRef.current || !cursorRef.current) return
+
+    const section = sectionRef.current
+    const cursor = cursorRef.current
+
+    const handleMouseMove = (e: MouseEvent) => {
+      const rect = section.getBoundingClientRect()
+      const x = e.clientX - rect.left
+      const y = e.clientY - rect.top
+
+      gsap.to(cursor, {
+        x: x,
+        y: y,
+        duration: 0.5,
+        ease: "power3.out",
+      })
     }
+
+    const handleMouseEnter = () => setIsHovering(true)
+    const handleMouseLeave = () => setIsHovering(false)
+
+    section.addEventListener("mousemove", handleMouseMove)
+    section.addEventListener("mouseenter", handleMouseEnter)
+    section.addEventListener("mouseleave", handleMouseLeave)
+
     return () => {
-      if (el) el.removeEventListener("scroll", checkScroll)
-      window.removeEventListener("resize", checkScroll)
+      section.removeEventListener("mousemove", handleMouseMove)
+      section.removeEventListener("mouseenter", handleMouseEnter)
+      section.removeEventListener("mouseleave", handleMouseLeave)
     }
   }, [])
 
+  const handleScroll = () => {
+    if (scrollRef.current) {
+      const scrollLeft = scrollRef.current.scrollLeft
+      const card = scrollRef.current.querySelector(".snap-start")
+      if (card) {
+        const cardWidth = card.getBoundingClientRect().width + 24 // card width + gap
+        const index = Math.round(scrollLeft / cardWidth)
+        if (index !== activeIndex && index >= 0 && index < teamMembers.length) {
+          setActiveIndex(index)
+        }
+      }
+      setCanScrollLeft(scrollLeft > 10)
+      setCanScrollRight(
+        scrollLeft + scrollRef.current.clientWidth < scrollRef.current.scrollWidth - 10
+      )
+    }
+  }
+
   const scroll = (direction: "left" | "right") => {
     if (scrollRef.current) {
-      const offset = direction === "left" ? -380 : 380
-      scrollRef.current.scrollBy({ left: offset, behavior: "smooth" })
+      const card = scrollRef.current.querySelector(".snap-start")
+      if (card) {
+        const cardWidth = card.getBoundingClientRect().width + 24 // card width + gap
+        const newIndex = direction === "left" ? activeIndex - 1 : activeIndex + 1
+        if (newIndex >= 0 && newIndex < teamMembers.length) {
+          const targetScrollLeft = newIndex * cardWidth
+          scrollRef.current.scrollTo({ left: targetScrollLeft, behavior: "smooth" })
+          setActiveIndex(newIndex)
+        }
+      }
     }
   }
 
   return (
-    <section id="team" className="relative py-32 pl-6 md:pl-28 pr-6 md:pr-12 border-t border-border/30 overflow-hidden">
+    <section 
+      ref={sectionRef}
+      id="team" 
+      className="relative py-32 border-t border-[var(--border)] overflow-hidden bg-[var(--background)]"
+    >
       {/* Background glow and sparkles */}
-      <HorizonGlow glowPosition="center" glowColor="mixed" sparkleCount={5} showHorizonLine={true} />
+      <HorizonGlow glowPosition="center" glowColor="mixed" sparkleCount={5} showHorizonLine={false} />
 
-      {/* Section header */}
-      <div className="mb-16 flex flex-col md:flex-row md:items-end justify-between gap-4">
-        <div>
-          <span className="font-mono text-[10px] uppercase tracking-[0.3em] text-accent">05 / Team</span>
-          <h2 className="mt-4 font-[var(--font-outfit)] text-5xl md:text-7xl tracking-tight font-medium text-foreground">
-            MEET THE BUILDERS
-          </h2>
-        </div>
-        <p className="max-w-xs font-mono text-xs text-muted-foreground leading-relaxed">
-          The developers who build the next generation of local Java refactoring intelligence.
-        </p>
+      {/* GSAP Custom Pointer Tracker */}
+      <div
+        ref={cursorRef}
+        className={cn(
+          "pointer-events-none absolute top-0 left-0 -translate-x-1/2 -translate-y-1/2 z-50",
+          "w-12 h-12 rounded-full border-2 border-[var(--accent)] bg-[var(--accent)]/10",
+          "transition-opacity duration-300",
+          isHovering ? "opacity-100" : "opacity-0"
+        )}
+      />
+
+      {/* Section Header */}
+      <div className="mb-16 px-6 md:px-28">
+        <span className="font-[var(--font-mono)] text-[10px] uppercase tracking-[0.3em] text-[var(--accent)]">05 / Team</span>
+        <h2 className="mt-4 font-[var(--font-display)] text-5xl md:text-7xl tracking-tight text-[var(--foreground)]">
+          MEET THE BUILDERS
+        </h2>
       </div>
 
       {/* Horizontal Scrollable Carousel */}
       <div className="relative w-full">
         <div
           ref={scrollRef}
-          className="flex gap-6 overflow-x-auto snap-x snap-mandatory scroll-smooth pb-8 scrollbar-hide"
+          onScroll={handleScroll}
+          className="flex gap-6 overflow-x-auto snap-x snap-mandatory scroll-smooth pb-8 scrollbar-hide px-6 md:px-28 scroll-pl-6 md:scroll-pl-28"
           style={{ scrollbarWidth: "none" }}
         >
           {teamMembers.map((member, index) => (
             <div
-              key={index}
-              className="flex-shrink-0 w-[290px] sm:w-[350px] md:w-[420px] snap-start group"
+              key={member.id}
+              className={cn(
+                "flex-shrink-0 w-[80vw] sm:w-[50vw] md:w-[42vw] aspect-[16/9] snap-start group relative rounded-[2rem] bg-[var(--card)] border border-[var(--border)]/65 overflow-hidden flex items-center justify-center transition-all duration-500 shadow-xl",
+                activeIndex === index ? "border-[var(--accent)]/60 scale-[1.01]" : "opacity-75 hover:opacity-90"
+              )}
             >
-              {/* Media Card (Image Placeholder) */}
-              <div className="relative aspect-[16/10] w-full rounded-[2rem] bg-gradient-to-br from-card to-background border border-border/40 overflow-hidden flex items-center justify-center transition-all duration-500 group-hover:border-accent/40 shadow-xl">
-                {/* Visual Placeholder Content */}
-                <div className="absolute inset-0 bg-[#0d0d0f]/60 z-10" />
-                
-                {/* Subtle tech mesh grid in background */}
-                <div className="absolute inset-0 grid-bg opacity-15" />
-                
-                {/* Avatar mock circle inside card */}
-                <div className="w-20 h-20 rounded-full border border-border/50 bg-card/65 flex items-center justify-center text-muted-foreground/60 text-xs font-mono z-15 shadow-inner transition-transform duration-500 group-hover:scale-105">
-                  [ PHOTO ]
-                </div>
+              {/* Subtle tech mesh grid in background */}
+              <div className="absolute inset-0 grid-bg opacity-5" />
 
-                {/* Centered Play Button Overlay */}
-                <button 
-                  className="absolute z-20 w-14 h-14 bg-white/10 backdrop-blur-md rounded-full border border-white/20 flex items-center justify-center text-white shadow-lg hover:bg-white/20 hover:scale-110 hover:border-accent/50 transition-all duration-300"
-                  aria-label="Play video intro"
-                >
-                  <Play className="w-5 h-5 fill-white text-white translate-x-0.5" />
-                </button>
+              {/* Initials Display inside placeholder card */}
+              <div className="font-[var(--font-display)] text-5xl md:text-7xl font-bold text-[var(--muted-foreground)]/30 tracking-tight transition-transform duration-700 group-hover:scale-105 select-none">
+                {member.initials}
               </div>
 
-              {/* Developer Details */}
-              <div className="mt-6 flex flex-col items-start px-2">
-                <h3 className="font-[var(--font-inter)] text-lg md:text-xl font-semibold tracking-tight text-foreground transition-colors group-hover:text-accent duration-300">
-                  {member.role}
-                </h3>
-                <p className="mt-2 font-[var(--font-inter)] text-sm text-muted-foreground/80 leading-relaxed min-h-[60px]">
-                  {member.description}
-                </p>
-                <a
-                  href={member.detailsLink}
-                  className="mt-4 font-mono text-[10px] uppercase tracking-widest text-foreground hover:text-accent flex items-center gap-1.5 transition-colors duration-200"
-                >
-                  View details <ChevronRight className="w-3.5 h-3.5" />
-                </a>
-              </div>
+              {/* Centered Play Button Overlay */}
+              <button 
+                className="absolute z-20 w-14 h-14 bg-white/10 backdrop-blur-md rounded-full border border-white/20 flex items-center justify-center text-[var(--foreground)] shadow-lg hover:bg-white/20 hover:scale-110 hover:border-[var(--accent)]/55 transition-all duration-300"
+                aria-label={`Play video intro for ${member.name}`}
+              >
+                <Play className="w-5 h-5 fill-white text-white translate-x-0.5" />
+              </button>
             </div>
           ))}
         </div>
+      </div>
 
-        {/* Carousel controls - Floating arrow buttons */}
-        <div className="mt-8 flex items-center gap-3 justify-end md:justify-start md:px-2">
+      {/* Synced Caption Panel below the row */}
+      <div className="mt-12 px-6 md:px-28 grid grid-cols-1 md:grid-cols-12 gap-8 items-start">
+        {/* Caption Info Block */}
+        <div className="md:col-span-8 flex flex-col items-start min-h-[160px]">
+          <h3 className="font-[var(--font-display)] text-2xl md:text-3xl font-medium tracking-tight text-[var(--foreground)]">
+            {teamMembers[activeIndex].role} — <span className="text-[var(--muted-foreground)] font-light">{teamMembers[activeIndex].name}</span>
+          </h3>
+          <p className="mt-4 font-[var(--font-sans)] text-sm md:text-base text-[var(--muted-foreground)] leading-relaxed max-w-2xl transition-all duration-300">
+            {teamMembers[activeIndex].description}
+          </p>
+          <a
+            href={teamMembers[activeIndex].detailsLink}
+            className="mt-6 inline-flex items-center gap-1.5 font-[var(--font-mono)] text-xs text-[var(--accent)] hover:underline tracking-wider"
+          >
+            View specs ›
+          </a>
+        </div>
+
+        {/* Carousel controls - Top-right of description block */}
+        <div className="md:col-span-4 flex justify-end items-center gap-3">
           <button
             onClick={() => scroll("left")}
             disabled={!canScrollLeft}
             className={cn(
-              "w-10 h-10 rounded-full border border-border/50 flex items-center justify-center bg-card text-foreground transition-all duration-300",
-              canScrollLeft ? "opacity-100 hover:border-accent hover:text-accent" : "opacity-30 cursor-not-allowed"
+              "w-12 h-12 rounded-full border border-[var(--border)] flex items-center justify-center bg-[var(--card)] text-[var(--foreground)] transition-all duration-300",
+              canScrollLeft ? "opacity-100 hover:border-[var(--accent)] hover:text-[var(--accent)]" : "opacity-35 cursor-not-allowed"
             )}
             aria-label="Scroll left"
           >
-            <ChevronLeft className="w-4 h-4" />
+            ‹
           </button>
           <button
             onClick={() => scroll("right")}
             disabled={!canScrollRight}
             className={cn(
-              "w-10 h-10 rounded-full border border-border/50 flex items-center justify-center bg-card text-foreground transition-all duration-300",
-              canScrollRight ? "opacity-100 hover:border-accent hover:text-accent" : "opacity-30 cursor-not-allowed"
+              "w-12 h-12 rounded-full border border-[var(--border)] flex items-center justify-center bg-[var(--card)] text-[var(--foreground)] transition-all duration-300",
+              canScrollRight ? "opacity-100 hover:border-[var(--accent)] hover:text-[var(--accent)]" : "opacity-35 cursor-not-allowed"
             )}
             aria-label="Scroll right"
           >
-            <ChevronRight className="w-4 h-4" />
+            ›
           </button>
         </div>
       </div>
