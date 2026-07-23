@@ -121,7 +121,7 @@ export function PipelineSection() {
       {/* Section header */}
       <div ref={headerRef} className="mb-16 pr-6 md:pr-12">
         <span className="font-mono text-[10px] uppercase tracking-[0.3em] text-accent">02 / Pipeline</span>
-        <h2 className="mt-4 font-[var(--font-bebas)] text-5xl md:text-7xl tracking-tight">PIPELINE PHASES</h2>
+        <h2 className="mt-4 font-[var(--font-inter)] text-5xl md:text-7xl tracking-tight">PIPELINE PHASES</h2>
       </div>
 
       {/* Infinite Carousel container */}
@@ -176,7 +176,7 @@ function SignalCard({
         <div className="absolute -top-px left-0 right-0 h-px bg-gradient-to-r from-transparent via-border/40 to-transparent z-20" />
 
         {/* Large background number */}
-        <div className="absolute right-4 top-1/2 -translate-y-1/2 text-[160px] leading-none font-[var(--font-bebas)] text-foreground/[0.02] group-hover:text-foreground/[0.08] transition-colors duration-500 pointer-events-none select-none z-0">
+        <div className="absolute right-4 top-1/2 -translate-y-1/2 text-[160px] leading-none font-[var(--font-inter)] text-foreground/[0.02] group-hover:text-foreground/[0.08] transition-colors duration-500 pointer-events-none select-none z-0">
           {String(index + 1).padStart(2, "0")}
         </div>
 
@@ -189,7 +189,7 @@ function SignalCard({
           </div>
 
           {/* Title */}
-          <h3 className="font-[var(--font-bebas)] text-4xl tracking-tight mb-4 group-hover:text-accent transition-colors duration-300">
+          <h3 className="font-[var(--font-inter)] text-4xl tracking-tight mb-4 group-hover:text-accent transition-colors duration-300">
             {signal.title}
           </h3>
 

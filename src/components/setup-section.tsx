@@ -24,7 +24,7 @@ export function SetupSection() {
       {/* Section header */}
       <div className="mb-16">
         <span className="font-mono text-[10px] uppercase tracking-[0.3em] text-accent">01 / Setup</span>
-        <h2 className="mt-4 font-[var(--font-bebas)] text-5xl md:text-7xl tracking-tight">INSTALLATION</h2>
+        <h2 className="mt-4 font-[var(--font-inter)] text-5xl md:text-7xl tracking-tight">INSTALLATION</h2>
         <p className="mt-6 font-mono text-sm text-foreground/70 max-w-2xl leading-relaxed">
           No build required. Everything (app code + models) is bundled inside the pre-built image and pulled from GitHub Container Registry.
         </p>

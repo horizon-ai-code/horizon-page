@@ -49,7 +49,7 @@ export function HeroSection() {
           <div className="relative">
             <SplitFlapDisplay 
               text="HORIZON AI" 
-              className="font-[var(--font-bebas)] text-[13vw] md:text-[10vw] xl:text-[12vw] 2xl:text-[14rem] whitespace-nowrap leading-[0.85] tracking-tight text-foreground w-full"
+              className="font-[var(--font-inter)] text-[13vw] md:text-[10vw] xl:text-[12vw] 2xl:text-[14rem] whitespace-nowrap leading-[0.85] tracking-tight text-foreground w-full"
               speed={80}
             />
             <div className="mt-4">
@@ -57,9 +57,9 @@ export function HeroSection() {
             </div>
           </div>
 
-          <h2 className="font-[var(--font-bebas)] text-foreground/80 text-[clamp(1rem,3vw,2rem)] mt-8 tracking-wide">
-            <TextScramble text="NEXT-GEN" className="text-accent inline-block mr-2" />
-            JAVA REFACTORING PIPELINE
+          <h2 className="font-[var(--font-inter)] text-foreground/80 text-[clamp(1rem,3vw,2rem)] mt-8 tracking-wide">
+            <TextScramble text="JAVA" className="text-accent inline-block mr-2" />
+            REFACTORING STUDIO
           </h2>
 
           <p className="mt-8 max-w-md font-mono text-sm text-foreground/70 leading-relaxed">

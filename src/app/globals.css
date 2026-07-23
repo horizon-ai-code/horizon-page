@@ -3,43 +3,42 @@
 
 @custom-variant dark (&:is(.dark *));
 
-/* Custom editorial design tokens - monochrome with orange accent */
+/* Custom editorial design tokens - matching Horizon AI Refactoring Studio UI */
 :root {
-  --background: oklch(0 0 0);
-  --foreground: oklch(0.909 0.006 264.53);
-  --card: oklch(0.296 0.006 258.36);
-  --card-foreground: oklch(0.909 0.006 264.53);
-  --popover: oklch(0.296 0.006 258.36);
-  --popover-foreground: oklch(0.909 0.006 264.53);
-  --primary: oklch(0.909 0.006 264.53);
-  --primary-foreground: oklch(0.239 0.006 271.17);
-  --secondary: oklch(0.352 0.009 268.40);
-  --secondary-foreground: oklch(0.909 0.006 264.53);
-  --muted: oklch(0.352 0.009 268.40);
-  --muted-foreground: oklch(0.554 0.012 261.77);
-  --accent: oklch(0.650 0.173 262.72);
-  --accent-foreground: oklch(0.239 0.006 271.17);
+  --background: oklch(0.21 0.005 285);
+  --foreground: oklch(0.98 0 0);
+  --card: oklch(0.24 0.005 285);
+  --card-foreground: oklch(0.95 0 0);
+  --popover: oklch(0.24 0.005 285);
+  --popover-foreground: oklch(0.95 0 0);
+  --primary: oklch(0.546 0.245 262.88);
+  --primary-foreground: oklch(0.98 0 0);
+  --secondary: oklch(0.28 0.005 285);
+  --secondary-foreground: oklch(0.98 0 0);
+  --muted: oklch(0.28 0.005 285);
+  --muted-foreground: oklch(0.65 0 0);
+  --accent: oklch(0.546 0.245 262.88);
+  --accent-foreground: oklch(0.98 0 0);
   --destructive: oklch(0.648 0.223 26.05);
-  --destructive-foreground: oklch(0.909 0.006 264.53);
-  --border: oklch(0.352 0.009 268.40);
-  --input: oklch(0.352 0.009 268.40);
-  --ring: oklch(0.650 0.173 262.72);
-  --radius: 0rem;
-  --sidebar: oklch(0.296 0.006 258.36);
-  --sidebar-foreground: oklch(0.909 0.006 264.53);
-  --sidebar-primary: oklch(0.650 0.173 262.72);
-  --sidebar-primary-foreground: oklch(0.239 0.006 271.17);
-  --sidebar-accent: oklch(0.352 0.009 268.40);
-  --sidebar-accent-foreground: oklch(0.909 0.006 264.53);
-  --sidebar-border: oklch(0.352 0.009 268.40);
-  --sidebar-ring: oklch(0.650 0.173 262.72);
+  --destructive-foreground: oklch(0.98 0 0);
+  --border: oklch(0.28 0.005 285);
+  --input: oklch(0.28 0.005 285);
+  --ring: oklch(0.546 0.245 262.88);
+  --radius: 0.5rem;
+  --sidebar: oklch(0.21 0.005 285);
+  --sidebar-foreground: oklch(0.95 0 0);
+  --sidebar-primary: oklch(0.546 0.245 262.88);
+  --sidebar-primary-foreground: oklch(0.98 0 0);
+  --sidebar-accent: oklch(0.28 0.005 285);
+  --sidebar-accent-foreground: oklch(0.95 0 0);
+  --sidebar-border: oklch(0.28 0.005 285);
+  --sidebar-ring: oklch(0.546 0.245 262.88);
 }
 
 @theme inline {
-  /* Updated font-sans and font-mono to use IBM Plex */
-  --font-sans: "IBM Plex Sans", "IBM Plex Sans Fallback", sans-serif;
-  --font-mono: "IBM Plex Mono", "IBM Plex Mono Fallback", monospace;
-  --font-display: "Bebas Neue", "Bebas Neue Fallback", sans-serif;
+  --font-sans: var(--font-inter), sans-serif;
+  --font-mono: var(--font-ibm-plex-mono), monospace;
+  --font-display: var(--font-inter), sans-serif;
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   --color-card: var(--card);

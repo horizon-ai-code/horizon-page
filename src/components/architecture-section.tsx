@@ -94,7 +94,7 @@ export function ArchitectureSection() {
       {/* Section header */}
       <div ref={headerRef} className="mb-24">
         <span className="font-mono text-[10px] uppercase tracking-[0.3em] text-accent">04 / Principles</span>
-        <h2 className="mt-4 font-[var(--font-bebas)] text-5xl md:text-7xl tracking-tight">ARCHITECTURE</h2>
+        <h2 className="mt-4 font-[var(--font-inter)] text-5xl md:text-7xl tracking-tight">ARCHITECTURE</h2>
       </div>
 
       {/* Staggered principles */}
@@ -111,7 +111,7 @@ export function ArchitectureSection() {
               {principle.number} / {principle.titleParts[0].text.split(" ")[0]}
             </span>
 
-            <h3 className="font-[var(--font-bebas)] text-4xl md:text-6xl lg:text-8xl tracking-tight leading-none">
+            <h3 className="font-[var(--font-inter)] text-4xl md:text-6xl lg:text-8xl tracking-tight leading-none">
               {principle.titleParts.map((part, i) =>
                 part.highlight ? (
                   <TextHighlighter key={i} parallaxSpeed={0.6}>
