@@ -120,7 +120,7 @@ export function SignalsSection() {
 
       {/* Section header */}
       <div ref={headerRef} className="mb-16 pr-6 md:pr-12">
-        <span className="font-mono text-[10px] uppercase tracking-[0.3em] text-accent">01 / Pipeline</span>
+        <span className="font-mono text-[10px] uppercase tracking-[0.3em] text-accent">02 / Pipeline</span>
         <h2 className="mt-4 font-[var(--font-bebas)] text-5xl md:text-7xl tracking-tight">PIPELINE PHASES</h2>
       </div>
 
