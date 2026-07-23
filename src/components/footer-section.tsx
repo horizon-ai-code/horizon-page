@@ -2,6 +2,7 @@
 
 import { useRef, useEffect } from "react"
 import { HorizonGlow } from "@/components/horizon-glow"
+import { ArrowUpRight } from "lucide-react"
 import gsap from "gsap"
 import { ScrollTrigger } from "gsap/ScrollTrigger"
 
@@ -9,7 +10,6 @@ gsap.registerPlugin(ScrollTrigger)
 
 export function FooterSection() {
   const sectionRef = useRef<HTMLElement>(null)
-  const headerRef = useRef<HTMLDivElement>(null)
   const gridRef = useRef<HTMLDivElement>(null)
   const footerRef = useRef<HTMLDivElement>(null)
 
@@ -17,21 +17,6 @@ export function FooterSection() {
     if (!sectionRef.current) return
 
     const ctx = gsap.context(() => {
-      // Header slide in
-      if (headerRef.current) {
-        gsap.from(headerRef.current, {
-          x: -60,
-          opacity: 0,
-          duration: 1,
-          ease: "power3.out",
-          scrollTrigger: {
-            trigger: headerRef.current,
-            start: "top 85%",
-            toggleActions: "play none none reverse",
-          },
-        })
-      }
-
       // Grid columns fade up with stagger
       if (gridRef.current) {
         const columns = gridRef.current.querySelectorAll(":scope > div")
@@ -72,73 +57,86 @@ export function FooterSection() {
     <section
       ref={sectionRef}
       id="colophon"
-      className="relative py-32 pl-6 md:pl-28 pr-6 md:pr-12 border-t border-border/30"
+      className="relative py-32 pl-6 md:pl-28 pr-6 md:pr-12 border-t border-border/30 bg-[#0d0d0f]/20"
     >
       <HorizonGlow glowPosition="bottom" glowColor="mixed" sparkleCount={4} showHorizonLine={false} />
-      {/* Section header */}
-      <div ref={headerRef} className="mb-16">
-        <span className="font-mono text-[10px] uppercase tracking-[0.3em] text-accent">05 / Colophon</span>
-        <h2 className="mt-4 font-[var(--font-inter)] text-5xl md:text-7xl tracking-tight">CREDITS</h2>
-      </div>
 
-      <div ref={gridRef} className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 md:gap-12">
-        {/* Contributors */}
-        <div className="col-span-1">
-          <h4 className="font-mono text-[9px] uppercase tracking-[0.3em] text-muted-foreground mb-4">Contributors</h4>
-          <ul className="space-y-2">
-            <li className="font-mono text-xs text-foreground/80">
-              <a href="https://www.pugario.tech/" target="_blank" rel="noopener noreferrer" className="hover:text-accent hover:underline transition-colors duration-200">Joshua Lopez</a> — Lead/Fullstack Developer (
-              <a href="https://github.com/pugarioo" target="_blank" rel="noopener noreferrer" className="hover:text-accent hover:underline transition-colors duration-200">@pugrario</a>)
-            </li>
-            <li className="font-mono text-xs text-foreground/80">
-              <a href="https://www.vardz.dev/" target="_blank" rel="noopener noreferrer" className="hover:text-accent hover:underline transition-colors duration-200">Jericho Varde</a> — Frontend Developer (
-              <a href="https://github.com/vardzz" target="_blank" rel="noopener noreferrer" className="hover:text-accent hover:underline transition-colors duration-200">@vardzz</a>)
-            </li>
-            <li className="font-mono text-xs text-foreground/80">
-              <a href="#" className="hover:text-accent hover:underline transition-colors duration-200">Christian Balinado</a> — Contributor (
-              <a href="https://github.com/blueztian" target="_blank" rel="noopener noreferrer" className="hover:text-accent hover:underline transition-colors duration-200">@blueztian</a>)
-            </li>
-            <li className="font-mono text-xs text-foreground/80">
-              <a href="#" className="hover:text-accent hover:underline transition-colors duration-200">Andrew Dejito</a> — Contributor (
-              <a href="https://github.com/andrewdejito" target="_blank" rel="noopener noreferrer" className="hover:text-accent hover:underline transition-colors duration-200">@andrewdejito</a>)
-            </li>
-          </ul>
-        </div>
-
-        {/* Tech Stack */}
-        <div className="col-span-1">
-          <h4 className="font-mono text-[9px] uppercase tracking-[0.3em] text-muted-foreground mb-4">Tech Stack</h4>
-          <p className="font-mono text-xs text-foreground/80 leading-relaxed">
-            Python 3.10 · FastAPI · llama-cpp-python — Next.js 16 · TypeScript · Tailwind CSS · Framer Motion — Qwen2.5-Coder & Llama-3.2 (GGUF) — Docker / GHCR.
+      <div ref={gridRef} className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-8">
+        {/* Left Brand Panel */}
+        <div className="lg:col-span-4 flex flex-col items-start">
+          <div className="flex items-center gap-3">
+            <img src="/logo-dark.png" alt="Horizon Logo" className="w-8 h-8 object-contain" />
+            <span className="font-[var(--font-outfit)] text-xl font-medium tracking-tight text-foreground">Horizon AI</span>
+          </div>
+          <p className="mt-4 font-mono text-[11px] text-muted-foreground leading-relaxed max-w-xs">
+            Privacy-first, local multi-agent LLM orchestration for automated Java AST refactoring.
           </p>
+          <div className="mt-6 w-full max-w-[280px] rounded-lg bg-card border border-border/50 px-4 py-2.5 flex items-center justify-between text-[11px] text-muted-foreground/75">
+            <span className="font-mono">How can we help you refactor today?</span>
+            <div className="w-5 h-5 rounded-md bg-accent/15 flex items-center justify-center text-accent">
+              <ArrowUpRight className="w-3 h-3" />
+            </div>
+          </div>
         </div>
 
-        {/* Details */}
-        <div className="col-span-1">
-          <h4 className="font-mono text-[9px] uppercase tracking-[0.3em] text-muted-foreground mb-4">Details</h4>
-          <ul className="space-y-2">
-            <li className="font-mono text-xs text-foreground/80">
-              License:{" "}
-              <a
-                href="https://github.com/horizon-ai-code/horizon?tab=MIT-1-ov-file"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="hover:text-accent hover:underline transition-colors duration-200"
-              >
-                MIT
-              </a>
-            </li>
-            <li>
-              <a
-                href="https://github.com/horizon-ai-code/horizon"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="font-mono text-xs text-foreground/80 hover:text-accent hover:underline transition-colors duration-200"
-              >
-                GitHub Repository
-              </a>
-            </li>
-          </ul>
+        {/* Right Navigation Links Columns */}
+        <div className="lg:col-span-8 grid grid-cols-2 sm:grid-cols-3 gap-8">
+          {/* Tech Stack / Architecture */}
+          <div>
+            <h4 className="font-mono text-[9px] uppercase tracking-[0.3em] text-muted-foreground mb-4">Architecture</h4>
+            <ul className="space-y-2.5">
+              <li className="font-mono text-xs text-foreground/75 hover:text-accent transition-colors">
+                <a href="#principles">AST Verification</a>
+              </li>
+              <li className="font-mono text-xs text-foreground/75 hover:text-accent transition-colors">
+                <a href="#principles">GBNF Grammars</a>
+              </li>
+              <li className="font-mono text-xs text-foreground/75 hover:text-accent transition-colors">
+                <a href="#principles">Quantized GGUF</a>
+              </li>
+              <li className="font-mono text-xs text-foreground/75 hover:text-accent transition-colors">
+                <a href="#principles">Feedback Loops</a>
+              </li>
+            </ul>
+          </div>
+
+          {/* Contributors */}
+          <div>
+            <h4 className="font-mono text-[9px] uppercase tracking-[0.3em] text-muted-foreground mb-4">Contributors</h4>
+            <ul className="space-y-2.5">
+              <li className="font-mono text-xs text-foreground/75 hover:text-accent transition-colors">
+                <a href="https://www.pugario.tech/" target="_blank" rel="noopener noreferrer">Joshua Lopez</a>
+              </li>
+              <li className="font-mono text-xs text-foreground/75 hover:text-accent transition-colors">
+                <a href="https://www.vardz.dev/" target="_blank" rel="noopener noreferrer">Jericho Varde</a>
+              </li>
+              <li className="font-mono text-xs text-foreground/75 hover:text-accent transition-colors">
+                <a href="https://github.com/blueztian" target="_blank" rel="noopener noreferrer">Christian Balinado</a>
+              </li>
+              <li className="font-mono text-xs text-foreground/75 hover:text-accent transition-colors">
+                <a href="https://github.com/andrewdejito" target="_blank" rel="noopener noreferrer">Andrew Dejito</a>
+              </li>
+            </ul>
+          </div>
+
+          {/* Project Details */}
+          <div>
+            <h4 className="font-mono text-[9px] uppercase tracking-[0.3em] text-muted-foreground mb-4">Resources</h4>
+            <ul className="space-y-2.5">
+              <li className="font-mono text-xs text-foreground/75 hover:text-accent transition-colors">
+                <a href="https://github.com/horizon-ai-code/horizon" target="_blank" rel="noopener noreferrer">GitHub Repository</a>
+              </li>
+              <li className="font-mono text-xs text-foreground/75 hover:text-accent transition-colors">
+                <a href="https://github.com/horizon-ai-code/horizon?tab=MIT-1-ov-file" target="_blank" rel="noopener noreferrer">MIT License</a>
+              </li>
+              <li className="font-mono text-xs text-foreground/75 hover:text-accent transition-colors">
+                <a href="#installation">Docker Compose</a>
+              </li>
+              <li className="font-mono text-xs text-foreground/75 hover:text-accent transition-colors">
+                <a href="#signals">Pipeline Phases</a>
+              </li>
+            </ul>
+          </div>
         </div>
       </div>
 
