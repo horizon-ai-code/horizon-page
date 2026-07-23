@@ -68,7 +68,7 @@ export function HeroSection() {
               rel="noopener noreferrer"
               className="group inline-flex items-center gap-3 border border-foreground/20 px-6 py-3 font-mono text-xs uppercase tracking-widest text-foreground hover:border-accent hover:text-accent transition-all duration-200"
             >
-              <TextScramble text="View Repository" />
+              <TextScramble text="View on Github" />
             </a>
             <a
               href="#signals"
