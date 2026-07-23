@@ -48,7 +48,7 @@ export function HeroSection() {
       <div ref={contentRef} className="flex-1 w-full">
         <SplitFlapAudioProvider>
           <div className="relative">
-            <SplitFlapText text="HORIZON" speed={80} />
+            <SplitFlapText text="HORIZON AI" speed={80} />
             <div className="mt-4">
               <SplitFlapMuteToggle />
             </div>
