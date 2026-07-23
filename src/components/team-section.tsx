@@ -42,7 +42,7 @@ const teamMembers: TeamMember[] = [
     role: "Quality Assurance Manager",
     description: "Develops semantic validation tests and runs syntax error monitors, ensuring AST verification and complexity metrics are strictly maintained throughout the refactoring pipeline.",
     imageSrc: "/andrew.png",
-    siteUrl: "#",
+    siteUrl: "https://github.com/andrewdejito",
   },
 ]
 
