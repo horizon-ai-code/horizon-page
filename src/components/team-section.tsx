@@ -13,6 +13,7 @@ type TeamMember = {
   description: string
   imageSrc: string
   siteUrl: string
+  objectPosition?: string
 }
 
 const teamMembers: TeamMember[] = [
@@ -22,6 +23,7 @@ const teamMembers: TeamMember[] = [
     description: "Orchestrates overall direction, multi-agent workflows, and coordination across the refactoring pipeline to align local agent orchestration with system goals.",
     imageSrc: "/ian.png",
     siteUrl: "https://github.com/blueztian",
+    objectPosition: "85% center", // Shift Ian leftwards to add padding on the right side
   },
   {
     id: "joshua",
@@ -29,6 +31,7 @@ const teamMembers: TeamMember[] = [
     description: "Engineers the core multi-agent execution services, state management, and real-time WebSocket telemetry communication layer that drives Horizon's pipelines.",
     imageSrc: "/joshua.png",
     siteUrl: "https://www.pugario.tech/",
+    objectPosition: "80% center", // Shift Joshua leftwards to add padding on the right side
   },
   {
     id: "jericho",
@@ -36,6 +39,7 @@ const teamMembers: TeamMember[] = [
     description: "Designs the premium JetBrains-inspired UI, orchestrating the dynamic FlowGrid visual timelines, Glassbox Terminal console feeds, and metric display layouts.",
     imageSrc: "/vardz.png",
     siteUrl: "https://www.vardz.dev/",
+    objectPosition: "center center",
   },
   {
     id: "andrew",
@@ -43,6 +47,7 @@ const teamMembers: TeamMember[] = [
     description: "Develops semantic validation tests and runs syntax error monitors, ensuring AST verification and complexity metrics are strictly maintained throughout the refactoring pipeline.",
     imageSrc: "/andrew.png",
     siteUrl: "https://github.com/andrewdejito",
+    objectPosition: "center center",
   },
 ]
 
@@ -248,6 +253,7 @@ function TeamCard({
         src={member.imageSrc} 
         alt={member.role} 
         initials={member.role.split(" ").map((w) => w[0]).join("").toUpperCase()} 
+        objectPosition={member.objectPosition}
       />
 
       {/* Role overlay text on the left side of the image (horizontal scramble transition on view) */}
@@ -275,7 +281,7 @@ function TeamCard({
   )
 }
 
-function CardImage({ src, alt, initials }: { src: string; alt: string; initials: string }) {
+function CardImage({ src, alt, initials, objectPosition = "center" }: { src: string; alt: string; initials: string; objectPosition?: string }) {
   const [hasError, setHasError] = useState(false)
   const isPlaceholder = src.includes("-placeholder")
 
@@ -292,6 +298,7 @@ function CardImage({ src, alt, initials }: { src: string; alt: string; initials:
       src={src}
       alt={alt}
       onError={() => setHasError(true)}
+      style={{ objectPosition }}
       className="absolute inset-0 w-full h-full object-cover z-10 transition-transform duration-500 group-hover:scale-105"
     />
   )
