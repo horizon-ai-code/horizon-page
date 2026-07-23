@@ -1,4 +1,4 @@
-export function BitmapChevron({ className }: { className?: string }) {
+export function ScrollIndicator({ className }: { className?: string }) {
   return (
     <svg
       width="18"

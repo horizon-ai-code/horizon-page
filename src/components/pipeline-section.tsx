@@ -41,7 +41,7 @@ const signals = [
   },
 ]
 
-export function SignalsSection() {
+export function PipelineSection() {
   const scrollRef = useRef<HTMLDivElement>(null)
   const sectionRef = useRef<HTMLElement>(null)
   const headerRef = useRef<HTMLDivElement>(null)

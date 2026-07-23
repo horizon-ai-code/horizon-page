@@ -46,7 +46,7 @@ const experiments = [
   },
 ]
 
-export function WorkSection() {
+export function FeaturesSection() {
   const sectionRef = useRef<HTMLElement>(null)
   const headerRef = useRef<HTMLDivElement>(null)
   const gridRef = useRef<HTMLDivElement>(null)

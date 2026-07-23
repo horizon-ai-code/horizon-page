@@ -9,7 +9,7 @@ const commands = {
   cpu: "curl -sL https://raw.githubusercontent.com/horizon-ai-code/horizon/main/docker-compose.cpu.yml | docker compose -f - up -d"
 }
 
-export function InstallationSection() {
+export function SetupSection() {
   const [activeTab, setActiveTab] = useState<"gpu" | "cpu">("gpu")
   const [copied, setCopied] = useState(false)
 

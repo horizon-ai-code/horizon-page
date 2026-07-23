@@ -1,24 +1,24 @@
 import { HeroSection } from "@/components/hero-section"
-import { InstallationSection } from "@/components/installation-section"
-import { SignalsSection } from "@/components/signals-section"
-import { WorkSection } from "@/components/work-section"
-import { PrinciplesSection } from "@/components/principles-section"
-import { ColophonSection } from "@/components/colophon-section"
-import { SideNav } from "@/components/side-nav"
+import { SetupSection } from "@/components/setup-section"
+import { PipelineSection } from "@/components/pipeline-section"
+import { FeaturesSection } from "@/components/features-section"
+import { ArchitectureSection } from "@/components/architecture-section"
+import { FooterSection } from "@/components/footer-section"
+import { NavigationSidebar } from "@/components/navigation-sidebar"
 
 export default function Page() {
   return (
     <main className="relative min-h-screen">
-      <SideNav />
+      <NavigationSidebar />
       <div className="grid-bg fixed inset-0 opacity-30" aria-hidden="true" />
 
       <div className="relative z-10">
         <HeroSection />
-        <InstallationSection />
-        <SignalsSection />
-        <WorkSection />
-        <PrinciplesSection />
-        <ColophonSection />
+        <SetupSection />
+        <PipelineSection />
+        <FeaturesSection />
+        <ArchitectureSection />
+        <FooterSection />
       </div>
     </main>
   )

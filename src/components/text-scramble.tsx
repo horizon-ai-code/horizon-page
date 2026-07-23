@@ -117,7 +117,7 @@ export function ScrambleText({ text, className, delayMs = 0, duration = 0.9 }: S
 /**
  * Scramble text animation component - animates on hover.
  */
-export function ScrambleTextOnHover({
+export function TextScramble({
   text,
   className,
   duration = 0.4,

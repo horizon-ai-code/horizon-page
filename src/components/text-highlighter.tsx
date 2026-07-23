@@ -12,7 +12,7 @@ interface HighlightTextProps {
   parallaxSpeed?: number
 }
 
-export function HighlightText({ children, className = "", parallaxSpeed = 0.3 }: HighlightTextProps) {
+export function TextHighlighter({ children, className = "", parallaxSpeed = 0.3 }: HighlightTextProps) {
   const containerRef = useRef<HTMLSpanElement>(null)
   const highlightRef = useRef<HTMLSpanElement>(null)
   const textRef = useRef<HTMLSpanElement>(null)

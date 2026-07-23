@@ -1,10 +1,10 @@
 "use client"
 
 import { useEffect, useRef } from "react"
-import { ScrambleTextOnHover } from "@/components/scramble-text"
-import { SplitFlapText, SplitFlapMuteToggle, SplitFlapAudioProvider } from "@/components/split-flap-text"
-import { AnimatedNoise } from "@/components/animated-noise"
-import { BitmapChevron } from "@/components/bitmap-chevron"
+import { TextScramble } from "@/components/text-scramble"
+import { SplitFlapDisplay, SplitFlapMuteToggle, SplitFlapAudioProvider } from "@/components/split-flap-display"
+import { NoiseOverlay } from "@/components/noise-overlay"
+import { ScrollIndicator } from "@/components/scroll-indicator"
 import gsap from "gsap"
 import { ScrollTrigger } from "gsap/ScrollTrigger"
 
@@ -34,54 +34,56 @@ export function HeroSection() {
   }, [])
 
   return (
-    <section ref={sectionRef} id="hero" className="relative min-h-screen flex items-center pl-6 md:pl-28 pr-6 md:pr-12">
-      <AnimatedNoise opacity={0.03} />
+    <SplitFlapAudioProvider>
+      <section ref={sectionRef} id="hero" className="relative min-h-screen flex flex-col justify-center overflow-hidden bg-background px-6 md:px-28">
+        <NoiseOverlay opacity={0.03} />
 
-      {/* Left vertical labels */}
-      <div className="absolute left-4 md:left-6 top-1/2 -translate-y-1/2">
-        <span className="font-mono text-[10px] uppercase tracking-[0.3em] text-muted-foreground -rotate-90 origin-left block whitespace-nowrap">
-          HORIZON
-        </span>
-      </div>
+        {/* Scroll Indicator */}
+        <div className="absolute bottom-8 left-1/2 -translate-x-1/2 flex flex-col items-center gap-4 animate-pulse opacity-50">
+          <span className="font-mono text-[10px] uppercase tracking-widest text-muted-foreground">Scroll</span>
+          <ScrollIndicator className="text-muted-foreground opacity-50" />
+        </div>
 
-      {/* Main content */}
-      <div ref={contentRef} className="flex-1 w-full">
-        <SplitFlapAudioProvider>
+        {/* Main content */}
+        <div ref={contentRef} className="w-full max-w-5xl">
           <div className="relative">
-            <SplitFlapText text="HORIZON AI" speed={80} />
+            <SplitFlapDisplay 
+              text="HORIZON AI" 
+              className="font-[var(--font-bebas)] text-[clamp(4rem,15vw,14rem)] leading-[0.85] tracking-tight text-foreground"
+              characterDelay={0.04}
+            />
             <div className="mt-4">
               <SplitFlapMuteToggle />
             </div>
           </div>
-        </SplitFlapAudioProvider>
 
-        <h2 className="font-[var(--font-bebas)] text-foreground/80 text-[clamp(1rem,3vw,2rem)] mt-4 tracking-wide">
-          AI-driven Java refactoring pipeline powered by local multi-agent SLM orchestration.
-        </h2>
+          <h2 className="font-[var(--font-bebas)] text-foreground/80 text-[clamp(1rem,3vw,2rem)] mt-8 tracking-wide">
+            <TextScramble text="NEXT-GEN" className="text-accent inline-block mr-2" />
+            JAVA REFACTORING PIPELINE
+          </h2>
 
-        <p className="mt-12 max-w-md font-mono text-sm text-foreground/70 leading-relaxed">
-          Runs fully local with no cloud dependency or API keys. Targets consumer GPUs (as low as 4GB VRAM) with automatic CPU fallback.
-        </p>
+          <p className="mt-8 max-w-md font-mono text-sm text-foreground/70 leading-relaxed">
+            Runs fully local with no cloud dependency or API keys. Targets consumer GPUs (as low as 4GB VRAM) with automatic CPU fallback.
+          </p>
 
-        <div className="mt-16 flex items-center gap-8">
-          <a
-            href="https://github.com/horizon-ai-code/horizon"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="group inline-flex items-center gap-3 border border-foreground/20 px-6 py-3 font-mono text-xs uppercase tracking-widest text-foreground hover:border-accent hover:text-accent transition-all duration-200"
-          >
-            <ScrambleTextOnHover text="View Repository" as="span" duration={0.6} />
-            <BitmapChevron className="transition-transform duration-[400ms] ease-in-out group-hover:rotate-45" />
-          </a>
-          <a
-            href="#signals"
-            className="font-mono text-xs uppercase tracking-widest text-muted-foreground hover:text-foreground transition-colors duration-200"
-          >
-            Explore Pipeline
-          </a>
+          <div className="mt-12 flex items-center gap-8">
+            <a
+              href="https://github.com/horizon-ai-code/horizon"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="group inline-flex items-center gap-3 border border-foreground/20 px-6 py-3 font-mono text-xs uppercase tracking-widest text-foreground hover:border-accent hover:text-accent transition-all duration-200"
+            >
+              <TextScramble text="View Repository" />
+            </a>
+            <a
+              href="#signals"
+              className="font-mono text-xs uppercase tracking-widest text-muted-foreground hover:text-foreground transition-colors duration-200"
+            >
+              Explore Pipeline
+            </a>
+          </div>
         </div>
-      </div>
-
-    </section>
+      </section>
+    </SplitFlapAudioProvider>
   )
 }

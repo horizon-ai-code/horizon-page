@@ -7,7 +7,7 @@ interface AnimatedNoiseProps {
   className?: string
 }
 
-export function AnimatedNoise({ opacity = 0.05, className }: AnimatedNoiseProps) {
+export function NoiseOverlay({ opacity = 0.05, className }: AnimatedNoiseProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null)
 
   useEffect(() => {

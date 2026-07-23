@@ -166,7 +166,7 @@ function SplitFlapTextInner({ text, className = "", speed = 50 }: SplitFlapTextP
   )
 }
 
-export function SplitFlapText(props: SplitFlapTextProps) {
+export function SplitFlapDisplay(props: SplitFlapTextProps) {
   return <SplitFlapTextInner {...props} />
 }
 

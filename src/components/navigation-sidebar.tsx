@@ -12,7 +12,7 @@ const navItems = [
   { id: "colophon", label: "Colophon" },
 ]
 
-export function SideNav() {
+export function NavigationSidebar() {
   const [activeSection, setActiveSection] = useState("hero")
 
   useEffect(() => {

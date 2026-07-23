@@ -1,13 +1,13 @@
 "use client"
 
 import { useRef, useEffect } from "react"
-import { HighlightText } from "@/components/highlight-text"
+import { TextHighlighter } from "@/components/text-highlighter"
 import gsap from "gsap"
 import { ScrollTrigger } from "gsap/ScrollTrigger"
 
 gsap.registerPlugin(ScrollTrigger)
 
-export function PrinciplesSection() {
+export function ArchitectureSection() {
   const sectionRef = useRef<HTMLElement>(null)
   const headerRef = useRef<HTMLDivElement>(null)
   const principlesRef = useRef<HTMLDivElement>(null)
@@ -114,9 +114,9 @@ export function PrinciplesSection() {
             <h3 className="font-[var(--font-bebas)] text-4xl md:text-6xl lg:text-8xl tracking-tight leading-none">
               {principle.titleParts.map((part, i) =>
                 part.highlight ? (
-                  <HighlightText key={i} parallaxSpeed={0.6}>
+                  <TextHighlighter key={i} parallaxSpeed={0.6}>
                     {part.text}
-                  </HighlightText>
+                  </TextHighlighter>
                 ) : (
                   <span key={i}>{part.text}</span>
                 ),
