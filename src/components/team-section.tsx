@@ -175,30 +175,33 @@ export function TeamSection() {
           </AnimatePresence>
         </div>
 
-        {/* Carousel controls - Top-right of description block */}
-        <div className="md:col-span-4 flex justify-end items-center gap-3">
-          <button
-            onClick={() => scroll("left")}
-            disabled={!canScrollLeft}
-            className={cn(
-              "w-12 h-12 rounded-full border border-[var(--border)] flex items-center justify-center bg-[var(--card)] text-[var(--foreground)] transition-all duration-300",
-              canScrollLeft ? "opacity-100 hover:border-[var(--accent)] hover:text-[var(--accent)]" : "opacity-35 cursor-not-allowed"
-            )}
-            aria-label="Scroll left"
-          >
-            ‹
-          </button>
-          <button
-            onClick={() => scroll("right")}
-            disabled={!canScrollRight}
-            className={cn(
-              "w-12 h-12 rounded-full border border-[var(--border)] flex items-center justify-center bg-[var(--card)] text-[var(--foreground)] transition-all duration-300",
-              canScrollRight ? "opacity-100 hover:border-[var(--accent)] hover:text-[var(--accent)]" : "opacity-35 cursor-not-allowed"
-            )}
-            aria-label="Scroll right"
-          >
-            ›
-          </button>
+        {/* Carousel controls - Single integrated pill capsule */}
+        <div className="md:col-span-4 flex justify-end items-center">
+          <div className="flex items-center bg-white rounded-full p-1 shadow-2xl border border-white/25">
+            <button
+              onClick={() => scroll("left")}
+              disabled={!canScrollLeft}
+              className={cn(
+                "w-10 h-10 rounded-full flex items-center justify-center text-black font-semibold text-lg transition-all duration-300",
+                canScrollLeft ? "opacity-100 hover:bg-black/10" : "opacity-25 cursor-not-allowed"
+              )}
+              aria-label="Scroll left"
+            >
+              ‹
+            </button>
+            <div className="w-[1px] h-4 bg-black/10" />
+            <button
+              onClick={() => scroll("right")}
+              disabled={!canScrollRight}
+              className={cn(
+                "w-10 h-10 rounded-full flex items-center justify-center text-black font-semibold text-lg transition-all duration-300",
+                canScrollRight ? "opacity-100 hover:bg-black/10" : "opacity-25 cursor-not-allowed"
+              )}
+              aria-label="Scroll right"
+            >
+              ›
+            </button>
+          </div>
         </div>
       </div>
     </section>
