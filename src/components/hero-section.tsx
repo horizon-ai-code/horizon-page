@@ -50,7 +50,7 @@ export function HeroSection() {
             <SplitFlapDisplay 
               text="HORIZON AI" 
               className="font-[var(--font-bebas)] text-[clamp(4rem,15vw,14rem)] leading-[0.85] tracking-tight text-foreground"
-              characterDelay={0.04}
+              speed={80}
             />
             <div className="mt-4">
               <SplitFlapMuteToggle />
