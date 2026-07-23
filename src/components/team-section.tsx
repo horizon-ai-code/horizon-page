@@ -199,6 +199,8 @@ export function TeamSection() {
               </button>
             </div>
           ))}
+          {/* Spacer to allow the last card to scroll to the most left */}
+          <div className="flex-shrink-0 w-[20vw] sm:w-[50vw] md:w-[58vw]" />
         </div>
       </div>
 
