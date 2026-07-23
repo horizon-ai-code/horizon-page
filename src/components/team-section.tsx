@@ -106,11 +106,18 @@ export function TeamSection() {
       <HorizonGlow glowPosition="center" glowColor="mixed" sparkleCount={5} showHorizonLine={false} />
 
       {/* Section Header */}
-      <div className="mb-16 px-6 md:px-28">
-        <span className="font-[var(--font-mono)] text-[10px] uppercase tracking-[0.3em] text-[var(--accent)]">05 / Team</span>
-        <h2 className="mt-4 font-[var(--font-display)] text-5xl md:text-7xl tracking-tight text-[var(--foreground)]">
-          MEET THE BUILDERS
-        </h2>
+      <div className="mb-16 px-6 md:px-28 grid grid-cols-1 md:grid-cols-2 gap-8 items-end">
+        <div>
+          <span className="font-[var(--font-mono)] text-[10px] uppercase tracking-[0.3em] text-[var(--accent)]">05 / Team</span>
+          <h2 className="mt-4 font-[var(--font-display)] text-5xl md:text-7xl tracking-tight text-[var(--foreground)]">
+            MEET THE BUILDERS
+          </h2>
+        </div>
+        <div className="md:max-w-md pb-1.5">
+          <p className="font-[var(--font-sans)] text-sm md:text-base text-[var(--muted-foreground)] leading-relaxed">
+            This is the team that built the Multi Agent Orchestration system behind Horizon, driving automated AST checks, telemetry flows, and refactoring pipelines.
+          </p>
+        </div>
       </div>
 
       {/* Horizontal Scrollable Carousel */}
