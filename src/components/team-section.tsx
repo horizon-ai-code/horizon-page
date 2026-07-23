@@ -252,10 +252,10 @@ function TeamCard({
 
       {/* Role overlay text on the left side of the image (horizontal scramble transition on view) */}
       {activeIndex === index && (
-        <div className="absolute left-8 md:left-12 top-1/2 -translate-y-1/2 z-15 select-none pointer-events-none max-w-[200px] md:max-w-[280px] text-left">
+        <div className="absolute left-6 md:left-10 top-1/2 -translate-y-1/2 z-15 select-none pointer-events-none max-w-[160px] md:max-w-[220px] text-left">
           <TextScramble 
             text={member.role} 
-            className="font-[var(--font-display)] text-3xl md:text-5xl font-bold text-white tracking-tight leading-[1.05] uppercase"
+            className="font-[var(--font-display)] text-2xl md:text-[2.25rem] font-bold text-[#393b40] tracking-tight leading-[1.05] uppercase"
           />
         </div>
       )}
