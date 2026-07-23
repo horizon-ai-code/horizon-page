@@ -55,11 +55,11 @@ export function HeroSection() {
           </div>
         </SplitFlapAudioProvider>
 
-        <h2 className="font-[var(--font-bebas)] text-muted-foreground/60 text-[clamp(1rem,3vw,2rem)] mt-4 tracking-wide">
+        <h2 className="font-[var(--font-bebas)] text-foreground/80 text-[clamp(1rem,3vw,2rem)] mt-4 tracking-wide">
           AI-driven Java refactoring pipeline powered by local multi-agent SLM orchestration.
         </h2>
 
-        <p className="mt-12 max-w-md font-mono text-sm text-muted-foreground leading-relaxed">
+        <p className="mt-12 max-w-md font-mono text-sm text-foreground/70 leading-relaxed">
           Runs fully local with no cloud dependency or API keys. Targets consumer GPUs (as low as 4GB VRAM) with automatic CPU fallback.
         </p>
 
