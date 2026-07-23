@@ -4,7 +4,6 @@ import { useEffect, useRef } from "react"
 import { TextScramble } from "@/components/text-scramble"
 import { SplitFlapDisplay, SplitFlapMuteToggle, SplitFlapAudioProvider } from "@/components/split-flap-display"
 import { NoiseOverlay } from "@/components/noise-overlay"
-import { ScrollIndicator } from "@/components/scroll-indicator"
 import gsap from "gsap"
 import { ScrollTrigger } from "gsap/ScrollTrigger"
 
@@ -37,12 +36,6 @@ export function HeroSection() {
     <SplitFlapAudioProvider>
       <section ref={sectionRef} id="hero" className="relative min-h-screen flex flex-col justify-center overflow-hidden bg-background px-6 md:px-28">
         <NoiseOverlay opacity={0.03} />
-
-        {/* Scroll Indicator */}
-        <div className="absolute bottom-8 left-1/2 -translate-x-1/2 flex flex-col items-center gap-4 animate-pulse opacity-50">
-          <span className="font-mono text-[10px] uppercase tracking-widest text-muted-foreground">Scroll</span>
-          <ScrollIndicator className="text-muted-foreground opacity-50" />
-        </div>
 
         {/* Main content */}
         <div ref={contentRef} className="w-full">
