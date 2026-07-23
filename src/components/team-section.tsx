@@ -250,15 +250,12 @@ function TeamCard({
         initials={member.role.split(" ").map((w) => w[0]).join("").toUpperCase()} 
       />
 
-      {/* Role overlay text on the left side of the image (scramble transition on view) */}
+      {/* Role overlay text on the left side of the image (horizontal scramble transition on view) */}
       {activeIndex === index && (
-        <div 
-          className="absolute left-6 top-1/2 -translate-y-1/2 z-15 select-none pointer-events-none" 
-          style={{ writingMode: 'vertical-lr', transform: 'translateY(-50%) rotate(180deg)' }}
-        >
+        <div className="absolute left-8 md:left-12 top-1/2 -translate-y-1/2 z-15 select-none pointer-events-none max-w-[200px] md:max-w-[280px] text-left">
           <TextScramble 
-            text={member.role.toUpperCase()} 
-            className="font-mono text-[9px] md:text-[10px] tracking-[0.3em] text-black font-bold uppercase"
+            text={member.role} 
+            className="font-[var(--font-display)] text-3xl md:text-5xl font-bold text-white tracking-tight leading-[1.05] uppercase"
           />
         </div>
       )}
