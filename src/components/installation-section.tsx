@@ -21,19 +21,17 @@ export function InstallationSection() {
 
   return (
     <section id="installation" className="relative py-32 pl-6 md:pl-28 pr-6 md:pr-12">
-      <div className="max-w-6xl">
-        
-        {/* Section header */}
-        <div className="mb-16">
-          <span className="font-mono text-[10px] uppercase tracking-[0.3em] text-accent">01 / Setup</span>
-          <h2 className="mt-4 font-[var(--font-bebas)] text-5xl md:text-7xl tracking-tight">INSTALLATION</h2>
-          <p className="mt-6 font-mono text-sm text-foreground/70 max-w-2xl leading-relaxed">
-            No build required. Everything (app code + models) is bundled inside the pre-built image and pulled from GitHub Container Registry.
-          </p>
-        </div>
+      {/* Section header */}
+      <div className="mb-16">
+        <span className="font-mono text-[10px] uppercase tracking-[0.3em] text-accent">01 / Setup</span>
+        <h2 className="mt-4 font-[var(--font-bebas)] text-5xl md:text-7xl tracking-tight">INSTALLATION</h2>
+        <p className="mt-6 font-mono text-sm text-foreground/70 max-w-2xl leading-relaxed">
+          No build required. Everything (app code + models) is bundled inside the pre-built image and pulled from GitHub Container Registry.
+        </p>
+      </div>
 
-        {/* Terminal Window */}
-        <div className="rounded-xl overflow-hidden border border-border/50 bg-[#0A0A0B] shadow-2xl relative group mx-auto">
+      {/* Terminal Window */}
+      <div className="max-w-6xl mx-auto rounded-xl overflow-hidden border border-border/50 bg-[#0A0A0B] shadow-2xl relative group">
           {/* Terminal Header */}
           <div className="flex items-center justify-between px-4 py-3 border-b border-border/30 bg-[#121214]">
             <div className="flex space-x-2">
@@ -96,8 +94,6 @@ export function InstallationSection() {
                </span>
              ))}
           </div>
-        </div>
-
       </div>
     </section>
   )
