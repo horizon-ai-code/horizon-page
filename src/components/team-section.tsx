@@ -143,8 +143,12 @@ export function TeamSection() {
       <div className="mt-12 px-6 md:px-28 grid grid-cols-1 md:grid-cols-12 gap-8 items-start">
         {/* Caption Info Block */}
         <div className="md:col-span-8 flex flex-col items-start min-h-[160px]">
-          <h3 className="font-[var(--font-display)] text-2xl md:text-3xl font-medium tracking-tight text-[var(--foreground)]">
-            {teamMembers[activeIndex].role}
+          <h3 className="font-[var(--font-display)] text-2xl md:text-3xl font-medium tracking-tight text-[var(--foreground)] flex flex-wrap items-center gap-x-2">
+            <span>{teamMembers[activeIndex].role} —</span>
+            <TextScramble 
+              text={teamMembers[activeIndex].name} 
+              className="text-[var(--muted-foreground)] font-light"
+            />
           </h3>
           <p className="mt-4 font-[var(--font-sans)] text-sm md:text-base text-[var(--muted-foreground)] leading-relaxed max-w-2xl transition-all duration-300">
             {teamMembers[activeIndex].description}
