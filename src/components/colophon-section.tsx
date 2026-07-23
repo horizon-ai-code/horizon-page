@@ -115,13 +115,23 @@ export function ColophonSection() {
         <div className="col-span-1">
           <h4 className="font-mono text-[9px] uppercase tracking-[0.3em] text-muted-foreground mb-4">Details</h4>
           <ul className="space-y-2">
-            <li className="font-mono text-xs text-foreground/80">License: MIT</li>
+            <li className="font-mono text-xs text-foreground/80">
+              License:{" "}
+              <a
+                href="https://github.com/horizon-ai-code/horizon?tab=MIT-1-ov-file"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="hover:text-accent hover:underline transition-colors duration-200"
+              >
+                MIT
+              </a>
+            </li>
             <li>
               <a
                 href="https://github.com/horizon-ai-code/horizon"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="font-mono text-xs text-foreground/80 hover:text-accent transition-colors duration-200"
+                className="font-mono text-xs text-foreground/80 hover:text-accent hover:underline transition-colors duration-200"
               >
                 GitHub Repository
               </a>
