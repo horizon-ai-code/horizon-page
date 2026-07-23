@@ -40,7 +40,7 @@ const teamMembers: TeamMember[] = [
     role: "Frontend Developer",
     name: "Jericho Varde",
     description: "Designs the premium JetBrains-inspired UI, orchestrating the dynamic FlowGrid visual timelines, Glassbox Terminal console feeds, and metric display layouts.",
-    imageSrc: "/public/vardz.png",
+    imageSrc: "/vardz.png",
     initials: "JV",
     detailsLink: "#",
   },
@@ -185,10 +185,8 @@ export function TeamSection() {
               {/* Subtle tech mesh grid in background */}
               <div className="absolute inset-0 grid-bg opacity-5" />
 
-              {/* Initials Display inside placeholder card */}
-              <div className="font-[var(--font-display)] text-5xl md:text-7xl font-bold text-[var(--muted-foreground)]/30 tracking-tight transition-transform duration-700 group-hover:scale-105 select-none">
-                {member.initials}
-              </div>
+              {/* Responsive Image with Graceful Initials Fallback */}
+              <CardImage src={member.imageSrc} alt={member.name} initials={member.initials} />
 
               {/* Centered Play Button Overlay */}
               <button 
@@ -249,5 +247,27 @@ export function TeamSection() {
         </div>
       </div>
     </section>
+  )
+}
+
+function CardImage({ src, alt, initials }: { src: string; alt: string; initials: string }) {
+  const [hasError, setHasError] = useState(false)
+  const isPlaceholder = src.includes("-placeholder")
+
+  if (isPlaceholder || hasError) {
+    return (
+      <div className="font-[var(--font-display)] text-5xl md:text-7xl font-bold text-[var(--muted-foreground)]/30 tracking-tight transition-transform duration-700 group-hover:scale-105 select-none z-10">
+        {initials}
+      </div>
+    )
+  }
+
+  return (
+    <img
+      src={src}
+      alt={alt}
+      onError={() => setHasError(true)}
+      className="absolute inset-0 w-full h-full object-cover z-10 transition-transform duration-500 group-hover:scale-105"
+    />
   )
 }
