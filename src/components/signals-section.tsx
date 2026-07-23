@@ -171,33 +171,37 @@ function SignalCard({
       )}
     >
       {/* Card with paper texture effect */}
-      <div className="relative bg-card border border-border/50 md:border-t md:border-l md:border-r-0 md:border-b-0 p-8">
+      <div className="relative bg-card border border-border/50 md:border-t md:border-l md:border-r-0 md:border-b-0 p-8 overflow-hidden">
         {/* Top torn edge effect */}
-        <div className="absolute -top-px left-0 right-0 h-px bg-gradient-to-r from-transparent via-border/40 to-transparent" />
+        <div className="absolute -top-px left-0 right-0 h-px bg-gradient-to-r from-transparent via-border/40 to-transparent z-20" />
 
-        {/* Issue number - editorial style */}
-        <div className="flex items-start justify-between mb-8 gap-4">
-          <span className="font-mono text-[10px] uppercase tracking-[0.3em] text-foreground/80 whitespace-nowrap">
-            No. {String(index + 1).padStart(2, "0")}
-          </span>
-          <span className="font-mono text-[10px] text-foreground/70 text-right">
-            {signal.date}
-          </span>
+        {/* Large background number */}
+        <div className="absolute right-4 top-1/2 -translate-y-1/2 text-[160px] leading-none font-[var(--font-bebas)] text-foreground/[0.02] group-hover:text-foreground/[0.08] transition-colors duration-500 pointer-events-none select-none z-0">
+          {String(index + 1).padStart(2, "0")}
         </div>
 
-        {/* Title */}
-        <h3 className="font-[var(--font-bebas)] text-4xl tracking-tight mb-4 group-hover:text-accent transition-colors duration-300">
-          {signal.title}
-        </h3>
+        <div className="relative z-10">
+          {/* Header */}
+          <div className="flex justify-end mb-8">
+            <span className="font-mono text-[10px] text-foreground/70 text-right">
+              {signal.date}
+            </span>
+          </div>
 
-        {/* Divider line */}
-        <div className="w-12 h-px bg-accent/60 mb-6 group-hover:w-full transition-all duration-500" />
+          {/* Title */}
+          <h3 className="font-[var(--font-bebas)] text-4xl tracking-tight mb-4 group-hover:text-accent transition-colors duration-300">
+            {signal.title}
+          </h3>
 
-        {/* Description */}
-        <p className="font-mono text-xs text-foreground/70 leading-relaxed">{signal.note}</p>
+          {/* Divider line */}
+          <div className="w-12 h-px bg-accent/60 mb-6 group-hover:w-full transition-all duration-500" />
+
+          {/* Description */}
+          <p className="font-mono text-xs text-foreground/70 leading-relaxed">{signal.note}</p>
+        </div>
 
         {/* Bottom right corner fold effect */}
-        <div className="absolute bottom-0 right-0 w-6 h-6 overflow-hidden">
+        <div className="absolute bottom-0 right-0 w-6 h-6 overflow-hidden z-20">
           <div className="absolute bottom-0 right-0 w-8 h-8 bg-background rotate-45 translate-x-4 translate-y-4 border-t border-l border-border/30" />
         </div>
       </div>
