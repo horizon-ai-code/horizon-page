@@ -45,11 +45,11 @@ export function HeroSection() {
         </div>
 
         {/* Main content */}
-        <div ref={contentRef} className="w-full max-w-5xl">
+        <div ref={contentRef} className="w-full">
           <div className="relative">
             <SplitFlapDisplay 
               text="HORIZON AI" 
-              className="font-[var(--font-bebas)] text-[clamp(1.5rem,7vw,10rem)] whitespace-nowrap leading-[0.85] tracking-tight text-foreground w-full"
+              className="font-[var(--font-bebas)] text-[13vw] md:text-[10vw] xl:text-[12vw] 2xl:text-[14rem] whitespace-nowrap leading-[0.85] tracking-tight text-foreground w-full"
               speed={80}
             />
             <div className="mt-4">
