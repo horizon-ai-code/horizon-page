@@ -40,7 +40,7 @@ const teamMembers: TeamMember[] = [
     role: "Frontend Developer",
     name: "Jericho Varde",
     description: "Designs the premium JetBrains-inspired UI, orchestrating the dynamic FlowGrid visual timelines, Glassbox Terminal console feeds, and metric display layouts.",
-    imageSrc: "/team/jericho-placeholder.jpg",
+    imageSrc: "/public/vardz.png",
     initials: "JV",
     detailsLink: "#",
   },
