@@ -85,20 +85,20 @@ export function ColophonSection() {
           <h4 className="font-mono text-[9px] uppercase tracking-[0.3em] text-muted-foreground mb-4">Contributors</h4>
           <ul className="space-y-2">
             <li className="font-mono text-xs text-foreground/80">
-              <a href="https://www.pugario.tech/" target="_blank" rel="noopener noreferrer" className="hover:text-accent transition-colors duration-200">Joshua Lopez</a> — Lead/Fullstack Developer (
-              <a href="https://github.com/pugarioo" target="_blank" rel="noopener noreferrer" className="hover:text-accent transition-colors duration-200">@pugrario</a>)
+              <a href="https://www.pugario.tech/" target="_blank" rel="noopener noreferrer" className="hover:text-accent hover:underline transition-colors duration-200">Joshua Lopez</a> — Lead/Fullstack Developer (
+              <a href="https://github.com/pugarioo" target="_blank" rel="noopener noreferrer" className="hover:text-accent hover:underline transition-colors duration-200">@pugrario</a>)
             </li>
             <li className="font-mono text-xs text-foreground/80">
-              <a href="https://www.vardz.dev/" target="_blank" rel="noopener noreferrer" className="hover:text-accent transition-colors duration-200">Jericho Varde</a> — Frontend Developer (
-              <a href="https://github.com/vardzz" target="_blank" rel="noopener noreferrer" className="hover:text-accent transition-colors duration-200">@vardzz</a>)
+              <a href="https://www.vardz.dev/" target="_blank" rel="noopener noreferrer" className="hover:text-accent hover:underline transition-colors duration-200">Jericho Varde</a> — Frontend Developer (
+              <a href="https://github.com/vardzz" target="_blank" rel="noopener noreferrer" className="hover:text-accent hover:underline transition-colors duration-200">@vardzz</a>)
             </li>
             <li className="font-mono text-xs text-foreground/80">
-              <a href="#" className="hover:text-accent transition-colors duration-200">Christian Balinado</a> — Contributor (
-              <a href="https://github.com/blueztian" target="_blank" rel="noopener noreferrer" className="hover:text-accent transition-colors duration-200">@blueztian</a>)
+              <a href="#" className="hover:text-accent hover:underline transition-colors duration-200">Christian Balinado</a> — Contributor (
+              <a href="https://github.com/blueztian" target="_blank" rel="noopener noreferrer" className="hover:text-accent hover:underline transition-colors duration-200">@blueztian</a>)
             </li>
             <li className="font-mono text-xs text-foreground/80">
-              <a href="#" className="hover:text-accent transition-colors duration-200">Andrew Dejito</a> — Contributor (
-              <a href="https://github.com/andrewdejito" target="_blank" rel="noopener noreferrer" className="hover:text-accent transition-colors duration-200">@andrewdejito</a>)
+              <a href="#" className="hover:text-accent hover:underline transition-colors duration-200">Andrew Dejito</a> — Contributor (
+              <a href="https://github.com/andrewdejito" target="_blank" rel="noopener noreferrer" className="hover:text-accent hover:underline transition-colors duration-200">@andrewdejito</a>)
             </li>
           </ul>
         </div>
