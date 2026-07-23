@@ -111,7 +111,7 @@ export function TeamSection() {
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
           <div className="lg:col-span-7">
             <h2 className="font-[var(--font-display)] text-4xl md:text-6xl font-bold tracking-tight text-[var(--foreground)] leading-[1.1] uppercase">
-              Meet the team
+              Meet the builders
             </h2>
           </div>
           <div className="lg:col-span-4 lg:col-start-9 pt-1.5">
