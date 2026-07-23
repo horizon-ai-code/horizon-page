@@ -2,6 +2,7 @@
 
 import { useRef, useEffect } from "react"
 import { TextHighlighter } from "@/components/text-highlighter"
+import { HorizonGlow } from "@/components/horizon-glow"
 import gsap from "gsap"
 import { ScrollTrigger } from "gsap/ScrollTrigger"
 
@@ -91,6 +92,7 @@ export function ArchitectureSection() {
 
   return (
     <section ref={sectionRef} id="principles" className="relative py-32 pl-6 md:pl-28 pr-6 md:pr-12">
+      <HorizonGlow glowPosition="center" glowColor="cyan" sparkleCount={5} showHorizonLine={true} />
       {/* Section header */}
       <div ref={headerRef} className="mb-24">
         <span className="font-mono text-[10px] uppercase tracking-[0.3em] text-accent">04 / Principles</span>

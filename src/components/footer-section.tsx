@@ -1,6 +1,7 @@
 "use client"
 
 import { useRef, useEffect } from "react"
+import { HorizonGlow } from "@/components/horizon-glow"
 import gsap from "gsap"
 import { ScrollTrigger } from "gsap/ScrollTrigger"
 
@@ -73,6 +74,7 @@ export function FooterSection() {
       id="colophon"
       className="relative py-32 pl-6 md:pl-28 pr-6 md:pr-12 border-t border-border/30"
     >
+      <HorizonGlow glowPosition="bottom" glowColor="mixed" sparkleCount={4} showHorizonLine={false} />
       {/* Section header */}
       <div ref={headerRef} className="mb-16">
         <span className="font-mono text-[10px] uppercase tracking-[0.3em] text-accent">05 / Colophon</span>
