@@ -43,12 +43,15 @@ export function SmoothScroll({ children }: { children: React.ReactNode }) {
     const handleAnchorClick = (e: MouseEvent) => {
       const target = e.target as HTMLElement
       const link = target.closest("a")
-      if (link && link.hash && link.hash.startsWith("#")) {
-        // Check if the target element exists on the page
-        const targetElement = document.getElementById(link.hash.substring(1))
-        if (targetElement) {
-          e.preventDefault()
-          lenis.scrollTo(targetElement, { duration: 1.2 })
+      if (link) {
+        const href = link.getAttribute("href")
+        if (href && href.startsWith("#")) {
+          // Check if the target element exists on the page
+          const targetElement = document.getElementById(href.substring(1))
+          if (targetElement) {
+            e.preventDefault()
+            lenis.scrollTo(targetElement, { duration: 1.2 })
+          }
         }
       }
     }
