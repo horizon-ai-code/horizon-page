@@ -6,6 +6,7 @@ import { cn } from "@/lib/utils"
 import { HorizonGlow } from "@/components/horizon-glow"
 import gsap from "gsap"
 import { ScrollTrigger } from "gsap/ScrollTrigger"
+import { motion } from "framer-motion"
 
 gsap.registerPlugin(ScrollTrigger)
 
@@ -21,7 +22,6 @@ export function SetupSection() {
   const sectionRef = useRef<HTMLElement>(null)
   const headerRef = useRef<HTMLDivElement>(null)
   const contentRef = useRef<HTMLDivElement>(null)
-  const stepsRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
     if (!sectionRef.current) return
@@ -55,25 +55,6 @@ export function SetupSection() {
             scrollTrigger: {
               trigger: contentRef.current,
               start: "top 85%",
-              toggleActions: "play none none reverse",
-            },
-          }
-        )
-      }
-
-      if (stepsRef.current) {
-        const cards = stepsRef.current.querySelectorAll(":scope > div")
-        gsap.fromTo(cards,
-          { y: 40, opacity: 0 },
-          {
-            y: 0,
-            opacity: 1,
-            duration: 0.8,
-            stagger: 0.1,
-            ease: "power3.out",
-            scrollTrigger: {
-              trigger: stepsRef.current,
-              start: "top 90%",
               toggleActions: "play none none reverse",
             },
           }
@@ -173,31 +154,49 @@ export function SetupSection() {
         <h3 className="font-mono text-[10px] uppercase tracking-[0.25em] text-accent mb-8 text-center">
           What happens next?
         </h3>
-        <div ref={stepsRef} className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          <div className="flex flex-col bg-card/25 border border-border/40 p-6 rounded-xl hover:border-accent/40 transition-all duration-300">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <motion.div 
+            initial={{ opacity: 0, y: 30 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, margin: "-100px" }}
+            transition={{ duration: 0.6, delay: 0.1 }}
+            className="flex flex-col bg-card/25 border border-border/40 p-6 rounded-xl hover:border-accent/40 transition-all duration-300"
+          >
             <span className="font-mono text-[10px] uppercase tracking-widest text-accent mb-3 block">
               01 / Copy & Run
             </span>
             <p className="font-sans text-xs text-muted-foreground leading-relaxed">
               Run the compose command in your terminal to automatically pull the pre-quantized models and configure local VRAM serialization.
             </p>
-          </div>
-          <div className="flex flex-col bg-card/25 border border-border/40 p-6 rounded-xl hover:border-accent/40 transition-all duration-300">
+          </motion.div>
+          <motion.div 
+            initial={{ opacity: 0, y: 30 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, margin: "-100px" }}
+            transition={{ duration: 0.6, delay: 0.2 }}
+            className="flex flex-col bg-card/25 border border-border/40 p-6 rounded-xl hover:border-accent/40 transition-all duration-300"
+          >
             <span className="font-mono text-[10px] uppercase tracking-widest text-accent mb-3 block">
               02 / Access Studio
             </span>
             <p className="font-sans text-xs text-muted-foreground leading-relaxed">
               Navigate to <code className="text-[10px] font-mono text-foreground bg-muted/50 px-1.5 py-0.5 rounded border border-border/30">http://localhost:3000</code> to load the desktop refactoring studio workspace.
             </p>
-          </div>
-          <div className="flex flex-col bg-card/25 border border-border/40 p-6 rounded-xl hover:border-accent/40 transition-all duration-300">
+          </motion.div>
+          <motion.div 
+            initial={{ opacity: 0, y: 30 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, margin: "-100px" }}
+            transition={{ duration: 0.6, delay: 0.3 }}
+            className="flex flex-col bg-card/25 border border-border/40 p-6 rounded-xl hover:border-accent/40 transition-all duration-300"
+          >
             <span className="font-mono text-[10px] uppercase tracking-widest text-accent mb-3 block">
               03 / Refactor
             </span>
             <p className="font-sans text-xs text-muted-foreground leading-relaxed">
               Upload your Java source files. The multi-agent pipeline immediately kicks off analysis, displaying live AST changes in the workspace.
             </p>
-          </div>
+          </motion.div>
         </div>
       </div>
     </section>
