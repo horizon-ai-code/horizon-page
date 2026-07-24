@@ -49,7 +49,13 @@ export function CodeSection() {
         <div className="flex flex-col rounded-xl overflow-hidden border border-border/40 bg-[#1E1F22] shadow-2xl relative min-h-[460px]">
           {/* Editor Header */}
           <div className="flex items-center justify-between px-4 py-2 border-b border-border/20 bg-[#2B2D30]/80 backdrop-blur-sm select-none">
-            <div className="flex items-center">
+            <div className="flex items-center gap-3">
+              {/* iOS stoplight */}
+              <div className="flex space-x-1.5">
+                <div className="w-2.5 h-2.5 rounded-full bg-red-500/80" />
+                <div className="w-2.5 h-2.5 rounded-full bg-yellow-500/80" />
+                <div className="w-2.5 h-2.5 rounded-full bg-green-500/80" />
+              </div>
               <div className="px-4 py-1.5 rounded-t-lg bg-[#1E1F22] border-t border-x border-border/30 text-xs font-mono text-foreground font-medium">
                 Input.java
               </div>
@@ -123,29 +129,37 @@ export function CodeSection() {
         <div className="flex flex-col rounded-xl overflow-hidden border border-border/40 bg-[#1E1F22] shadow-2xl relative min-h-[460px]">
           {/* Editor Header */}
           <div className="flex items-center justify-between px-4 py-2 border-b border-border/20 bg-[#2B2D30]/80 backdrop-blur-sm select-none">
-            <div className="flex items-center gap-1">
-              <button
-                onClick={() => setActiveTabRight("insights")}
-                className={cn(
-                  "px-4 py-1.5 text-xs font-mono transition-all font-medium rounded-t-lg border-t border-x",
-                  activeTabRight === "insights"
-                    ? "bg-[#1E1F22] border-border/30 text-foreground"
-                    : "border-transparent text-muted-foreground hover:text-foreground/75"
-                )}
-              >
-                Insights.md
-              </button>
-              <button
-                onClick={() => setActiveTabRight("code")}
-                className={cn(
-                  "px-4 py-1.5 text-xs font-mono transition-all font-medium rounded-t-lg border-t border-x",
-                  activeTabRight === "code"
-                    ? "bg-[#1E1F22] border-border/30 text-foreground"
-                    : "border-transparent text-muted-foreground hover:text-foreground/75"
-                )}
-              >
-                RefactoredOutput.java
-              </button>
+            <div className="flex items-center gap-3">
+              {/* iOS stoplight */}
+              <div className="flex space-x-1.5 shrink-0">
+                <div className="w-2.5 h-2.5 rounded-full bg-red-500/80" />
+                <div className="w-2.5 h-2.5 rounded-full bg-yellow-500/80" />
+                <div className="w-2.5 h-2.5 rounded-full bg-green-500/80" />
+              </div>
+              <div className="flex items-center gap-1">
+                <button
+                  onClick={() => setActiveTabRight("insights")}
+                  className={cn(
+                    "px-4 py-1.5 text-xs font-mono transition-all font-medium rounded-t-lg border-t border-x",
+                    activeTabRight === "insights"
+                      ? "bg-[#1E1F22] border-border/30 text-foreground"
+                      : "border-transparent text-muted-foreground hover:text-foreground/75"
+                  )}
+                >
+                  Insights.md
+                </button>
+                <button
+                  onClick={() => setActiveTabRight("code")}
+                  className={cn(
+                    "px-4 py-1.5 text-xs font-mono transition-all font-medium rounded-t-lg border-t border-x",
+                    activeTabRight === "code"
+                      ? "bg-[#1E1F22] border-border/30 text-foreground"
+                      : "border-transparent text-muted-foreground hover:text-foreground/75"
+                  )}
+                >
+                  RefactoredOutput.java
+                </button>
+              </div>
             </div>
             
             <div className="flex items-center gap-3">
