@@ -178,9 +178,6 @@ export function FooterSection() {
               <li className="font-mono text-xs text-foreground/75 hover:text-accent transition-colors">
                 <a href="#team">Team</a>
               </li>
-              <li className="font-mono text-xs text-foreground/75 hover:text-accent transition-colors">
-                <a href="#colophon">Colophon</a>
-              </li>
             </ul>
           </div>
 
