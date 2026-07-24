@@ -96,7 +96,7 @@ export function ArchitectureSection() {
       <HorizonGlow glowPosition="center" glowColor="cyan" sparkleCount={15} showHorizonLine={false} />
       {/* Section header */}
       <div ref={headerRef} className="mb-24">
-        <span className="font-mono text-[10px] uppercase tracking-[0.3em] text-accent">04 / Principles</span>
+        <span className="font-mono text-[10px] uppercase tracking-[0.3em] text-accent">05 / Principles</span>
         <h2 className="mt-4 font-[var(--font-inter)] text-5xl md:text-7xl tracking-tight">ARCHITECTURE</h2>
       </div>
 

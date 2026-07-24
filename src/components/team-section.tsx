@@ -175,7 +175,7 @@ export function TeamSection() {
 
       {/* Section Header */}
       <div ref={headerRef} className="mb-16 px-6 md:px-28">
-        <span className="font-[var(--font-mono)] text-[10px] uppercase tracking-[0.3em] text-[var(--accent)] block mb-4">05 / Team</span>
+        <span className="font-[var(--font-mono)] text-[10px] uppercase tracking-[0.3em] text-[var(--accent)] block mb-4">06 / Team</span>
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
           <div className="lg:col-span-7">
             <h2 className="font-[var(--font-display)] text-4xl md:text-6xl font-bold tracking-tight text-[var(--foreground)] leading-[1.1] uppercase">
