@@ -2,6 +2,7 @@ import { HeroSection } from "@/components/hero-section"
 import { SetupSection } from "@/components/setup-section"
 import { PipelineSection } from "@/components/pipeline-section"
 import { FeaturesSection } from "@/components/features-section"
+import { CodeSection } from "@/components/code-section"
 import { ArchitectureSection } from "@/components/architecture-section"
 import { TeamSection } from "@/components/team-section"
 import { FooterSection } from "@/components/footer-section"
@@ -18,6 +19,7 @@ export default function Page() {
         <SetupSection />
         <PipelineSection />
         <FeaturesSection />
+        <CodeSection />
         <ArchitectureSection />
         <TeamSection />
         <FooterSection />
@@ -25,3 +27,4 @@ export default function Page() {
     </main>
   )
 }
+

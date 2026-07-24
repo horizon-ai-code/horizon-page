@@ -97,6 +97,39 @@ export function SetupSection() {
              ))}
           </div>
       </div>
+
+      {/* What happens next? */}
+      <div className="mt-20 max-w-6xl mx-auto">
+        <h3 className="font-mono text-[10px] uppercase tracking-[0.25em] text-accent mb-8 text-center">
+          What happens next?
+        </h3>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div className="flex flex-col bg-card/25 border border-border/40 p-6 rounded-xl hover:border-accent/40 transition-all duration-300">
+            <span className="font-mono text-[10px] uppercase tracking-widest text-accent mb-3 block">
+              01 / Copy & Run
+            </span>
+            <p className="font-sans text-xs text-muted-foreground leading-relaxed">
+              Run the compose command in your terminal to automatically pull the pre-quantized models and configure local VRAM serialization.
+            </p>
+          </div>
+          <div className="flex flex-col bg-card/25 border border-border/40 p-6 rounded-xl hover:border-accent/40 transition-all duration-300">
+            <span className="font-mono text-[10px] uppercase tracking-widest text-accent mb-3 block">
+              02 / Access Studio
+            </span>
+            <p className="font-sans text-xs text-muted-foreground leading-relaxed">
+              Navigate to <code className="text-[10px] font-mono text-foreground bg-muted/50 px-1.5 py-0.5 rounded border border-border/30">http://localhost:3000</code> to load the desktop refactoring studio workspace.
+            </p>
+          </div>
+          <div className="flex flex-col bg-card/25 border border-border/40 p-6 rounded-xl hover:border-accent/40 transition-all duration-300">
+            <span className="font-mono text-[10px] uppercase tracking-widest text-accent mb-3 block">
+              03 / Refactor
+            </span>
+            <p className="font-sans text-xs text-muted-foreground leading-relaxed">
+              Upload your Java source files. The multi-agent pipeline immediately kicks off analysis, displaying live AST changes in the workspace.
+            </p>
+          </div>
+        </div>
+      </div>
     </section>
   )
 }
