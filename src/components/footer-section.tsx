@@ -158,16 +158,22 @@ export function FooterSection() {
             <h4 className="font-mono text-[9px] uppercase tracking-[0.3em] text-muted-foreground mb-4">Navigation</h4>
             <ul className="space-y-2.5">
               <li className="font-mono text-xs text-foreground/75 hover:text-accent transition-colors">
-                <a href="#hero">Hero</a>
+                <a href="#hero">Horizon</a>
               </li>
               <li className="font-mono text-xs text-foreground/75 hover:text-accent transition-colors">
-                <a href="#signals">Signals</a>
+                <a href="#installation">Installation</a>
               </li>
               <li className="font-mono text-xs text-foreground/75 hover:text-accent transition-colors">
-                <a href="#work">Work</a>
+                <a href="#signals">Pipeline</a>
               </li>
               <li className="font-mono text-xs text-foreground/75 hover:text-accent transition-colors">
-                <a href="#principles">Principles</a>
+                <a href="#work">Features</a>
+              </li>
+              <li className="font-mono text-xs text-foreground/75 hover:text-accent transition-colors">
+                <a href="#demo">Demo</a>
+              </li>
+              <li className="font-mono text-xs text-foreground/75 hover:text-accent transition-colors">
+                <a href="#principles">Architecture</a>
               </li>
               <li className="font-mono text-xs text-foreground/75 hover:text-accent transition-colors">
                 <a href="#team">Team</a>
