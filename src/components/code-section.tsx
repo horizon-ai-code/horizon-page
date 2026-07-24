@@ -1,13 +1,59 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useRef, useEffect } from "react"
 import { Check, Copy, Sparkles } from "lucide-react"
 import { HorizonGlow } from "@/components/horizon-glow"
 import { cn } from "@/lib/utils"
+import gsap from "gsap"
+import { ScrollTrigger } from "gsap/ScrollTrigger"
+
+gsap.registerPlugin(ScrollTrigger)
 
 export function CodeSection() {
   const [copied, setCopied] = useState(false)
   const [activeTabRight, setActiveTabRight] = useState<"code" | "insights">("code")
+
+  const sectionRef = useRef<HTMLElement>(null)
+  const headerRef = useRef<HTMLDivElement>(null)
+  const editorGridRef = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    if (!sectionRef.current) return
+
+    const ctx = gsap.context(() => {
+      if (headerRef.current) {
+        gsap.from(headerRef.current, {
+          y: 40,
+          opacity: 0,
+          duration: 0.8,
+          ease: "power3.out",
+          scrollTrigger: {
+            trigger: headerRef.current,
+            start: "top 85%",
+            toggleActions: "play none none reverse",
+          },
+        })
+      }
+
+      if (editorGridRef.current) {
+        const editors = editorGridRef.current.querySelectorAll(":scope > div")
+        gsap.from(editors, {
+          y: 50,
+          opacity: 0,
+          duration: 0.8,
+          stagger: 0.15,
+          ease: "power3.out",
+          scrollTrigger: {
+            trigger: editorGridRef.current,
+            start: "top 85%",
+            toggleActions: "play none none reverse",
+          },
+        })
+      }
+    }, sectionRef)
+
+    return () => ctx.revert()
+  }, [])
 
   const refactoredCode = `public class OrderTracker {
 
@@ -30,11 +76,11 @@ export function CodeSection() {
   }
 
   return (
-    <section id="demo" className="relative py-32 pl-6 md:pl-28 pr-6 md:pr-12 border-t border-border/30 bg-[#0d0d0f]/20 overflow-hidden">
+    <section ref={sectionRef} id="demo" className="relative py-32 pl-6 md:pl-28 pr-6 md:pr-12 border-t border-border/30 bg-[#0d0d0f]/20 overflow-hidden">
       <HorizonGlow glowPosition="center" glowColor="blue" sparkleCount={15} showHorizonLine={false} />
       
       {/* Section Header */}
-      <div className="mb-16">
+      <div ref={headerRef} className="mb-16">
         <span className="font-mono text-[10px] uppercase tracking-[0.3em] text-accent">03.5 / Studio Demo</span>
         <h2 className="mt-4 font-[var(--font-inter)] text-5xl md:text-7xl tracking-tight">REFACTORING IN ACTION</h2>
         <p className="mt-6 font-mono text-sm text-foreground/70 max-w-2xl leading-relaxed">
@@ -43,7 +89,7 @@ export function CodeSection() {
       </div>
 
       {/* Side-by-side IDE Container */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 max-w-7xl mx-auto items-stretch">
+      <div ref={editorGridRef} className="grid grid-cols-1 lg:grid-cols-2 gap-6 max-w-7xl mx-auto items-stretch">
         
         {/* Left Code Editor (Input.java) */}
         <div className="flex flex-col rounded-xl overflow-hidden border border-border/40 bg-[#1E1F22] shadow-2xl relative min-h-[460px]">

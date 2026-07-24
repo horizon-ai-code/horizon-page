@@ -1,9 +1,13 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useRef, useEffect } from "react"
 import { Check, Copy, Terminal } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { HorizonGlow } from "@/components/horizon-glow"
+import gsap from "gsap"
+import { ScrollTrigger } from "gsap/ScrollTrigger"
+
+gsap.registerPlugin(ScrollTrigger)
 
 const commands = {
   gpu: "curl -sL https://raw.githubusercontent.com/horizon-ai-code/horizon/main/docker-compose.yml | docker compose -f - up -d",
@@ -14,6 +18,63 @@ export function SetupSection() {
   const [activeTab, setActiveTab] = useState<"gpu" | "cpu">("gpu")
   const [copied, setCopied] = useState(false)
 
+  const sectionRef = useRef<HTMLElement>(null)
+  const headerRef = useRef<HTMLDivElement>(null)
+  const contentRef = useRef<HTMLDivElement>(null)
+  const stepsRef = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    if (!sectionRef.current) return
+
+    const ctx = gsap.context(() => {
+      if (headerRef.current) {
+        gsap.from(headerRef.current, {
+          y: 40,
+          opacity: 0,
+          duration: 0.8,
+          ease: "power3.out",
+          scrollTrigger: {
+            trigger: headerRef.current,
+            start: "top 85%",
+            toggleActions: "play none none reverse",
+          },
+        })
+      }
+
+      if (contentRef.current) {
+        gsap.from(contentRef.current, {
+          y: 50,
+          opacity: 0,
+          duration: 0.8,
+          ease: "power3.out",
+          scrollTrigger: {
+            trigger: contentRef.current,
+            start: "top 85%",
+            toggleActions: "play none none reverse",
+          },
+        })
+      }
+
+      if (stepsRef.current) {
+        const cards = stepsRef.current.querySelectorAll(":scope > div")
+        gsap.from(cards, {
+          y: 40,
+          opacity: 0,
+          duration: 0.8,
+          stagger: 0.1,
+          ease: "power3.out",
+          scrollTrigger: {
+            trigger: stepsRef.current,
+            start: "top 90%",
+            toggleActions: "play none none reverse",
+          },
+        })
+      }
+    }, sectionRef)
+
+    return () => ctx.revert()
+  }, [])
+
   const handleCopy = () => {
     navigator.clipboard.writeText(commands[activeTab])
     setCopied(true)
@@ -21,10 +82,10 @@ export function SetupSection() {
   }
 
   return (
-    <section id="installation" className="relative py-32 pl-6 md:pl-28 pr-6 md:pr-12">
+    <section ref={sectionRef} id="installation" className="relative py-32 pl-6 md:pl-28 pr-6 md:pr-12">
       <HorizonGlow glowPosition="bottom" glowColor="cyan" sparkleCount={15} showHorizonLine={false} />
       {/* Section header */}
-      <div className="mb-16">
+      <div ref={headerRef} className="mb-16">
         <span className="font-mono text-[10px] uppercase tracking-[0.3em] text-accent">01 / Setup</span>
         <h2 className="mt-4 font-[var(--font-inter)] text-5xl md:text-7xl tracking-tight">INSTALLATION</h2>
         <p className="mt-6 font-mono text-sm text-foreground/70 max-w-2xl leading-relaxed">
@@ -33,7 +94,7 @@ export function SetupSection() {
       </div>
 
       {/* Terminal Window */}
-      <div className="max-w-6xl mx-auto rounded-xl overflow-hidden border border-border/50 bg-[#0A0A0B] shadow-2xl relative group">
+      <div ref={contentRef} className="max-w-6xl mx-auto rounded-xl overflow-hidden border border-border/50 bg-[#0A0A0B] shadow-2xl relative group">
           {/* Terminal Header */}
           <div className="flex items-center justify-between px-4 py-3 border-b border-border/30 bg-[#121214]">
             <div className="flex space-x-2">
@@ -103,7 +164,7 @@ export function SetupSection() {
         <h3 className="font-mono text-[10px] uppercase tracking-[0.25em] text-accent mb-8 text-center">
           What happens next?
         </h3>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div ref={stepsRef} className="grid grid-cols-1 md:grid-cols-3 gap-6">
           <div className="flex flex-col bg-card/25 border border-border/40 p-6 rounded-xl hover:border-accent/40 transition-all duration-300">
             <span className="font-mono text-[10px] uppercase tracking-widest text-accent mb-3 block">
               01 / Copy & Run

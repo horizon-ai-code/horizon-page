@@ -6,7 +6,10 @@ import { cn } from "@/lib/utils"
 import { HorizonGlow } from "@/components/horizon-glow"
 import { ScrambleText } from "@/components/text-scramble"
 import gsap from "gsap"
+import { ScrollTrigger } from "gsap/ScrollTrigger"
 import { motion, AnimatePresence } from "framer-motion"
+
+gsap.registerPlugin(ScrollTrigger)
 
 type TeamMember = {
   id: string
@@ -61,6 +64,61 @@ export function TeamSection() {
   const scrollRef = useRef<HTMLDivElement>(null)
   const [activeIndex, setActiveIndex] = useState(0)
 
+  const sectionRef = useRef<HTMLElement>(null)
+  const headerRef = useRef<HTMLDivElement>(null)
+  const carouselRef = useRef<HTMLDivElement>(null)
+  const detailsRef = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    if (!sectionRef.current) return
+
+    const ctx = gsap.context(() => {
+      if (headerRef.current) {
+        gsap.from(headerRef.current, {
+          y: 40,
+          opacity: 0,
+          duration: 0.8,
+          ease: "power3.out",
+          scrollTrigger: {
+            trigger: headerRef.current,
+            start: "top 85%",
+            toggleActions: "play none none reverse",
+          },
+        })
+      }
+
+      if (carouselRef.current) {
+        gsap.from(carouselRef.current, {
+          y: 50,
+          opacity: 0,
+          duration: 0.8,
+          ease: "power3.out",
+          scrollTrigger: {
+            trigger: carouselRef.current,
+            start: "top 85%",
+            toggleActions: "play none none reverse",
+          },
+        })
+      }
+
+      if (detailsRef.current) {
+        gsap.from(detailsRef.current, {
+          y: 40,
+          opacity: 0,
+          duration: 0.8,
+          ease: "power3.out",
+          scrollTrigger: {
+            trigger: detailsRef.current,
+            start: "top 90%",
+            toggleActions: "play none none reverse",
+          },
+        })
+      }
+    }, sectionRef)
+
+    return () => ctx.revert()
+  }, [])
+
   const handleScroll = () => {
     if (scrollRef.current) {
       const { scrollLeft, clientWidth, scrollWidth } = scrollRef.current
@@ -99,6 +157,7 @@ export function TeamSection() {
 
   return (
     <section 
+      ref={sectionRef}
       id="team" 
       className="relative py-32 border-t border-[var(--border)] overflow-hidden bg-[var(--background)]"
     >
@@ -106,7 +165,7 @@ export function TeamSection() {
       <HorizonGlow glowPosition="center" glowColor="mixed" sparkleCount={15} showHorizonLine={false} />
 
       {/* Section Header */}
-      <div className="mb-16 px-6 md:px-28">
+      <div ref={headerRef} className="mb-16 px-6 md:px-28">
         <span className="font-[var(--font-mono)] text-[10px] uppercase tracking-[0.3em] text-[var(--accent)] block mb-4">05 / Team</span>
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
           <div className="lg:col-span-7">
@@ -123,7 +182,7 @@ export function TeamSection() {
       </div>
 
       {/* Horizontal Scrollable Carousel */}
-      <div className="relative w-full">
+      <div ref={carouselRef} className="relative w-full">
         <div
           ref={scrollRef}
           onScroll={handleScroll}
@@ -144,7 +203,7 @@ export function TeamSection() {
       </div>
 
       {/* Synced Caption Panel below the row */}
-      <div className="mt-12 px-6 md:px-28 grid grid-cols-1 md:grid-cols-12 gap-8 items-start">
+      <div ref={detailsRef} className="mt-12 px-6 md:px-28 grid grid-cols-1 md:grid-cols-12 gap-8 items-start">
         {/* Caption Info Block */}
         <div className="md:col-span-8 flex flex-col items-start min-h-[180px]">
           <AnimatePresence mode="wait">
