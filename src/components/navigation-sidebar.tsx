@@ -39,7 +39,11 @@ export function NavigationSidebar() {
   const scrollToSection = (id: string) => {
     const element = document.getElementById(id)
     if (element) {
-      element.scrollIntoView({ behavior: "smooth" })
+      if (window.lenis) {
+        window.lenis.scrollTo(element, { duration: 1.2 })
+      } else {
+        element.scrollIntoView({ behavior: "smooth" })
+      }
     }
   }
 
