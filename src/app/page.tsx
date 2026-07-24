@@ -5,6 +5,7 @@ import { FeaturesSection } from "@/components/features-section"
 import { CodeSection } from "@/components/code-section"
 import { ArchitectureSection } from "@/components/architecture-section"
 import { TeamSection } from "@/components/team-section"
+import { BannerSection } from "@/components/banner-section"
 import { FooterSection } from "@/components/footer-section"
 import { NavigationSidebar } from "@/components/navigation-sidebar"
 
@@ -22,6 +23,7 @@ export default function Page() {
         <CodeSection />
         <ArchitectureSection />
         <TeamSection />
+        <BannerSection />
         <FooterSection />
       </div>
     </main>
