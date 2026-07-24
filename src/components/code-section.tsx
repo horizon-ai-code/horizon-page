@@ -102,25 +102,6 @@ export function CodeSection() {
                 &#125; <span className="text-[#CC7832]">else</span> &#123;
               </div>
             </div>
-
-            {/* Prompt overlay dialog */}
-            <div className="absolute bottom-4 left-4 right-4 bg-[#1A1A1C]/95 border border-border/50 rounded-xl p-5 shadow-2xl backdrop-blur-md z-20">
-              <p className="text-[11px] text-foreground/80 leading-relaxed font-sans">
-                This method translates an integer status code from a database into a human-readable message.
-              </p>
-              <p className="text-[11px] text-foreground/80 leading-relaxed font-sans mt-2">
-                The Goal: Refactor this code to eliminate the "magic numbers" and get rid of the clunky if/else chain.
-              </p>
-              <div className="mt-4 flex items-center justify-between border-t border-border/20 pt-3">
-                <div className="w-6 h-6 rounded-md bg-[#2B2D30] flex items-center justify-center border border-border/40 text-muted-foreground text-xs select-none">
-                  ⌘
-                </div>
-                <button className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-accent text-accent-foreground font-sans text-[11px] font-semibold hover:bg-accent/90 transition-all select-none shadow-md">
-                  <Sparkles className="w-3 h-3" />
-                  <span>Run</span>
-                </button>
-              </div>
-            </div>
           </div>
         </div>
 
