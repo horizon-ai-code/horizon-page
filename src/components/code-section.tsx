@@ -22,33 +22,39 @@ export function CodeSection() {
 
     const ctx = gsap.context(() => {
       if (headerRef.current) {
-        gsap.from(headerRef.current, {
-          y: 40,
-          opacity: 0,
-          duration: 0.8,
-          ease: "power3.out",
-          scrollTrigger: {
-            trigger: headerRef.current,
-            start: "top 85%",
-            toggleActions: "play none none reverse",
-          },
-        })
+        gsap.fromTo(headerRef.current,
+          { y: 40, opacity: 0 },
+          {
+            y: 0,
+            opacity: 1,
+            duration: 0.8,
+            ease: "power3.out",
+            scrollTrigger: {
+              trigger: headerRef.current,
+              start: "top 85%",
+              toggleActions: "play none none reverse",
+            },
+          }
+        )
       }
 
       if (editorGridRef.current) {
         const editors = editorGridRef.current.querySelectorAll(":scope > div")
-        gsap.from(editors, {
-          y: 50,
-          opacity: 0,
-          duration: 0.8,
-          stagger: 0.15,
-          ease: "power3.out",
-          scrollTrigger: {
-            trigger: editorGridRef.current,
-            start: "top 85%",
-            toggleActions: "play none none reverse",
-          },
-        })
+        gsap.fromTo(editors,
+          { y: 50, opacity: 0 },
+          {
+            y: 0,
+            opacity: 1,
+            duration: 0.8,
+            stagger: 0.15,
+            ease: "power3.out",
+            scrollTrigger: {
+              trigger: editorGridRef.current,
+              start: "top 85%",
+              toggleActions: "play none none reverse",
+            },
+          }
+        )
       }
     }, sectionRef)
 

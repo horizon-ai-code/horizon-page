@@ -28,47 +28,56 @@ export function SetupSection() {
 
     const ctx = gsap.context(() => {
       if (headerRef.current) {
-        gsap.from(headerRef.current, {
-          y: 40,
-          opacity: 0,
-          duration: 0.8,
-          ease: "power3.out",
-          scrollTrigger: {
-            trigger: headerRef.current,
-            start: "top 85%",
-            toggleActions: "play none none reverse",
-          },
-        })
+        gsap.fromTo(headerRef.current,
+          { y: 40, opacity: 0 },
+          {
+            y: 0,
+            opacity: 1,
+            duration: 0.8,
+            ease: "power3.out",
+            scrollTrigger: {
+              trigger: headerRef.current,
+              start: "top 85%",
+              toggleActions: "play none none reverse",
+            },
+          }
+        )
       }
 
       if (contentRef.current) {
-        gsap.from(contentRef.current, {
-          y: 50,
-          opacity: 0,
-          duration: 0.8,
-          ease: "power3.out",
-          scrollTrigger: {
-            trigger: contentRef.current,
-            start: "top 85%",
-            toggleActions: "play none none reverse",
-          },
-        })
+        gsap.fromTo(contentRef.current,
+          { y: 50, opacity: 0 },
+          {
+            y: 0,
+            opacity: 1,
+            duration: 0.8,
+            ease: "power3.out",
+            scrollTrigger: {
+              trigger: contentRef.current,
+              start: "top 85%",
+              toggleActions: "play none none reverse",
+            },
+          }
+        )
       }
 
       if (stepsRef.current) {
         const cards = stepsRef.current.querySelectorAll(":scope > div")
-        gsap.from(cards, {
-          y: 40,
-          opacity: 0,
-          duration: 0.8,
-          stagger: 0.1,
-          ease: "power3.out",
-          scrollTrigger: {
-            trigger: stepsRef.current,
-            start: "top 90%",
-            toggleActions: "play none none reverse",
-          },
-        })
+        gsap.fromTo(cards,
+          { y: 40, opacity: 0 },
+          {
+            y: 0,
+            opacity: 1,
+            duration: 0.8,
+            stagger: 0.1,
+            ease: "power3.out",
+            scrollTrigger: {
+              trigger: stepsRef.current,
+              start: "top 90%",
+              toggleActions: "play none none reverse",
+            },
+          }
+        )
       }
     }, sectionRef)
 

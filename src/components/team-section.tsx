@@ -74,45 +74,54 @@ export function TeamSection() {
 
     const ctx = gsap.context(() => {
       if (headerRef.current) {
-        gsap.from(headerRef.current, {
-          y: 40,
-          opacity: 0,
-          duration: 0.8,
-          ease: "power3.out",
-          scrollTrigger: {
-            trigger: headerRef.current,
-            start: "top 85%",
-            toggleActions: "play none none reverse",
-          },
-        })
+        gsap.fromTo(headerRef.current,
+          { y: 40, opacity: 0 },
+          {
+            y: 0,
+            opacity: 1,
+            duration: 0.8,
+            ease: "power3.out",
+            scrollTrigger: {
+              trigger: headerRef.current,
+              start: "top 85%",
+              toggleActions: "play none none reverse",
+            },
+          }
+        )
       }
 
       if (carouselRef.current) {
-        gsap.from(carouselRef.current, {
-          y: 50,
-          opacity: 0,
-          duration: 0.8,
-          ease: "power3.out",
-          scrollTrigger: {
-            trigger: carouselRef.current,
-            start: "top 85%",
-            toggleActions: "play none none reverse",
-          },
-        })
+        gsap.fromTo(carouselRef.current,
+          { y: 50, opacity: 0 },
+          {
+            y: 0,
+            opacity: 1,
+            duration: 0.8,
+            ease: "power3.out",
+            scrollTrigger: {
+              trigger: carouselRef.current,
+              start: "top 85%",
+              toggleActions: "play none none reverse",
+            },
+          }
+        )
       }
 
       if (detailsRef.current) {
-        gsap.from(detailsRef.current, {
-          y: 40,
-          opacity: 0,
-          duration: 0.8,
-          ease: "power3.out",
-          scrollTrigger: {
-            trigger: detailsRef.current,
-            start: "top 90%",
-            toggleActions: "play none none reverse",
-          },
-        })
+        gsap.fromTo(detailsRef.current,
+          { y: 40, opacity: 0 },
+          {
+            y: 0,
+            opacity: 1,
+            duration: 0.8,
+            ease: "power3.out",
+            scrollTrigger: {
+              trigger: detailsRef.current,
+              start: "top 90%",
+              toggleActions: "play none none reverse",
+            },
+          }
+        )
       }
     }, sectionRef)
 
