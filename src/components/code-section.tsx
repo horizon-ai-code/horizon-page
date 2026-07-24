@@ -55,7 +55,7 @@ export function CodeSection() {
               </div>
             </div>
             <div className="font-mono text-[9px] text-[#548af7]/90 bg-[#548af7]/10 px-2 py-0.5 rounded border border-[#548af7]/20 uppercase tracking-wider font-semibold">
-              # 20 lines
+              # 17 lines
             </div>
           </div>
 
