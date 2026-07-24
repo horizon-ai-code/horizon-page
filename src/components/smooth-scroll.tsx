@@ -39,7 +39,7 @@ export function SmoothScroll({ children }: { children: React.ReactNode }) {
 
     gsap.ticker.lagSmoothing(0)
 
-    // Intercept all hash/anchor link clicks for smooth routing via Lenis
+    // Intercept all hash/anchor link clicks for smooth routing
     const handleAnchorClick = (e: MouseEvent) => {
       const target = e.target as HTMLElement
       const link = target.closest("a")
@@ -50,7 +50,7 @@ export function SmoothScroll({ children }: { children: React.ReactNode }) {
           const targetElement = document.getElementById(href.substring(1))
           if (targetElement) {
             e.preventDefault()
-            lenis.scrollTo(targetElement, { duration: 1.2 })
+            targetElement.scrollIntoView({ behavior: "smooth" })
           }
         }
       }
