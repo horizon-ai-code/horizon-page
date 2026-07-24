@@ -242,9 +242,6 @@ export function FooterSection() {
           <p className="font-mono text-[10px] text-muted-foreground uppercase tracking-widest">
             © 2026 Horizon AI.
           </p>
-          <span className="font-mono text-[9px] text-muted-foreground/60 bg-card border border-border/40 px-2 py-0.5 rounded w-fit">
-            v{packageInfo.version} • telemetry active
-          </span>
         </div>
       </div>
     </section>
