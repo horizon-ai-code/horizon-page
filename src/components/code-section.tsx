@@ -62,14 +62,14 @@ export function CodeSection() {
           {/* Editor Body */}
           <div className="p-6 font-mono text-xs md:text-sm flex-1 relative flex">
             {/* Line Numbers */}
-            <div className="text-muted-foreground/35 select-none text-right pr-6 border-r border-border/10 flex flex-col justify-start space-y-1.5 w-10">
-              {Array.from({ length: 18 }).map((_, i) => (
+            <div className="text-muted-foreground/35 select-none text-right pr-6 border-r border-border/10 flex flex-col justify-start w-10 leading-6">
+              {Array.from({ length: 17 }).map((_, i) => (
                 <span key={i}>{i + 1}</span>
               ))}
             </div>
             
             {/* Syntax Highlighted Code */}
-            <div className="pl-6 flex-1 text-[#A9B7C6] whitespace-pre overflow-x-auto leading-relaxed select-text space-y-1.5">
+            <div className="pl-6 flex-1 text-[#A9B7C6] whitespace-pre overflow-x-auto leading-6 select-text">
               <div>
                 <span className="text-[#CC7832]">public class</span> <span className="text-[#A9B7C6]">OrderTracker</span> &#123;
               </div>
@@ -79,7 +79,6 @@ export function CodeSection() {
               <div className="pl-8">
                 <span className="text-[#569CD6]">String</span> msg = <span className="text-[#6A8759]">""</span>;
               </div>
-              <div className="pl-8"></div>
               <div className="pl-8">
                 <span className="text-[#CC7832]">if</span> (s == <span className="text-[#6897BB]">0</span>) &#123;
               </div>
@@ -169,18 +168,18 @@ export function CodeSection() {
             {activeTabRight === "code" ? (
               <>
                 {/* Line Numbers */}
-                <div className="text-muted-foreground/35 select-none text-right pr-6 border-r border-border/10 flex flex-col justify-start space-y-1.5 w-10">
+                <div className="text-muted-foreground/35 select-none text-right pr-6 border-r border-border/10 flex flex-col justify-start w-10 leading-6">
                   {Array.from({ length: 13 }).map((_, i) => (
                     <span key={i}>{i + 1}</span>
                   ))}
                 </div>
 
                 {/* Syntax Highlighted Code */}
-                <div className="pl-6 flex-1 text-[#A9B7C6] whitespace-pre overflow-x-auto leading-relaxed select-text space-y-1.5">
+                <div className="pl-6 flex-1 text-[#A9B7C6] whitespace-pre overflow-x-auto leading-6 select-text">
                   <div>
                     <span className="text-[#CC7832]">public class</span> <span className="text-[#A9B7C6]">OrderTracker</span> &#123;
                   </div>
-                  <div></div>
+                  <div>&nbsp;</div>
                   <div className="pl-4">
                     <span className="text-[#CC7832]">private static final</span> <span className="text-[#569CD6]">String</span>[] messages = &#123;
                   </div>
@@ -199,7 +198,7 @@ export function CodeSection() {
                   <div className="pl-4">
                     &#125;;
                   </div>
-                  <div></div>
+                  <div>&nbsp;</div>
                   <div className="pl-4">
                     <span className="text-[#CC7832]">public</span> <span className="text-[#569CD6]">String</span> <span className="text-[#FFC66D]">getStatusMessage</span>(<span className="text-[#569CD6]">int</span> s) &#123;
                   </div>
