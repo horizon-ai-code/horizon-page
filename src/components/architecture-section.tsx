@@ -27,7 +27,7 @@ export function ArchitectureSection() {
     {
       number: "02",
       titleParts: [
-        { text: "DETERMINISTIC ", highlight: true },
+        { text: "PROBABILISTIC ", highlight: true },
         { text: "OUTPUTS", highlight: false },
       ],
       description: "Grammar-constrained generation (GBNF) forces structural JSON alignment, backed by deep syntactic and semantic validation.",
