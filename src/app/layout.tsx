@@ -24,7 +24,11 @@ export const metadata: Metadata = {
     "AI-driven Java refactoring pipeline powered by local multi-agent LLM orchestration.",
   generator: "v0.app",
   icons: {
-    icon: "/logo-dark.png",
+    icon: [
+      { url: "/logo-dark.png", type: "image/png" },
+      { url: "/icon.png", type: "image/png" },
+    ],
+    shortcut: "/logo-dark.png",
     apple: "/logo-dark.png",
   },
 }
