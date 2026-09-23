@@ -1,0 +1,4071 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Scene 1: User Input Animation</title>
+    <style>
+        :root {
+            --bg-color: #0f111a;
+            --editor-bg: #1e1e2e;
+            --text-color: #cdd6f4;
+            --keyword-color: #cba6f7;
+            --class-color: #f9e2af;
+            --string-color: #a6e3a1;
+            --method-color: #89b4fa;
+            --border-color: rgba(255, 255, 255, 0.1);
+            --glow-color: rgba(137, 180, 250, 0.3);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            overflow: hidden; /* Prevent scrolling during animation */
+        }
+
+        #container {
+            width: 80%;
+            max-width: 1000px;
+            display: flex;
+            flex-direction: column;
+            gap: 24px;
+            opacity: 0; /* Initial state for fade-in */
+            transform: scale(0.95); /* Initial state for scale-in */
+            transition: opacity 1.5s ease-out, transform 1.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        #container.visible {
+            opacity: 1;
+            transform: scale(1);
+        }
+
+        .window {
+            background-color: var(--editor-bg);
+            border-radius: 12px;
+            border: 1px solid var(--border-color);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5), 0 0 20px var(--glow-color);
+            overflow: hidden;
+            position: relative;
+        }
+
+        .window-header {
+            height: 36px;
+            background-color: rgba(0, 0, 0, 0.2);
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            align-items: center;
+            padding: 0 16px;
+        }
+
+        .window-controls {
+            display: flex;
+            gap: 8px;
+        }
+
+        .control-dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+        }
+
+        .dot-red { background-color: #ff5f56; }
+        .dot-yellow { background-color: #ffbd2e; }
+        .dot-green { background-color: #27c93f; }
+
+        .window-title {
+            margin-left: 16px;
+            font-size: 13px;
+            color: rgba(255, 255, 255, 0.5);
+            font-family: monospace;
+        }
+
+        #editor-area {
+            height: 400px;
+            padding: 24px;
+            font-family: 'JetBrains Mono', 'Fira Code', 'Courier New', monospace;
+            font-size: 16px;
+            line-height: 1.6;
+            overflow-y: auto;
+            position: relative;
+        }
+
+        /* Scrollbar styling for editor */
+        #editor-area::-webkit-scrollbar {
+            width: 10px;
+        }
+        #editor-area::-webkit-scrollbar-track {
+            background: rgba(0,0,0,0.1);
+        }
+        #editor-area::-webkit-scrollbar-thumb {
+            background: rgba(255,255,255,0.2);
+            border-radius: 5px;
+        }
+
+        #code-content {
+            white-space: pre-wrap;
+            tab-size: 4;
+        }
+
+        .kw { color: var(--keyword-color); font-weight: bold; } /* Keyword */
+        .cl { color: var(--class-color); } /* Class */
+        .str { color: var(--string-color); } /* String */
+        .mth { color: var(--method-color); } /* Method */
+        .sym { color: #89dceb; } /* Symbol/Punctuation */
+
+        #request-area {
+            padding: 20px;
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        #request-input-container {
+            flex-grow: 1;
+            background-color: rgba(0, 0, 0, 0.2);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 16px;
+            min-height: 60px;
+            display: flex;
+            align-items: center;
+        }
+
+        #request-text {
+            font-size: 16px;
+            color: #bac2de;
+            white-space: pre-wrap;
+        }
+
+        .submit-btn {
+            background-color: var(--keyword-color);
+            color: #11111b;
+            border: none;
+            border-radius: 8px;
+            padding: 12px 24px;
+            font-weight: bold;
+            font-size: 14px;
+            cursor: pointer;
+            opacity: 0.5;
+            transition: opacity 0.3s;
+        }
+
+        .blinking-cursor {
+            display: inline-block;
+            width: 10px;
+            height: 20px;
+            background-color: var(--text-color);
+            vertical-align: middle;
+            animation: blink 1s step-end infinite;
+        }
+
+        @keyframes blink {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0; }
+        }
+
+        #mouse-cursor {
+            position: absolute;
+            width: 24px;
+            height: 24px;
+            background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="white" stroke="black" stroke-width="1.5"><path d="M3 3l7 19 3-8 8-3z"/></svg>');
+            pointer-events: none; /* Let clicks pass through if needed */
+            z-index: 1000;
+            top: 100%; /* Start off-screen */
+            left: 50%;
+            transition: top 1s ease-in-out, left 1s ease-in-out;
+            opacity: 0;
+            filter: drop-shadow(2px 4px 4px rgba(0,0,0,0.5));
+        }
+
+        #mouse-cursor.active {
+            opacity: 1;
+        }
+
+        .nav-btn {
+            position: fixed;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: rgba(30, 30, 46, 0.5);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: rgba(255, 255, 255, 0.5);
+            font-size: 24px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+            z-index: 2000;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+        }
+
+        .nav-btn:hover {
+            background: rgba(40, 40, 60, 0.8);
+            color: rgba(255, 255, 255, 0.9);
+            border-color: rgba(255, 255, 255, 0.3);
+            box-shadow: 0 0 15px rgba(137, 180, 250, 0.4);
+            transform: translateY(-50%) scale(1.1);
+        }
+
+        #prev-btn {
+            left: 20px;
+        }
+
+        #next-btn {
+            right: 20px;
+        }
+
+        /* --- Scene 2 Specific Styles --- */
+        
+        #scene2-container {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 1s ease-out;
+            z-index: 10;
+        }
+
+        #scene2-container.visible {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        /* The data packet that forms from the code */
+        .data-packet {
+            width: 80px;
+            height: 60px;
+            background: linear-gradient(135deg, var(--keyword-color), var(--method-color));
+            border-radius: 8px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: #11111b;
+            font-weight: bold;
+            font-size: 12px;
+            box-shadow: 0 0 20px var(--glow-color);
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%) scale(0);
+            opacity: 0;
+            z-index: 100;
+        }
+
+        /* SVG Architecture Canvas */
+        #arch-canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 5;
+        }
+
+        .flow-line {
+            stroke: var(--border-color);
+            stroke-width: 2;
+            stroke-dasharray: 5, 5;
+            fill: none;
+        }
+
+        .flow-line.active {
+            stroke: var(--keyword-color);
+            animation: dash 20s linear infinite;
+        }
+
+        @keyframes dash {
+            to {
+                stroke-dashoffset: -1000;
+            }
+        }
+
+        /* Architecture Nodes */
+        .arch-node {
+            background-color: var(--editor-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            position: absolute;
+            opacity: 0;
+            transform: scale(0.9);
+            transition: all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            text-align: center;
+            z-index: 10;
+        }
+
+        .arch-node.visible {
+            opacity: 1;
+            transform: scale(1);
+        }
+
+        .node-title {
+            font-size: 14px;
+            color: var(--text-color);
+            font-weight: bold;
+            margin-bottom: 8px;
+            letter-spacing: 1px;
+        }
+
+        .node-icon {
+            font-size: 32px;
+            margin-bottom: 12px;
+        }
+
+        /* Specific Nodes positioning */
+        #node-frontend {
+            top: 15%;
+            left: 50%;
+            transform: translate(-50%, 0) scale(0.9);
+            width: 200px;
+        }
+        #node-frontend.visible {
+            transform: translate(-50%, 0) scale(1);
+        }
+
+        #node-ws {
+            top: 40%;
+            left: 50%;
+            transform: translate(-50%, 0) scale(0.9);
+            width: 180px;
+            background-color: rgba(30, 30, 46, 0.8);
+            border-color: var(--method-color);
+            box-shadow: 0 0 15px rgba(137, 180, 250, 0.2);
+        }
+        #node-ws.visible {
+            transform: translate(-50%, 0) scale(1);
+        }
+
+        #node-backend {
+            top: 65%;
+            left: 30%;
+            transform: translate(-50%, 0) scale(0.9);
+            width: 220px;
+            border-color: var(--keyword-color);
+        }
+        #node-backend.visible {
+            transform: translate(-50%, 0) scale(1);
+        }
+
+        #node-session {
+            top: 65%;
+            left: 70%;
+            transform: translate(-50%, 0) scale(0.9);
+            width: 200px;
+            background-color: rgba(203, 166, 247, 0.1);
+            border-color: var(--keyword-color);
+        }
+        #node-session.visible {
+            transform: translate(-50%, 0) scale(1);
+        }
+
+        .session-details {
+            font-family: monospace;
+            font-size: 12px;
+            color: var(--string-color);
+            margin-top: 10px;
+            background: rgba(0,0,0,0.3);
+            padding: 8px;
+            border-radius: 4px;
+            opacity: 0;
+            transition: opacity 0.5s ease;
+        }
+
+        .session-details.visible {
+            opacity: 1;
+        }
+
+        /* Next Phase Indicator */
+        #next-phase-indicator {
+            position: absolute;
+            bottom: 10%;
+            left: 50%;
+            transform: translate(-50%, 20px);
+            opacity: 0;
+            text-align: center;
+            transition: all 1s ease;
+        }
+        
+        #next-phase-indicator.visible {
+            opacity: 1;
+            transform: translate(-50%, 0);
+        }
+
+        .phase-text {
+            color: var(--class-color);
+            font-weight: bold;
+            font-size: 16px;
+            letter-spacing: 2px;
+            margin-top: 10px;
+        }
+        
+        .arrow-down {
+            font-size: 24px;
+            color: var(--class-color);
+            animation: bounce 2s infinite;
+        }
+
+        @keyframes bounce {
+            0%, 20%, 50%, 80%, 100% { transform: translateY(0); }
+            40% { transform: translateY(-10px); }
+            60% { transform: translateY(-5px); }
+        }
+
+        /* Code particles effect container */
+        #particle-container {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 90;
+        }
+
+        /* --- Scene 3 Specific Styles --- */
+        
+        #scene3-container {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 1s ease-out;
+            z-index: 20;
+        }
+
+        #scene3-container.visible {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .chamber-wrapper {
+            position: relative;
+            width: 1000px;
+            height: 600px;
+            opacity: 0;
+            transform: scale(0.95);
+            transition: all 1s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        .chamber-wrapper.visible {
+            opacity: 1;
+            transform: scale(1);
+        }
+
+        /* SVG Connecting Beams */
+        #chamber-svg-layer {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 1;
+        }
+
+        .analysis-beam {
+            fill: none;
+            stroke: var(--border-color);
+            stroke-width: 2;
+            stroke-dasharray: 10, 10;
+            opacity: 0.3;
+            transition: all 0.5s ease;
+        }
+
+        .analysis-beam.active {
+            stroke: var(--keyword-color);
+            opacity: 0.8;
+            animation: beamFlow 1s linear infinite;
+        }
+
+        .analysis-beam.return {
+            stroke: var(--string-color);
+            opacity: 1;
+            animation: beamFlowReverse 0.8s linear infinite;
+        }
+
+        @keyframes beamFlow { to { stroke-dashoffset: -20; } }
+        @keyframes beamFlowReverse { to { stroke-dashoffset: 20; } }
+
+        /* Central Code Core */
+        .chamber-core {
+            position: absolute;
+            top: 45%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 320px;
+            background-color: var(--editor-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.6), 0 0 20px rgba(137, 180, 250, 0.1);
+            z-index: 10;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 13px;
+            line-height: 1.6;
+            color: rgba(255,255,255,0.6);
+            transition: all 0.8s ease;
+            overflow: hidden;
+        }
+
+        .chamber-core.scanning {
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.6), 0 0 30px rgba(137, 180, 250, 0.3);
+            border-color: var(--method-color);
+        }
+
+        /* Scanning Laser */
+        .core-laser {
+            position: absolute;
+            left: 0;
+            width: 100%;
+            height: 2px;
+            background-color: var(--method-color);
+            box-shadow: 0 0 15px 5px rgba(137, 180, 250, 0.5);
+            top: 10%;
+            opacity: 0;
+            z-index: 5;
+        }
+
+        .code-row { transition: all 0.2s ease; padding: 0 5px; border-radius: 4px; }
+        .code-row.scanned { color: var(--text-color); text-shadow: 0 0 5px rgba(255,255,255,0.2); }
+        .code-row.target { color: var(--class-color); background: rgba(249, 226, 175, 0.15); }
+
+        /* Peripheral Modules */
+        .chamber-module {
+            position: absolute;
+            width: 180px;
+            height: 180px;
+            background: rgba(30, 30, 46, 0.8);
+            backdrop-filter: blur(10px);
+            border: 1px solid var(--border-color);
+            border-radius: 50%;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 5;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.4);
+            transition: all 0.5s ease;
+            transform: translate(-50%, -50%) scale(0.9);
+            opacity: 0;
+        }
+
+        .chamber-module.visible { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+        .chamber-module.active { border-color: var(--keyword-color); box-shadow: 0 0 30px rgba(203, 166, 247, 0.2); }
+        .chamber-module.complete { border-color: var(--string-color); box-shadow: 0 0 30px rgba(166, 227, 161, 0.2); }
+        
+        .chamber-module.mod-syntax { top: 45%; left: 15%; }
+        .chamber-module.mod-semantic { top: 45%; left: 85%; }
+        .chamber-module.mod-complexity { top: 85%; left: 50%; width: 220px; height: 120px; border-radius: 16px; } /* Oval for bottom */
+
+        .module-label {
+            position: absolute;
+            top: -25px;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 11px;
+            color: rgba(255,255,255,0.5);
+            letter-spacing: 2px;
+            text-transform: uppercase;
+        }
+        .mod-complexity .module-label { top: -20px; }
+
+        /* Syntax Module Visuals */
+        .syn-node { fill: var(--editor-bg); stroke: var(--border-color); stroke-width: 2; transition: all 0.3s ease; }
+        .syn-edge { stroke: var(--border-color); stroke-width: 2; transition: all 0.3s ease; }
+        
+        .chamber-module.active .syn-node.a1 { fill: var(--string-color); stroke: var(--string-color); filter: drop-shadow(0 0 5px var(--string-color)); }
+        .chamber-module.active .syn-node.a2 { fill: var(--keyword-color); stroke: var(--keyword-color); filter: drop-shadow(0 0 5px var(--keyword-color)); transition-delay: 0.3s; }
+        .chamber-module.active .syn-node.a3 { fill: var(--method-color); stroke: var(--method-color); filter: drop-shadow(0 0 5px var(--method-color)); transition-delay: 0.6s; }
+        .chamber-module.active .syn-edge { stroke: var(--string-color); opacity: 0.5; }
+
+        /* Semantic Module Visuals */
+        .sem-target-ring { fill: none; stroke: var(--border-color); stroke-width: 1; stroke-dasharray: 4 4; animation: spin 10s linear infinite; }
+        .sem-icon { fill: rgba(255,255,255,0.2); transition: all 0.5s ease; }
+        .sem-pulse { fill: none; stroke: var(--class-color); stroke-width: 2; opacity: 0; transform-origin: center; }
+
+        .chamber-module.active .sem-target-ring { stroke: var(--class-color); stroke-width: 2; }
+        .chamber-module.active .sem-icon { fill: var(--class-color); filter: drop-shadow(0 0 8px var(--class-color)); transform: scale(1.1); }
+        .chamber-module.active .sem-pulse { animation: radarPulse 1.5s ease-out infinite; }
+        
+        @keyframes radarPulse {
+            0% { transform: scale(0.5); opacity: 1; }
+            100% { transform: scale(2); opacity: 0; }
+        }
+
+        /* Complexity Module Visuals */
+        .comp-track { fill: none; stroke: rgba(0,0,0,0.5); stroke-width: 8; stroke-linecap: round; }
+        .comp-fill { fill: none; stroke: var(--class-color); stroke-width: 8; stroke-linecap: round; stroke-dasharray: 200; stroke-dashoffset: 200; transition: stroke-dashoffset 1.5s cubic-bezier(0.25, 1, 0.5, 1); }
+        .comp-text { fill: var(--text-color); font-family: monospace; font-size: 20px; font-weight: bold; opacity: 0; transition: opacity 0.5s; text-anchor: middle; dominant-baseline: middle;}
+
+        .chamber-module.active .comp-fill { stroke-dashoffset: 70; } /* Animates to ~65% */
+        .chamber-module.active .comp-text { opacity: 1; }
+
+        /* The Consolidated Baseline Artifact */
+        .baseline-artifact-s3 {
+            position: absolute;
+            top: 45%;
+            left: 50%;
+            transform: translate(-50%, -50%) scale(0);
+            width: 240px;
+            background: rgba(30, 30, 46, 0.95);
+            border: 2px solid var(--string-color);
+            border-radius: 16px;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            box-shadow: 0 0 40px rgba(166, 227, 161, 0.3);
+            backdrop-filter: blur(10px);
+            z-index: 20;
+            opacity: 0;
+            transition: all 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        .baseline-artifact-s3.visible {
+            opacity: 1;
+            transform: translate(-50%, -50%) scale(1);
+        }
+
+        .art-title {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 14px;
+            color: var(--string-color);
+            font-weight: bold;
+            margin-bottom: 15px;
+            letter-spacing: 1px;
+        }
+
+        .art-indicators { display: flex; gap: 15px; }
+        
+        .art-dot-group { display: flex; flex-direction: column; align-items: center; gap: 6px; }
+        .art-dot { width: 14px; height: 14px; border-radius: 50%; background: var(--editor-bg); border: 2px solid var(--border-color); }
+        .art-label { font-family: monospace; font-size: 9px; color: rgba(255,255,255,0.5); text-transform: uppercase; }
+
+        .art-dot.syn-pass { background: var(--string-color); border-color: var(--string-color); box-shadow: 0 0 10px var(--string-color); }
+        .art-dot.sem-pass { background: var(--string-color); border-color: var(--string-color); box-shadow: 0 0 10px var(--string-color); }
+        .art-dot.comp-pass { background: var(--class-color); border-color: var(--class-color); box-shadow: 0 0 10px var(--class-color); }
+
+        #next-phase-indicator-2 {
+            position: absolute;
+            bottom: 5%;
+            left: 50%;
+            transform: translate(-50%, 20px);
+            opacity: 0;
+            text-align: center;
+            transition: all 1s ease;
+            z-index: 10;
+        }
+
+        #next-phase-indicator-2.visible {
+            opacity: 1;
+            transform: translate(-50%, 0);
+        }
+
+        /* --- Scene 4 Specific Styles --- */
+        #scene4-container {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 1s ease-out;
+            z-index: 25;
+            overflow: hidden;
+        }
+
+        #scene4-container.visible {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .model-badge {
+            position: absolute;
+            top: -80px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(30, 30, 46, 0.85);
+            border: 1px solid var(--border-color);
+            border-radius: 50px;
+            padding: 8px 24px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            backdrop-filter: blur(10px);
+            z-index: 100;
+            opacity: 0;
+            transition: all 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        .model-badge.visible {
+            top: 30px;
+            opacity: 1;
+        }
+
+        /* SLM Badge Variants & Animations */
+        .badge-planner { border-color: var(--keyword-color); animation: pulsePlanner 3s infinite alternate ease-in-out; }
+        .badge-planner .badge-title, .badge-planner .badge-icon { color: var(--keyword-color); }
+
+        .badge-generator { border-color: var(--string-color); animation: pulseGenerator 3s infinite alternate ease-in-out; }
+        .badge-generator .badge-title, .badge-generator .badge-icon { color: var(--string-color); }
+
+        .badge-judge { border-color: var(--class-color); animation: pulseJudge 3s infinite alternate ease-in-out; }
+        .badge-judge .badge-title, .badge-judge .badge-icon { color: var(--class-color); }
+
+        @keyframes pulsePlanner {
+            from { box-shadow: 0 0 10px rgba(203, 166, 247, 0.15); }
+            to { box-shadow: 0 0 25px rgba(203, 166, 247, 0.4); }
+        }
+        @keyframes pulseGenerator {
+            from { box-shadow: 0 0 10px rgba(166, 227, 161, 0.15); }
+            to { box-shadow: 0 0 25px rgba(166, 227, 161, 0.4); }
+        }
+        @keyframes pulseJudge {
+            from { box-shadow: 0 0 10px rgba(249, 226, 175, 0.15); }
+            to { box-shadow: 0 0 25px rgba(249, 226, 175, 0.4); }
+        }
+
+        .badge-icon { font-size: 24px; filter: drop-shadow(0 0 8px currentColor); }
+        .badge-details { display: flex; flex-direction: column; }
+        .badge-title { font-family: 'JetBrains Mono', monospace; font-size: 10px; letter-spacing: 1px; font-weight: bold; }
+        .badge-model { font-family: 'Inter', sans-serif; font-size: 14px; color: var(--text-color); font-weight: bold; }
+        .badge-type { font-family: monospace; font-size: 9px; color: rgba(255,255,255,0.5); text-transform: uppercase; }
+
+        /* Planner Core (Rings) */
+        #planner-core {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 500px;
+            height: 500px;
+            opacity: 0;
+            transition: opacity 1s;
+            z-index: 1;
+        }
+
+        .core-ring {
+            fill: none;
+            stroke-width: 2;
+            transform-origin: center;
+        }
+        
+        .core-ring-outer {
+            stroke: rgba(137, 180, 250, 0.2);
+            stroke-dasharray: 20 30;
+            animation: spin 20s linear infinite;
+        }
+        
+        .core-ring-middle {
+            stroke: rgba(249, 226, 175, 0.2);
+            stroke-dasharray: 10 15;
+            animation: spin-reverse 15s linear infinite;
+        }
+        
+        .core-ring-inner {
+            stroke: rgba(166, 227, 161, 0.3);
+            stroke-dasharray: 5 10;
+            animation: spin 10s linear infinite;
+        }
+
+        /* Intent Packet (replaces the text-heavy classification) */
+        #intent-packet {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%) scale(0);
+            width: 80px;
+            height: 80px;
+            background: radial-gradient(circle, rgba(166, 227, 161, 0.3) 0%, transparent 70%);
+            border: 2px solid var(--string-color);
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: var(--string-color);
+            font-size: 24px;
+            box-shadow: 0 0 30px var(--string-color);
+            opacity: 0;
+            z-index: 10;
+            transition: all 1s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        /* Structural Map AST */
+        #ast-container {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%) scale(0.5);
+            width: 500px;
+            height: 350px;
+            opacity: 0;
+            z-index: 10;
+            transition: all 1s ease-in-out;
+            background: rgba(30, 30, 46, 0.8);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            box-shadow: 0 0 40px rgba(0,0,0,0.6);
+            backdrop-filter: blur(5px);
+        }
+
+        .ast-rect {
+            fill: var(--editor-bg);
+            stroke: rgba(255, 255, 255, 0.3);
+            stroke-width: 2;
+            transition: all 0.5s ease;
+        }
+
+        .ast-text {
+            fill: var(--text-color);
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 12px;
+            text-anchor: middle;
+            transition: all 0.5s ease;
+        }
+
+        .ast-edge {
+            stroke: rgba(255, 255, 255, 0.2);
+            stroke-width: 2;
+            transition: all 0.5s ease;
+            fill: none;
+        }
+
+        /* Highlight states for AST targeting */
+        .ast-node-group.dim .ast-rect { fill: rgba(0,0,0,0.5); stroke: rgba(255,255,255,0.1); }
+        .ast-node-group.dim .ast-text { fill: rgba(255,255,255,0.2); }
+        .ast-edge.dim { stroke: rgba(255,255,255,0.05); }
+
+        .ast-node-group.target .ast-rect {
+            fill: rgba(255, 95, 86, 0.15);
+            stroke: #ff5f56;
+            filter: drop-shadow(0 0 15px #ff5f56);
+        }
+
+        .ast-node-group.target .ast-text {
+            fill: #ff5f56;
+            font-weight: bold;
+        }
+        
+        .ast-edge.target {
+            stroke: #ff5f56;
+            stroke-width: 3;
+            stroke-dasharray: 5 5;
+            animation: flowDash 1s linear infinite;
+        }
+
+        /* Synthesis Sphere */
+        #synthesis-sphere {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%) scale(0);
+            width: 150px;
+            height: 150px;
+            border-radius: 50%;
+            background: radial-gradient(circle, rgba(203, 166, 247, 0.8) 0%, transparent 70%);
+            box-shadow: 0 0 60px var(--keyword-color);
+            opacity: 0;
+            z-index: 20;
+            transition: all 1s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        /* Blueprint Plan Generation */
+        #blueprint-artifact {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%) scale(0);
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            opacity: 0;
+            z-index: 30;
+            transition: all 1s ease-in-out;
+        }
+
+        .bp-card {
+            background: rgba(30, 30, 46, 0.95);
+            border: 1px solid var(--border-color);
+            border-top: 3px solid var(--class-color);
+            border-radius: 12px;
+            padding: 15px;
+            width: 130px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            opacity: 0;
+            transform: translateY(20px);
+            transition: all 0.5s ease;
+        }
+
+        .bp-card.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .bp-icon-large {
+            font-size: 24px;
+            margin-bottom: 10px;
+            color: var(--class-color);
+        }
+
+        .bp-card-title {
+            font-family: monospace;
+            font-size: 11px;
+            color: var(--text-color);
+            font-weight: bold;
+            text-transform: uppercase;
+        }
+
+        .bp-arrow {
+            color: var(--class-color);
+            font-size: 24px;
+            opacity: 0;
+            transform: translateX(-10px);
+            transition: all 0.3s ease;
+        }
+        
+        .bp-arrow.visible {
+            opacity: 1;
+            transform: translateX(0);
+        }
+
+        /* Execution Package (Exit Transition) */
+        .execution-package {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%) scale(0);
+            width: 200px;
+            height: 60px;
+            background: linear-gradient(90deg, var(--keyword-color), var(--class-color));
+            border-radius: 30px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: #11111b;
+            font-family: monospace;
+            font-weight: bold;
+            font-size: 14px;
+            box-shadow: 0 0 40px rgba(203, 166, 247, 0.6);
+            opacity: 0;
+            z-index: 40;
+            transition: all 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        .intent-word {
+            position: absolute;
+            font-family: monospace;
+            font-size: 14px;
+            color: var(--string-color);
+            opacity: 0;
+            transition: all 1s ease-in-out;
+            z-index: 15;
+            font-weight: bold;
+            text-shadow: 0 0 5px rgba(166, 227, 161, 0.8);
+        }
+
+        /* Particles */
+        .planner-particle {
+            position: absolute;
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            opacity: 1;
+            transition: all 0.6s cubic-bezier(0.25, 1, 0.5, 1);
+            z-index: 5;
+            pointer-events: none;
+        }
+
+        /* Intent Cube (3D) */
+        #intent-cube-container {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%) scale(0);
+            perspective: 800px;
+            z-index: 10;
+            opacity: 0;
+            transition: all 1s ease-in-out;
+        }
+
+        .intent-cube {
+            width: 80px;
+            height: 80px;
+            transform-style: preserve-3d;
+            animation: rotateCube 8s infinite linear;
+        }
+
+        .intent-cube .face {
+            position: absolute;
+            width: 80px;
+            height: 80px;
+            background: rgba(137, 180, 250, 0.15);
+            border: 2px solid var(--method-color);
+            box-shadow: inset 0 0 15px rgba(137, 180, 250, 0.5), 0 0 10px rgba(137, 180, 250, 0.3);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 24px;
+            color: rgba(255,255,255,0.2);
+        }
+
+        .intent-cube .front  { transform: translateZ(40px); }
+        .intent-cube .back   { transform: rotateY(180deg) translateZ(40px); }
+        .intent-cube .right  { transform: rotateY(90deg) translateZ(40px); }
+        .intent-cube .left   { transform: rotateY(-90deg) translateZ(40px); }
+        .intent-cube .top    { transform: rotateX(90deg) translateZ(40px); }
+        .intent-cube .bottom { transform: rotateX(-90deg) translateZ(40px); }
+        @keyframes rotateCube {
+            0% { transform: rotateX(0) rotateY(0) rotateZ(0); }
+            100% { transform: rotateX(360deg) rotateY(360deg) rotateZ(360deg); }
+        }
+
+        /* Note: #ast-container base styles are defined above (Scene 3 section). */
+        /* Scene 4 reuses the same element with JS-applied transforms. */
+
+        /* Highlight states for AST */
+        .ast-node-group.highlight .ast-rect {
+            fill: rgba(203, 166, 247, 0.2);
+            stroke: var(--keyword-color);
+            filter: drop-shadow(0 0 10px var(--keyword-color));
+        }
+        
+        .ast-node-group.highlight .ast-text {
+            fill: var(--keyword-color);
+            font-weight: bold;
+        }
+
+        .ast-node-group.target .ast-rect {
+            fill: rgba(249, 226, 175, 0.15);
+            stroke: var(--class-color);
+            filter: drop-shadow(0 0 15px var(--class-color));
+        }
+
+        .ast-node-group.target .ast-text {
+            fill: var(--class-color);
+            font-weight: bold;
+        }
+
+        .ast-edge.highlight {
+            stroke: var(--keyword-color);
+            stroke-width: 3;
+        }
+        
+        .ast-edge.target {
+            stroke: var(--class-color);
+            stroke-width: 3;
+            stroke-dasharray: 5 5;
+            animation: flowDash 1s linear infinite;
+        }
+
+        @keyframes flowDash {
+            to { stroke-dashoffset: -10; }
+        }
+
+        .ast-node-group.dim { opacity: 0.2; }
+        .ast-edge.dim { opacity: 0.2; }
+
+        .phase-indicator {
+            position: absolute;
+            bottom: 5%;
+            left: 50%;
+            transform: translate(-50%, 20px);
+            opacity: 0;
+            text-align: center;
+            transition: all 1s ease;
+        }
+
+        .phase-indicator.visible {
+            opacity: 1;
+            transform: translate(-50%, 0);
+        }
+
+        /* --- Scene 5 Specific Styles --- */
+        #scene5-container {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 1s ease-out;
+            z-index: 30;
+        }
+
+        #scene5-container.visible {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .blueprint-mini {
+            position: absolute;
+            top: -100px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 12px;
+            background: rgba(30, 30, 46, 0.95);
+            border: 2px solid var(--class-color);
+            padding: 10px 24px;
+            border-radius: 20px;
+            box-shadow: 0 0 20px rgba(249, 226, 175, 0.4);
+            opacity: 0;
+            z-index: 100;
+            transition: all 1s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        #generator-engine {
+            position: absolute;
+            top: 30%;
+            left: 50%;
+            transform: translate(-50%, -50%) scale(0);
+            width: 140px;
+            height: 140px;
+            opacity: 0;
+            z-index: 50;
+            transition: all 1s ease;
+        }
+
+        .gen-ring {
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            border-radius: 50%;
+            border: 2px dashed var(--string-color);
+        }
+        
+        .gen-ring.outer { animation: spin 10s linear infinite; }
+        .gen-ring.inner { border-color: var(--keyword-color); border-style: dotted; animation: spin-reverse 8s linear infinite; transform: scale(0.75); }
+        
+        .gen-center {
+            position: absolute;
+            top: 50%; left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 50px;
+            filter: drop-shadow(0 0 15px var(--string-color));
+            transition: all 0.5s ease;
+        }
+
+        /* NEW ADDITIONS FOR SCENE 5 ENGINE */
+        .gen-ring.outer {
+            border: 2px solid transparent;
+            border-top-color: var(--string-color);
+            border-bottom-color: var(--string-color);
+            animation: spin 6s linear infinite; 
+            box-shadow: 0 0 30px rgba(166, 227, 161, 0.2);
+        }
+        .gen-ring.middle {
+            border: 2px solid transparent;
+            border-left-color: var(--method-color);
+            border-right-color: var(--method-color);
+            animation: spin-reverse 4s linear infinite;
+            transform: scale(0.85);
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            border-radius: 50%;
+        }
+        .gen-ring.inner {
+            border: 2px dashed var(--keyword-color);
+            animation: spin 8s linear infinite;
+            transform: scale(0.7);
+        }
+
+        .gen-core-hex {
+            position: absolute;
+            top: 50%; left: 50%;
+            transform: translate(-50%, -50%);
+            width: 70px;
+            height: 70px;
+            background: rgba(166, 227, 161, 0.05);
+            border: 2px solid var(--string-color);
+            clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);
+            transition: all 0.5s ease;
+            animation: pulseHex 3s infinite alternate;
+        }
+        
+        .gen-core-hex.active {
+            background: rgba(166, 227, 161, 0.3);
+            box-shadow: 0 0 30px var(--string-color);
+            transform: translate(-50%, -50%) scale(1.1);
+            animation: pulseHexFast 0.5s infinite alternate;
+        }
+
+        @keyframes pulseHex {
+            from { transform: translate(-50%, -50%) scale(1); box-shadow: 0 0 10px rgba(166, 227, 161, 0.2); }
+            to { transform: translate(-50%, -50%) scale(1.05); box-shadow: 0 0 20px rgba(166, 227, 161, 0.4); }
+        }
+        
+        @keyframes pulseHexFast {
+            from { transform: translate(-50%, -50%) scale(1.05); box-shadow: 0 0 20px var(--string-color); }
+            to { transform: translate(-50%, -50%) scale(1.15); box-shadow: 0 0 40px var(--string-color); }
+        }
+
+        #code-compare-container {
+            display: flex;
+            gap: 20px;
+            width: 90%;
+            max-width: 1100px;
+            height: 450px;
+            margin-top: 80px;
+            opacity: 0;
+            transform: translateY(40px);
+            transition: all 1s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            z-index: 10;
+        }
+
+        .code-pane {
+            flex: 1;
+            background-color: var(--editor-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.4);
+        }
+
+        .old-pane { opacity: 0.6; filter: grayscale(0.5); }
+        .new-pane { border-color: rgba(166, 227, 161, 0.5); box-shadow: 0 0 25px rgba(166, 227, 161, 0.15); }
+
+        .pane-header {
+            height: 40px;
+            background: rgba(0,0,0,0.3);
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            align-items: center;
+            padding: 0 16px;
+            font-family: monospace;
+            font-size: 14px;
+            color: rgba(255,255,255,0.7);
+            font-weight: bold;
+        }
+
+        .pane-content {
+            padding: 20px;
+            font-family: 'JetBrains Mono', 'Courier New', monospace;
+            font-size: 14.5px;
+            line-height: 1.6;
+            overflow-y: auto;
+            color: var(--text-color);
+            white-space: pre-wrap;
+            flex-grow: 1;
+        }
+
+        .highlight-red { 
+            background-color: rgba(255, 95, 86, 0.15); 
+            border-radius: 4px; 
+            display: inline-block; 
+            width: 100%; 
+            padding: 2px 0;
+            border-left: 3px solid #ff5f56;
+        }
+        .highlight-green { 
+            background-color: rgba(166, 227, 161, 0.15); 
+            border-radius: 4px; 
+            display: inline-block; 
+            width: 100%; 
+            padding: 2px 0;
+            border-left: 3px solid var(--string-color);
+        }
+
+        /* --- Scene 6 Specific Styles --- */
+        #scene6-container {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 1s ease-out;
+            z-index: 35;
+        }
+
+        #scene6-container.visible {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .val-title {
+            position: absolute;
+            top: 5%;
+            color: rgba(255,255,255,0.4);
+            font-family: 'JetBrains Mono', monospace;
+            letter-spacing: 2px;
+            font-size: 14px;
+        }
+
+        .val-module {
+            position: absolute;
+            background: rgba(30, 30, 46, 0.85);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            width: 120px;
+            height: 140px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            backdrop-filter: blur(10px);
+            transition: all 0.5s ease;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            z-index: 10;
+        }
+
+        .val-mod-title {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 11px;
+            color: var(--text-color);
+            margin-bottom: 10px;
+            text-transform: uppercase;
+        }
+
+        .val-module.processing { border-color: var(--keyword-color); box-shadow: 0 0 20px rgba(203, 166, 247, 0.3); }
+        .val-module.pass { border-color: var(--string-color); box-shadow: 0 0 20px rgba(166, 227, 161, 0.3); }
+        .val-module.fail { border-color: #ff5f56; box-shadow: 0 0 20px rgba(255, 95, 86, 0.4); }
+
+        .syntax-mod { top: 25%; left: 50%; transform: translate(-50%, -50%); }
+        .boundary-mod { top: 50%; left: 25%; transform: translate(-50%, -50%); }
+        .complexity-mod { top: 50%; left: 75%; transform: translate(-50%, -50%); }
+
+        .val-core {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%) scale(0);
+            background: var(--editor-bg);
+            padding: 20px;
+            border-radius: 12px;
+            border: 1px solid var(--border-color);
+            color: rgba(255,255,255,0.8);
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 13px;
+            line-height: 1.5;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.6);
+            opacity: 0;
+            transition: all 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            z-index: 15;
+        }
+
+        .val-core.fail-core {
+            border-color: #ff5f56;
+            color: #ff5f56;
+            box-shadow: 0 0 30px rgba(255, 95, 86, 0.2);
+            animation: shake 0.5s;
+        }
+
+        @keyframes shake {
+            0%, 100% { transform: translate(-50%, -50%) scale(1); }
+            25% { transform: translate(-55%, -50%) scale(1); }
+            75% { transform: translate(-45%, -50%) scale(1); }
+        }
+
+        .val-beam {
+            stroke: rgba(255,255,255,0.1);
+            stroke-width: 2;
+            stroke-dasharray: 5 5;
+            transition: all 0.5s ease;
+        }
+
+        .val-beam.active-beam { stroke: var(--keyword-color); stroke-width: 3; animation: flowDash 1s linear infinite; }
+        .val-beam.pass-beam { stroke: var(--string-color); stroke-width: 3; stroke-dasharray: none; opacity: 0.5; }
+        .val-beam.fail-beam { stroke: #ff5f56; stroke-width: 3; stroke-dasharray: none; opacity: 0.8; }
+
+        .val-feedback {
+            position: absolute;
+            top: 50%;
+            left: 75%;
+            transform: translate(-50%, -50%) scale(0);
+            background: rgba(255, 95, 86, 0.15);
+            border: 1px solid #ff5f56;
+            color: #ff5f56;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 11px;
+            z-index: 50;
+            opacity: 0;
+            backdrop-filter: blur(5px);
+            box-shadow: 0 0 15px rgba(255,95,86,0.3);
+            transition: top 1.5s cubic-bezier(0.25, 1, 0.5, 1), left 1.5s cubic-bezier(0.25, 1, 0.5, 1), opacity 0.5s, transform 0.5s;
+        }
+
+        .val-retry-node {
+            position: absolute;
+            top: 20%;
+            left: 20%;
+            transform: translate(-50%, -50%);
+            background: rgba(30, 30, 46, 0.9);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 15px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            color: var(--text-color);
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 11px;
+            transition: all 0.3s ease;
+            z-index: 5;
+        }
+
+        .val-retry-node .badge-icon { font-size: 20px; margin-bottom: 5px; color: var(--keyword-color); }
+        .val-retry-node.active-retry { border-color: #ff5f56; box-shadow: 0 0 25px rgba(255, 95, 86, 0.3); transform: translate(-50%, -50%) scale(1.1); }
+        .val-retry-node.active-retry .badge-icon { color: #ff5f56; animation: spin 2s linear infinite; }
+
+        .validated-package {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%) scale(0);
+            background: linear-gradient(90deg, var(--string-color), var(--method-color));
+            color: #111;
+            padding: 15px 30px;
+            border-radius: 30px;
+            font-family: 'JetBrains Mono', monospace;
+            font-weight: bold;
+            font-size: 16px;
+            box-shadow: 0 0 40px rgba(166,227,161,0.5);
+            opacity: 0;
+            z-index: 100;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            transition: all 1s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        /* Module internal SVGs */
+        .syn-rect { transition: all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
+        .bound-shield { transition: all 0.5s ease; stroke-dasharray: 100; animation: spin 10s linear infinite; transform-origin: center;}
+        .comp-bar { transition: all 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
+
+        /* --- Scene 7 Specific Styles --- */
+        #scene7-container {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 1s ease-out;
+            z-index: 40;
+            overflow: hidden;
+        }
+
+        #scene7-container.visible {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        /* Model Swap Visuals */
+        #model-swap-area {
+            position: absolute;
+            top: 8%;
+            left: 0;
+            width: 100%;
+            height: 80px;
+            z-index: 100;
+        }
+
+        /* Override .model-badge positioning for swap context */
+        .model-badge.swap-badge {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%) scale(0.85);
+            opacity: 0;
+            transition: all 1s cubic-bezier(0.25, 1, 0.5, 1);
+        }
+
+        .model-badge.swap-badge.active-center {
+            opacity: 1;
+            transform: translate(-50%, -50%) scale(1);
+        }
+
+        .model-badge.swap-badge.exit-left {
+            opacity: 0;
+            transform: translate(calc(-50% - 300px), -50%) scale(0.8);
+            filter: blur(5px);
+        }
+
+        .model-badge.swap-badge.enter-right {
+            opacity: 0;
+            transform: translate(calc(-50% + 300px), -50%) scale(0.8);
+            filter: blur(0px);
+        }
+
+        .model-status-text {
+            color: var(--keyword-color);
+            font-weight: bold;
+            font-size: 10px;
+            margin-top: 4px;
+            text-align: center;
+            letter-spacing: 2px;
+            transition: color 0.5s;
+        }
+
+        /* Code Comparison Panels */
+        #s7-compare-area {
+            position: absolute;
+            top: 25%;
+            width: 800px;
+            display: flex;
+            justify-content: space-between;
+            z-index: 10;
+        }
+
+        .s7-code-box {
+            width: 250px;
+            height: 200px;
+            background: rgba(30, 30, 46, 0.85);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            backdrop-filter: blur(10px);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 15px;
+            opacity: 0;
+            transform: translateY(30px);
+            transition: all 1s ease;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.4);
+            position: relative;
+        }
+
+        .s7-code-box.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .s7-box-title {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 12px;
+            color: var(--text-color);
+            margin-bottom: 15px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .s7-ast-visual {
+            width: 100%;
+            height: 100%;
+        }
+
+        /* Judge Core */
+        #judge-core-container {
+            position: absolute;
+            top: 60%;
+            left: 50%;
+            transform: translate(-50%, -50%) scale(0);
+            width: 160px;
+            height: 160px;
+            z-index: 20;
+            opacity: 0;
+            transition: all 1s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        .judge-sphere {
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            border: 2px solid var(--class-color);
+            background: radial-gradient(circle, rgba(249, 226, 175, 0.1) 0%, rgba(30,30,46,0.9) 70%);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            box-shadow: 0 0 30px rgba(249, 226, 175, 0.2);
+            animation: pulseJudgeCore 4s infinite alternate;
+            position: relative;
+        }
+
+        @keyframes pulseJudgeCore {
+            from { box-shadow: 0 0 20px rgba(249, 226, 175, 0.2); }
+            to { box-shadow: 0 0 50px rgba(249, 226, 175, 0.5); }
+        }
+
+        .judge-crystal {
+            width: 40px;
+            height: 40px;
+            background: var(--class-color);
+            clip-path: polygon(50% 0%, 100% 50%, 50% 100%, 0% 50%);
+            box-shadow: 0 0 20px var(--class-color);
+            transition: all 0.5s ease;
+        }
+
+        .judge-crystal.reject { background: #ff5f56; box-shadow: 0 0 30px #ff5f56; }
+        .judge-crystal.accept { background: var(--string-color); box-shadow: 0 0 30px var(--string-color); }
+
+        /* Evaluation Beams */
+        #judge-beams-svg {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 15;
+        }
+
+        .eval-beam {
+            fill: none;
+            stroke: rgba(255,255,255,0.1);
+            stroke-width: 2;
+            stroke-dasharray: 6 6;
+            opacity: 0;
+            transition: all 0.5s ease;
+        }
+
+        .eval-beam.active {
+            opacity: 1;
+            stroke: var(--class-color);
+            animation: flowDashReverse 1s linear infinite;
+        }
+        
+        .eval-beam.reject { stroke: #ff5f56; stroke-width: 4; stroke-dasharray: none; animation: none; }
+        .eval-beam.accept { stroke: var(--string-color); stroke-width: 3; stroke-dasharray: none; opacity: 1; animation: none; }
+
+        @keyframes flowDashReverse { to { stroke-dashoffset: 20; } }
+
+        /* ── Scene 7 Final Comparison Panel ── */
+        #s7-final-comparison {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%) scale(0.85);
+            opacity: 0;
+            width: 88%;
+            max-width: 920px;
+            z-index: 60;
+            transition: all 0.9s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            pointer-events: none;
+        }
+        #s7-final-comparison.visible {
+            opacity: 1;
+            transform: translate(-50%, -50%) scale(1);
+            pointer-events: auto;
+        }
+        .s7-final-title {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 15px;
+            font-weight: bold;
+            color: var(--string-color);
+            text-align: center;
+            margin-bottom: 18px;
+            letter-spacing: 2px;
+            text-shadow: 0 0 20px rgba(166, 227, 161, 0.5);
+        }
+        .s7-final-panels {
+            display: flex;
+            gap: 18px;
+            align-items: stretch;
+        }
+        .s7-code-panel {
+            flex: 1;
+            background: rgba(22, 22, 35, 0.97);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            overflow: hidden;
+            text-align: left;
+            box-shadow: 0 15px 40px rgba(0,0,0,0.5);
+        }
+        .s7-code-panel.original  { border-color: rgba(255, 95, 86, 0.45); box-shadow: 0 0 20px rgba(255,95,86,0.08); }
+        .s7-code-panel.refactored{ border-color: var(--string-color);      box-shadow: 0 0 25px rgba(166,227,161,0.15); }
+        .s7-panel-header {
+            padding: 9px 16px;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 11px;
+            font-weight: bold;
+            letter-spacing: 2px;
+            border-bottom: 1px solid var(--border-color);
+            background: rgba(0,0,0,0.25);
+        }
+        .s7-code-panel.original  .s7-panel-header { color: #ff5f56; }
+        .s7-code-panel.refactored .s7-panel-header { color: var(--string-color); }
+        .s7-panel-code {
+            padding: 14px 18px;
+            font-family: 'JetBrains Mono', 'Courier New', monospace;
+            font-size: 12.5px;
+            line-height: 1.65;
+            color: var(--text-color);
+            margin: 0;
+            white-space: pre;
+            overflow-x: auto;
+            background: transparent;
+        }
+        .s7-panel-arrow {
+            color: var(--string-color);
+            font-size: 30px;
+            display: flex;
+            align-items: center;
+            padding: 0 4px;
+            filter: drop-shadow(0 0 12px var(--string-color));
+            flex-shrink: 0;
+        }
+
+        /* Missing keyframe animations used throughout */
+        @keyframes spin {
+            from { transform: rotate(0deg); }
+            to   { transform: rotate(360deg); }
+        }
+        @keyframes spin-reverse {
+            from { transform: rotate(0deg); }
+            to   { transform: rotate(-360deg); }
+        }
+
+        /* Particle elements created dynamically in Scene 2 */
+        .particle {
+            position: absolute;
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            pointer-events: none;
+            z-index: 95;
+        }
+
+        /* Completion badge used in Scene 5 */
+        .baseline-badge {
+            position: absolute;
+            bottom: 8%;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(30, 30, 46, 0.95);
+            border: 2px solid var(--border-color);
+            border-radius: 40px;
+            padding: 12px 28px;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 16px;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            box-shadow: 0 0 30px rgba(166, 227, 161, 0.3);
+            opacity: 0;
+            transition: opacity 0.8s ease, transform 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            z-index: 100;
+            white-space: nowrap;
+        }
+        .baseline-badge.visible {
+            opacity: 1;
+        }
+
+        .beam-label {
+            position: absolute;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 10px;
+            color: var(--class-color);
+            opacity: 0;
+            transition: opacity 0.5s;
+            background: rgba(0,0,0,0.6);
+            padding: 2px 6px;
+            border-radius: 4px;
+        }
+
+        /* Feedback and Iteration */
+        #s7-feedback-packet {
+            position: absolute;
+            top: 60%;
+            left: 50%;
+            transform: translate(-50%, -50%) scale(0);
+            background: rgba(255, 95, 86, 0.15);
+            border: 1px solid #ff5f56;
+            color: #ff5f56;
+            padding: 10px 20px;
+            border-radius: 20px;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 12px;
+            font-weight: bold;
+            z-index: 50;
+            opacity: 0;
+            box-shadow: 0 0 20px rgba(255,95,86,0.4);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 1s cubic-bezier(0.25, 1, 0.5, 1);
+        }
+
+        #s7-iteration-counter {
+            position: absolute;
+            top: 15%;
+            color: rgba(255,255,255,0.4);
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 14px;
+            letter-spacing: 2px;
+            opacity: 0;
+            transition: opacity 0.5s;
+        }
+
+        /* Fallback Capsule */
+        .fallback-shield {
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            border-radius: 12px;
+            border: 2px solid var(--string-color);
+            background: rgba(166, 227, 161, 0.05);
+            box-shadow: 0 0 40px rgba(166, 227, 161, 0.3), inset 0 0 20px rgba(166, 227, 161, 0.2);
+            opacity: 0;
+            transition: all 1s ease;
+            pointer-events: none;
+            z-index: 5;
+        }
+
+        .fallback-text {
+            position: absolute;
+            bottom: -30px;
+            left: 50%;
+            transform: translateX(-50%);
+            color: var(--string-color);
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 12px;
+            font-weight: bold;
+            white-space: nowrap;
+            opacity: 0;
+            transition: opacity 1s ease;
+        }
+
+    </style>
+    <!-- Import a nice monospace font -->
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+</head>
+<body>
+
+    <button id="prev-btn" class="nav-btn" onclick="prevScene()">←</button>
+    <button id="next-btn" class="nav-btn" onclick="nextScene()">→</button>
+
+    <!-- Scene 1 Container -->
+    <div id="container" class="scene">
+        <!-- Code Editor Window -->
+        <div class="window" id="editor-window">
+            <div class="window-header">
+                <div class="window-controls">
+                    <div class="control-dot dot-red"></div>
+                    <div class="control-dot dot-yellow"></div>
+                    <div class="control-dot dot-green"></div>
+                </div>
+                <div class="window-title">StudentManager.java</div>
+            </div>
+            <div id="editor-area">
+                <span id="code-content"></span><span id="code-cursor" class="blinking-cursor"></span>
+            </div>
+        </div>
+
+        <!-- Request Input Window -->
+        <div class="window" id="request-window">
+            <div id="request-area">
+                <div id="request-input-container">
+                    <span id="request-text"></span><span id="request-cursor" class="blinking-cursor" style="display: none;"></span>
+                </div>
+                <button class="submit-btn" id="submit-btn">Refactor</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scene 2 Container -->
+    <div id="scene2-container" class="scene">
+        
+        <svg id="arch-canvas">
+            <!-- Lines will be drawn dynamically via JS based on node positions -->
+            <path id="line-fe-ws" class="flow-line" d=""></path>
+            <path id="line-ws-be" class="flow-line" d=""></path>
+            <path id="line-be-session" class="flow-line" d=""></path>
+        </svg>
+
+        <div id="node-frontend" class="arch-node">
+            <div class="node-icon">💻</div>
+            <div class="node-title">USER INTERFACE</div>
+        </div>
+
+        <div id="node-ws" class="arch-node">
+            <div class="node-icon">⚡</div>
+            <div class="node-title">WebSocket Connection</div>
+        </div>
+
+        <div id="node-backend" class="arch-node">
+            <div class="node-icon">⚙️</div>
+            <div class="node-title">HorizonAI Backend</div>
+            <div style="font-size: 12px; color: #bac2de; margin-top: 5px;">Orchestrator</div>
+        </div>
+
+        <div id="node-session" class="arch-node">
+            <div class="node-icon">🗄️</div>
+            <div class="node-title">Session Manager</div>
+            <div class="session-details" id="session-info">
+                SESSION<br>
+                #HZN-001<br>
+                <span style="color: var(--string-color)">ACTIVE</span>
+            </div>
+        </div>
+
+        <div class="data-packet" id="data-packet">
+            { Request }
+        </div>
+
+        <div id="particle-container"></div>
+
+        <div id="next-phase-indicator">
+            <div class="arrow-down">↓</div>
+            <div class="phase-text">Phase 1: Baseline Analysis</div>
+        </div>
+    </div>
+
+    <!-- Scene 3 Container -->
+    <div id="scene3-container" class="scene">
+        <div class="chamber-wrapper" id="chamber-wrapper">
+            
+            <!-- SVG Connecting Beams -->
+            <svg id="chamber-svg-layer">
+                <!-- Center (500, 270) to Syntax (150, 270) -->
+                <path id="beam-syntax" class="analysis-beam" d="M 500 270 L 240 270" />
+                <!-- Center (500, 270) to Semantic (850, 270) -->
+                <path id="beam-semantic" class="analysis-beam" d="M 500 270 L 760 270" />
+                <!-- Center (500, 270) to Complexity (500, 510) -->
+                <path id="beam-complexity" class="analysis-beam" d="M 500 270 L 500 450" />
+            </svg>
+
+            <!-- Syntax Module -->
+            <div class="chamber-module mod-syntax" id="mod-syntax">
+                <div class="module-label">SYNTAX</div>
+                <svg width="100" height="100" viewBox="0 0 100 100">
+                    <line x1="50" y1="20" x2="25" y2="50" class="syn-edge" />
+                    <line x1="50" y1="20" x2="75" y2="50" class="syn-edge" />
+                    <line x1="25" y1="50" x2="25" y2="80" class="syn-edge" />
+                    <line x1="75" y1="50" x2="75" y2="80" class="syn-edge" />
+                    <circle cx="50" cy="20" r="10" class="syn-node a1" />
+                    <circle cx="25" cy="50" r="10" class="syn-node a2" />
+                    <circle cx="75" cy="50" r="10" class="syn-node a2" />
+                    <circle cx="25" cy="80" r="8" class="syn-node a3" />
+                    <circle cx="75" cy="80" r="8" class="syn-node a3" />
+                </svg>
+            </div>
+
+            <!-- Semantic Module -->
+            <div class="chamber-module mod-semantic" id="mod-semantic">
+                <div class="module-label">SEMANTIC</div>
+                <svg width="120" height="120" viewBox="0 0 120 120">
+                    <circle cx="60" cy="60" r="45" class="sem-target-ring" />
+                    <circle cx="60" cy="60" r="25" class="sem-pulse" />
+                    <!-- Abstract Target Icon (Magnifying glass over code brackets) -->
+                    <path d="M 45 45 L 35 60 L 45 75 M 75 45 L 85 60 L 75 75" class="sem-icon" fill="none" stroke="currentColor" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+                    <circle cx="60" cy="60" r="8" class="sem-icon" />
+                </svg>
+            </div>
+
+            <!-- Complexity Module -->
+            <div class="chamber-module mod-complexity" id="mod-complexity">
+                <div class="module-label">COMPLEXITY</div>
+                <svg width="140" height="80" viewBox="0 0 140 80">
+                    <path d="M 20 70 A 50 50 0 0 1 120 70" class="comp-track" />
+                    <path d="M 20 70 A 50 50 0 0 1 120 70" class="comp-fill" />
+                    <text x="70" y="55" class="comp-text">O(N)</text>
+                </svg>
+            </div>
+
+            <!-- Center Code Core -->
+            <div class="chamber-core" id="chamber-core">
+                <div class="core-laser" id="core-laser"></div>
+                <div class="code-row">public class StudentManager {</div>
+                <div class="code-row"> </div>
+                <div class="code-row">    private List&lt;Student&gt; students;</div>
+                <div class="code-row"> </div>
+                <div class="code-row">    public void addStudent(Student s) {</div>
+                <div class="code-row">        students.add(s);</div>
+                <div class="code-row">    }</div>
+                <div class="code-row"> </div>
+                <div class="code-row" id="core-target-row">    public void displayStudents() {</div>
+                <div class="code-row" id="core-target-row2">        for (Student s : students) {</div>
+                <div class="code-row" id="core-target-row3">            System.out.println(s.getName());</div>
+                <div class="code-row">        }</div>
+                <div class="code-row">    }</div>
+                <div class="code-row">}</div>
+            </div>
+
+            <!-- Final Baseline Artifact -->
+            <div class="baseline-artifact-s3" id="baseline-artifact-s3">
+                <div class="art-title">BASELINE PROFILE</div>
+                <div class="art-indicators">
+                    <div class="art-dot-group">
+                        <div class="art-dot" id="dot-syn"></div>
+                        <div class="art-label">SYN</div>
+                    </div>
+                    <div class="art-dot-group">
+                        <div class="art-dot" id="dot-sem"></div>
+                        <div class="art-label">SEM</div>
+                    </div>
+                    <div class="art-dot-group">
+                        <div class="art-dot" id="dot-comp"></div>
+                        <div class="art-label">CMP</div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+        <div id="next-phase-indicator-2">
+            <div class="arrow-down">↓</div>
+            <div class="phase-text" style="color: var(--keyword-color)">Phase 2: Strategy Block</div>
+        </div>
+    </div>
+
+    <!-- Scene 4 Container -->
+    <div id="scene4-container" class="scene">
+        
+        <div id="planner-model-badge" class="model-badge badge-planner">
+            <div class="badge-icon">🧠</div>
+            <div class="badge-details">
+                <div class="badge-title">PLANNER ENGINE</div>
+                <div class="badge-model">Qwen2.5-Coder-3B-Instruct</div>
+                <div class="badge-type">Small Language Model</div>
+            </div>
+        </div>
+
+        <!-- Incoming Inputs -->
+        <div id="input-baseline" class="data-packet" style="width: 100px; font-size: 10px; z-index: 100; background: var(--editor-bg); border: 1px solid var(--border-color); color: var(--text-color); position: absolute; top: -50px; left: 40%; transform: translateX(-50%); transition: top 0.8s ease; opacity: 0;">
+            [Baseline Code]
+        </div>
+        <div id="input-instruction" class="data-packet" style="width: 100px; font-size: 10px; z-index: 100; background: rgba(166, 227, 161, 0.2); border: 1px solid var(--string-color); color: var(--string-color); position: absolute; top: -50px; left: 60%; transform: translateX(-50%); transition: top 0.8s ease; opacity: 0;">
+            "Refactor..."
+        </div>
+
+        <!-- Planner Core Background -->
+        <div id="planner-core">
+            <svg viewBox="0 0 500 500" width="100%" height="100%">
+                <circle cx="250" cy="250" r="220" class="core-ring core-ring-outer" />
+                <circle cx="250" cy="250" r="160" class="core-ring core-ring-middle" />
+                <circle cx="250" cy="250" r="100" class="core-ring core-ring-inner" />
+            </svg>
+        </div>
+
+        <!-- Step A: Intent Object -->
+        <div id="intent-packet">🎯</div>
+
+        <!-- Structural Map (AST Analysis) -->
+        <div id="ast-container">
+            <svg id="ast-svg" width="100%" height="100%" viewBox="0 0 500 350">
+                <!-- Edges -->
+                <path id="ast-edge-left" class="ast-edge" d="M 250 80 L 150 180" />
+                <path id="ast-edge-right" class="ast-edge" d="M 250 80 L 350 180" />
+                <path id="ast-edge-target" class="ast-edge" d="M 350 180 L 350 280" />
+
+                <!-- Root Node (Class) -->
+                <g id="ast-root" class="ast-node-group">
+                    <rect x="170" y="40" width="160" height="40" class="ast-rect" />
+                    <text x="250" y="65" class="ast-text">class StudentManager</text>
+                </g>
+
+                <!-- Left Node (addStudent) -->
+                <g id="ast-var" class="ast-node-group">
+                    <rect x="70" y="160" width="160" height="40" class="ast-rect" />
+                    <text x="150" y="185" class="ast-text">method addStudent()</text>
+                </g>
+
+                <!-- Right Node (displayStudents) -->
+                <g id="ast-branch-r" class="ast-node-group">
+                    <rect x="270" y="160" width="160" height="40" class="ast-rect" />
+                    <text x="350" y="185" class="ast-text">method displayStudents()</text>
+                </g>
+
+                <!-- Target Issue Node (Loop) -->
+                <g id="ast-issue" class="ast-node-group">
+                    <rect x="270" y="260" width="160" height="40" class="ast-rect" />
+                    <text x="350" y="285" class="ast-text">loop for(Student s)</text>
+                </g>
+            </svg>
+        </div>
+
+        <!-- Step C: Synthesis Sphere -->
+        <div id="synthesis-sphere"></div>
+
+        <!-- Blueprint Artifact -->
+        <div id="blueprint-artifact">
+            <div class="bp-card" id="bp-card1">
+                <div class="bp-icon-large" style="color: #ff5f56;">🎯</div>
+                <div class="bp-card-title">Target Loop</div>
+            </div>
+            
+            <div class="bp-arrow" id="bp-arrow1">→</div>
+            
+            <div class="bp-card" id="bp-card2">
+                <div class="bp-icon-large" style="color: var(--keyword-color);">✂️</div>
+                <div class="bp-card-title">Extract Logic</div>
+            </div>
+            
+            <div class="bp-arrow" id="bp-arrow2">→</div>
+            
+            <div class="bp-card" id="bp-card3">
+                <div class="bp-icon-large" style="color: var(--string-color);">✨</div>
+                <div class="bp-card-title">Generate Stream</div>
+            </div>
+        </div>
+        
+        <!-- Execution Package Output -->
+        <div id="execution-package" class="execution-package">
+            [ EXECUTION PLAN ]
+        </div>
+
+    </div>
+    <!-- Scene 5 Container -->
+    <div id="scene5-container" class="scene">
+        
+        <div id="generator-model-badge" class="model-badge badge-generator">
+            <div class="badge-icon">⚡</div>
+            <div class="badge-details">
+                <div class="badge-title">GENERATOR ENGINE</div>
+                <div class="badge-model">Qwen2.5-Coder-3B-Instruct</div>
+                <div class="badge-type">Small Language Model</div>
+            </div>
+        </div>
+
+        <div id="gen-status" style="position: absolute; top: 15%; color: var(--string-color); font-family: 'JetBrains Mono', monospace; font-size: 14px; letter-spacing: 1px; opacity: 0; transition: opacity 0.5s; z-index: 100; font-weight: bold; text-shadow: 0 0 10px rgba(166, 227, 161, 0.5);">RECEIVING EXECUTION PACKAGE...</div>
+        
+        <!-- Blueprint flying in -->
+        <div id="incoming-blueprint" class="execution-package" style="top: -100px; transform: translateX(-50%); box-shadow: 0 0 40px rgba(166, 227, 161, 0.6); background: linear-gradient(90deg, var(--string-color), var(--method-color));">
+            [ EXECUTION PLAN ]
+        </div>
+
+        <!-- Generator Core -->
+        <div id="generator-engine">
+            <div class="gen-ring outer"></div>
+            <div class="gen-ring middle"></div>
+            <div class="gen-ring inner"></div>
+            <div class="gen-core-hex" id="gen-core-hex"></div>
+            <div class="gen-center">⚙️</div>
+        </div>
+
+        <!-- Code Split View -->
+        <div id="code-compare-container">
+            <div class="code-pane old-pane">
+                <div class="pane-header">Original (Imperative)</div>
+                <div id="old-code-content" class="pane-content"></div>
+            </div>
+            <div class="code-pane new-pane">
+                <div class="pane-header" style="color: var(--string-color)">Refactored (Declarative Stream)</div>
+                <div id="new-code-content" class="pane-content"></div>
+            </div>
+        </div>
+
+        <!-- Final completion -->
+        <div id="refactor-complete" class="baseline-badge" style="border-color: var(--string-color); color: var(--string-color)">
+            <span style="font-size: 24px;">✨</span> REFACTORING COMPLETE
+        </div>
+    </div>
+
+    <!-- Scene 6 Container -->
+    <div id="scene6-container" class="scene">
+        <div class="val-title">PHASE 4: DETERMINISTIC VALIDATION</div>
+        
+        <svg id="val-svg-layer" style="position:absolute; width:100%; height:100%; top:0; left:0; z-index:1; pointer-events:none;">
+            <!-- Lines connecting modules to center -->
+            <line x1="50%" y1="50%" x2="50%" y2="25%" id="val-beam-syntax" class="val-beam" />
+            <line x1="50%" y1="50%" x2="25%" y2="50%" id="val-beam-boundary" class="val-beam" />
+            <line x1="50%" y1="50%" x2="75%" y2="50%" id="val-beam-complexity" class="val-beam" />
+        </svg>
+
+        <!-- Retry Node (Top Leftish) -->
+        <div id="val-retry-node" class="val-retry-node">
+            <div class="badge-icon">⚙️</div>
+            <div style="font-weight: bold; margin-bottom: 4px;">Generator Revision</div>
+            <div id="val-attempt" style="color: rgba(255,255,255,0.5);">Attempt: 1</div>
+        </div>
+
+        <!-- Modules -->
+        <div id="val-syntax" class="val-module syntax-mod">
+            <div class="val-mod-title">Syntax Check</div>
+            <svg width="60" height="60" viewBox="0 0 100 100">
+                <rect id="syn-token-1" class="syn-rect" x="10" y="20" width="40" height="10" fill="var(--keyword-color)" rx="2"/>
+                <rect id="syn-token-2" class="syn-rect" x="40" y="45" width="50" height="10" fill="var(--string-color)" rx="2"/>
+                <rect id="syn-token-3" class="syn-rect" x="20" y="70" width="30" height="10" fill="var(--class-color)" rx="2"/>
+            </svg>
+        </div>
+
+        <div id="val-boundary" class="val-module boundary-mod">
+            <div class="val-mod-title">Boundary Check</div>
+            <svg width="60" height="60" viewBox="0 0 100 100">
+                <circle cx="50" cy="50" r="15" fill="var(--editor-bg)" stroke="var(--text-color)" stroke-width="2"/>
+                <path id="bound-shield" class="bound-shield" d="M 20 50 A 30 30 0 1 1 80 50 A 30 30 0 1 1 20 50" fill="none" stroke="var(--method-color)" stroke-width="4" opacity="0.2"/>
+            </svg>
+        </div>
+
+        <div id="val-complexity" class="val-module complexity-mod">
+            <div class="val-mod-title">Complexity Check</div>
+            <svg width="60" height="60" viewBox="0 0 100 100">
+                <text x="25" y="95" fill="rgba(255,255,255,0.4)" font-size="10" font-family="monospace">BASE</text>
+                <rect x="25" y="50" width="15" height="35" fill="var(--text-color)" opacity="0.4" rx="2"/>
+                
+                <text x="60" y="95" fill="rgba(255,255,255,0.4)" font-size="10" font-family="monospace">GEN</text>
+                <rect id="comp-bar-gen" class="comp-bar" x="60" y="75" width="15" height="10" fill="var(--class-color)" rx="2"/>
+            </svg>
+        </div>
+
+        <!-- Center Core Code -->
+        <div id="val-core" class="val-core">
+            <span class="kw">students</span>.stream()<br>
+            &nbsp;&nbsp;.map(...)<br>
+            &nbsp;&nbsp;.forEach(...)
+        </div>
+
+        <!-- Feedback Packet -->
+        <div id="val-feedback" class="val-feedback">
+            ⚠️ O(N²) Detected
+        </div>
+
+        <!-- Final Validated Package -->
+        <div id="validated-package" class="validated-package">
+            <span style="font-size:20px;">✅</span> VALIDATED CODE
+        </div>
+    </div>
+
+    <!-- Scene 7 Container -->
+    <div id="scene7-container" class="scene">
+        
+        <div id="s7-iteration-counter">STRATEGY ITERATION: 1</div>
+
+        <!-- Model Swap Area -->
+        <div id="model-swap-area">
+            <div id="s7-qwen-badge" class="model-badge badge-planner swap-badge">
+                <div class="badge-icon">⚙️</div>
+                <div class="badge-details">
+                    <div class="badge-title">GENERATOR ENGINE</div>
+                    <div class="badge-model">Qwen2.5-Coder-3B-Instruct</div>
+                    <div id="qwen-status" class="model-status-text">ACTIVE</div>
+                </div>
+            </div>
+            
+            <div id="s7-llama-badge" class="model-badge badge-judge swap-badge enter-right">
+                <div class="badge-icon">⚖️</div>
+                <div class="badge-details">
+                    <div class="badge-title">EVALUATION ENGINE</div>
+                    <div class="badge-model">Llama-3.2-3B-Instruct</div>
+                    <div id="llama-status" class="model-status-text" style="color: var(--class-color);">STANDBY</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Code Comparison Panels -->
+        <div id="s7-compare-area">
+            <!-- Original Code -->
+            <div id="s7-box-original" class="s7-code-box">
+                <div class="s7-box-title">Original Structure</div>
+                <svg class="s7-ast-visual" viewBox="0 0 100 100">
+                    <!-- Messy, complex AST -->
+                    <path d="M 50 10 L 20 40 L 40 70 L 60 70 L 80 40 Z" fill="none" stroke="rgba(255,255,255,0.2)" stroke-width="2"/>
+                    <path d="M 20 40 L 80 40 M 40 70 L 80 40 M 20 40 L 60 70" fill="none" stroke="rgba(255,255,255,0.2)" stroke-width="1"/>
+                    <circle cx="50" cy="10" r="4" fill="var(--text-color)"/>
+                    <circle cx="20" cy="40" r="4" fill="#ff5f56"/>
+                    <circle cx="80" cy="40" r="4" fill="var(--text-color)"/>
+                    <circle cx="40" cy="70" r="4" fill="#ff5f56"/>
+                    <circle cx="60" cy="70" r="4" fill="var(--text-color)"/>
+                </svg>
+                <div id="fallback-shield" class="fallback-shield"></div>
+                <div id="fallback-text" class="fallback-text">SAFE ORIGINAL VERSION RESTORED</div>
+            </div>
+
+            <!-- Refactored Code -->
+            <div id="s7-box-refactored" class="s7-code-box">
+                <div class="s7-box-title" style="color: var(--string-color);">Generated Candidate</div>
+                <svg class="s7-ast-visual" viewBox="0 0 100 100">
+                    <!-- Clean, linear AST -->
+                    <path d="M 50 10 L 50 40 L 50 70 L 50 90" fill="none" stroke="var(--string-color)" stroke-width="2"/>
+                    <circle cx="50" cy="10" r="4" fill="var(--string-color)"/>
+                    <circle cx="50" cy="40" r="4" fill="var(--string-color)"/>
+                    <circle cx="50" cy="70" r="4" fill="var(--string-color)"/>
+                    <circle cx="50" cy="90" r="4" fill="var(--string-color)"/>
+                </svg>
+            </div>
+        </div>
+
+        <!-- Judge Core -->
+        <div id="judge-core-container">
+            <div class="judge-sphere">
+                <div id="judge-crystal" class="judge-crystal"></div>
+            </div>
+        </div>
+
+        <!-- Evaluation Beams (SVG Layer) -->
+        <svg id="judge-beams-svg">
+            <!-- Center of Judge is ~ (50vw, 60vh). Refactored box is ~ (70vw, 35vh) -->
+            <!-- We will use generic coordinates and let CSS position them contextually, or draw straight lines to % values -->
+            <line id="s7-beam-logic" class="eval-beam" x1="50%" y1="60%" x2="70%" y2="35%" />
+            <line id="s7-beam-struct" class="eval-beam" x1="50%" y1="60%" x2="70%" y2="45%" />
+            <line id="s7-beam-quality" class="eval-beam" x1="50%" y1="60%" x2="70%" y2="55%" />
+        </svg>
+
+        <div id="s7-label-logic" class="beam-label" style="top: 45%; left: 60%;">Logic Consistency</div>
+        <div id="s7-label-struct" class="beam-label" style="top: 50%; left: 62%;">Structural Change</div>
+        <div id="s7-label-quality" class="beam-label" style="top: 55%; left: 64%;">Refactoring Quality</div>
+
+        <!-- Feedback Packet -->
+        <div id="s7-feedback-packet">
+            <span>⚠️</span> REFACTORING QUALITY DEGRADATION
+        </div>
+
+        <!-- Final Side-by-Side Comparison (shown on successful iteration 2) -->
+        <div id="s7-final-comparison">
+            <div class="s7-final-title">✅ VALIDATED OUTPUT — ITERATION 2 APPROVED</div>
+            <div class="s7-final-panels">
+                <div class="s7-code-panel original">
+                    <div class="s7-panel-header">⚠ ORIGINAL — IMPERATIVE LOOP</div>
+                    <pre class="s7-panel-code">public class StudentManager {
+
+    private List&lt;Student&gt; students;
+
+    public void addStudent(Student s) {
+        students.add(s);
+    }
+
+    public void displayStudents() {
+        for (Student s : students) {
+            System.out.println(s.getName());
+        }
+    }
+}</pre>
+                </div>
+                <div class="s7-panel-arrow">→</div>
+                <div class="s7-code-panel refactored">
+                    <div class="s7-panel-header">✅ REFACTORED — DECLARATIVE STREAM</div>
+                    <pre class="s7-panel-code">public class StudentManager {
+
+    private List&lt;Student&gt; students;
+
+    public void addStudent(Student s) {
+        students.add(s);
+    }
+
+    public void displayStudents() {
+        students.stream()
+                .map(Student::getName)
+                .forEach(System.out::println);
+    }
+}</pre>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <div id="mouse-cursor"></div>
+
+    <script>
+        const javaCode = `public class StudentManager {
+
+    private List<Student> students;
+
+    public void addStudent(Student student) {
+        students.add(student);
+    }
+
+    public void displayStudents() {
+        for(Student s : students) {
+            System.out.println(s.getName());
+        }
+    }
+}`;
+
+        const requestText = "Refactor this Java code to improve readability, reduce duplicated code, and optimize performance.";
+
+        // Basic syntax highlighter tokens for the typing effect
+        const keywords = ['public', 'class', 'private', 'void', 'for'];
+        const classes = ['StudentManager', 'List', 'Student', 'System'];
+        const methods = ['addStudent', 'displayStudents', 'add', 'out', 'println', 'getName'];
+
+        const codeElement = document.getElementById('code-content');
+        const codeCursor = document.getElementById('code-cursor');
+        const requestElement = document.getElementById('request-text');
+        const requestCursor = document.getElementById('request-cursor');
+        const mouseCursor = document.getElementById('mouse-cursor');
+        const editorArea = document.getElementById('editor-area');
+        const container = document.getElementById('container'); // Scene 1
+        const scene2Container = document.getElementById('scene2-container');
+        const requestInputContainer = document.getElementById('request-input-container');
+        
+        // Scene 2 elements
+        const dataPacket = document.getElementById('data-packet');
+        const nodeFE = document.getElementById('node-frontend');
+        const nodeWS = document.getElementById('node-ws');
+        const nodeBE = document.getElementById('node-backend');
+        const nodeSession = document.getElementById('node-session');
+        const lineFeWs = document.getElementById('line-fe-ws');
+        const lineWsBe = document.getElementById('line-ws-be');
+        const lineBeSession = document.getElementById('line-be-session');
+        const sessionInfo = document.getElementById('session-info');
+        const nextPhaseIndicator = document.getElementById('next-phase-indicator');
+        const particleContainer = document.getElementById('particle-container');
+
+        let isAnimating = false;
+        let scene1TimeoutIds = [];
+        let scene2TimeoutIds = [];
+        let scene3TimeoutIds = [];
+        let scene4TimeoutIds = [];
+        let scene5TimeoutIds = [];
+        let scene6TimeoutIds = [];
+        let scene7TimeoutIds = [];
+
+        // Note: Real syntax highlighting during typing is complex.
+        // For this simulation, we'll build the HTML string incrementally.
+        // To handle partial words during typing, we just append text.
+        // For a more realistic look, we'll re-parse the *entire* typed string
+        // at each step and apply spans. This is fine for small code snippets.
+        function highlightSyntax(codeStr) {
+            let highlighted = codeStr
+                // Escape HTML
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;');
+
+            // A very rudimentary regex-based highlighter just for this snippet
+            // Highlight keywords
+            keywords.forEach(kw => {
+                const regex = new RegExp(`\\b${kw}\\b`, 'g');
+                highlighted = highlighted.replace(regex, `<span class="kw">${kw}</span>`);
+            });
+
+            // Highlight classes
+            classes.forEach(cls => {
+                const regex = new RegExp(`\\b${cls}\\b`, 'g');
+                highlighted = highlighted.replace(regex, `<span class="cl">${cls}</span>`);
+            });
+
+            // Highlight methods
+            methods.forEach(mth => {
+                const regex = new RegExp(`\\b${mth}\\b`, 'g');
+                highlighted = highlighted.replace(regex, `<span class="mth">${mth}</span>`);
+            });
+
+             // Highlight symbols (rudimentary)
+            highlighted = highlighted.replace(/([{}();,])/g, '<span class="sym">$1</span>');
+
+            return highlighted;
+        }
+
+        async function typeText(text, element, minDelay = 20, maxDelay = 80, isCode = false, sceneId) {
+            let currentText = '';
+            for (let i = 0; i < text.length; i++) {
+                if (currentScene !== sceneId) return; // Exit if scene changed
+
+                currentText += text[i];
+                
+                if (isCode) {
+                    element.innerHTML = highlightSyntax(currentText);
+                    // Auto-scroll logic
+                    editorArea.scrollTop = editorArea.scrollHeight;
+                } else {
+                    element.textContent = currentText;
+                }
+
+                // Simulate realistic typing delays (some chars fast, some slow)
+                let delay = Math.random() * (maxDelay - minDelay) + minDelay;
+                
+                // Add pauses for punctuation or newlines
+                if (text[i] === '\n' || text[i] === '.' || text[i] === ';') {
+                    delay += 200;
+                }
+                
+                await new Promise(resolve => {
+                    const id = setTimeout(resolve, delay);
+                    if(sceneId === 1) scene1TimeoutIds.push(id);
+                });
+            }
+        }
+
+        async function moveMouse(x, y, duration = 1000, sceneId) {
+            if (currentScene !== sceneId) return;
+            mouseCursor.style.transition = `top ${duration}ms ease-in-out, left ${duration}ms ease-in-out`;
+            mouseCursor.style.left = `${x}px`;
+            mouseCursor.style.top = `${y}px`;
+            await new Promise(resolve => {
+                const id = setTimeout(resolve, duration);
+                if(sceneId === 1) scene1TimeoutIds.push(id);
+            });
+        }
+
+        function delayAsync(ms, sceneId) {
+            return new Promise(resolve => {
+                const id = setTimeout(() => {
+                    if (currentScene === sceneId) resolve();
+                }, ms);
+                if (sceneId === 1) scene1TimeoutIds.push(id);
+                else if (sceneId === 2) scene2TimeoutIds.push(id);
+                else if (sceneId === 3) scene3TimeoutIds.push(id);
+                else if (sceneId === 4) scene4TimeoutIds.push(id);
+                else if (sceneId === 5) scene5TimeoutIds.push(id);
+                else if (sceneId === 6) scene6TimeoutIds.push(id);
+                else if (sceneId === 7) scene7TimeoutIds.push(id);
+            });
+        }
+
+        async function runScene1() {
+            if (currentScene !== 1) return;
+            isAnimating = true;
+            
+            // 1. Opening Animation — fast fade in
+            await delayAsync(200, 1);
+            if (currentScene !== 1) return;
+            container.classList.add('visible');
+            await delayAsync(600, 1); // Short wait for fade in
+            if (currentScene !== 1) return;
+
+            // 2. Mouse enters editor quickly
+            mouseCursor.classList.add('active');
+            const editorRect = editorArea.getBoundingClientRect();
+            await moveMouse(editorRect.left + 50, editorRect.top + 50, 400, 1);
+            if (currentScene !== 1) return;
+
+            // 3. Click in editor
+            mouseCursor.style.opacity = '0';
+            await delayAsync(100, 1);
+            if (currentScene !== 1) return;
+            
+            // 4. Rapid code typing — looks like a fast developer
+            await typeText(javaCode, codeElement, 1, 8, true, 1);
+            if (currentScene !== 1) return;
+            
+            await delayAsync(300, 1);
+            if (currentScene !== 1) return;
+
+            // 5. Mouse moves quickly to request input box
+            codeCursor.style.display = 'none';
+            mouseCursor.style.opacity = '1';
+            const inputRect = requestInputContainer.getBoundingClientRect();
+            await moveMouse(inputRect.left + 50, inputRect.top + 30, 400, 1);
+            if (currentScene !== 1) return;
+            
+            mouseCursor.style.opacity = '0';
+            requestCursor.style.display = 'inline-block';
+            await delayAsync(100, 1);
+            if (currentScene !== 1) return;
+
+            // 6. Fast request text typing
+            await typeText(requestText, requestElement, 3, 12, false, 1);
+            if (currentScene !== 1) return;
+            
+            await delayAsync(200, 1);
+            if (currentScene !== 1) return;
+
+            // 7. Mouse quickly hits submit
+            requestCursor.style.display = 'none';
+            mouseCursor.style.opacity = '1';
+            const btnRect = document.getElementById('submit-btn').getBoundingClientRect();
+            await moveMouse(btnRect.left + (btnRect.width/2), btnRect.top + (btnRect.height/2), 350, 1);
+            if (currentScene !== 1) return;
+            
+            document.getElementById('submit-btn').style.opacity = '1';
+            await delayAsync(150, 1);
+            if (currentScene !== 1) return;
+            document.getElementById('submit-btn').style.transform = 'scale(0.95)';
+            await delayAsync(100, 1);
+            if (currentScene !== 1) return;
+            document.getElementById('submit-btn').style.transform = 'scale(1)';
+            
+            // Auto-transition to scene 2
+            await delayAsync(600, 1);
+            if (currentScene === 1) {
+                nextScene();
+            }
+        }
+
+        // Utility to draw lines between elements
+        function drawLine(lineElem, startElem, endElem) {
+            const rect1 = startElem.getBoundingClientRect();
+            const rect2 = endElem.getBoundingClientRect();
+            
+            // Calculate centers relative to viewport
+            const startX = rect1.left + rect1.width / 2;
+            const startY = rect1.top + rect1.height / 2;
+            const endX = rect2.left + rect2.width / 2;
+            const endY = rect2.top + rect2.height / 2;
+
+            // Create a curved path (cubic bezier)
+            const controlY = startY + (endY - startY) / 2;
+            const path = `M ${startX} ${startY} C ${startX} ${controlY}, ${endX} ${controlY}, ${endX} ${endY}`;
+            
+            lineElem.setAttribute('d', path);
+        }
+
+        function updateAllLines() {
+            drawLine(lineFeWs, nodeFE, nodeWS);
+            
+            // For WS to Backend/Session, we might want custom routing if side-by-side
+            const wsRect = nodeWS.getBoundingClientRect();
+            const beRect = nodeBE.getBoundingClientRect();
+            
+            const startX = wsRect.left + wsRect.width / 2;
+            const startY = wsRect.top + wsRect.height / 2;
+            
+            const endBeX = beRect.left + beRect.width / 2;
+            const endBeY = beRect.top; // Top edge of backend
+            
+            // Path WS -> Backend
+            const pathWsBe = `M ${startX} ${startY} C ${startX} ${endBeY - 50}, ${endBeX} ${endBeY - 50}, ${endBeX} ${endBeY}`;
+            lineWsBe.setAttribute('d', pathWsBe);
+            
+            // Path Backend -> Session (straight line horizontally)
+            const beRectRight = beRect.right;
+            const beCenterY = beRect.top + beRect.height / 2;
+            const sessionRectLeft = nodeSession.getBoundingClientRect().left;
+            
+            const pathBeSession = `M ${beRectRight} ${beCenterY} L ${sessionRectLeft} ${beCenterY}`;
+            lineBeSession.setAttribute('d', pathBeSession);
+        }
+
+        function createParticles() {
+            // Create particles bursting from the center of the screen
+            const centerX = window.innerWidth / 2;
+            const centerY = window.innerHeight / 2;
+            
+            for(let i=0; i<30; i++) {
+                const particle = document.createElement('div');
+                particle.className = 'particle';
+                
+                // Random starting position slightly around center
+                const startX = centerX + (Math.random() - 0.5) * 100;
+                const startY = centerY + (Math.random() - 0.5) * 100;
+                
+                particle.style.left = startX + 'px';
+                particle.style.top = startY + 'px';
+                
+                // Set custom color based on code highlighting
+                const colors = ['#cba6f7', '#f9e2af', '#a6e3a1', '#89b4fa', '#cdd6f4'];
+                particle.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
+                
+                particleContainer.appendChild(particle);
+                
+                // Animate to center where packet forms
+                setTimeout(() => {
+                    particle.style.transition = 'all 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275)';
+                    particle.style.left = centerX + 'px';
+                    particle.style.top = centerY + 'px';
+                    particle.style.opacity = '0';
+                    particle.style.transform = `scale(${Math.random() * 2})`;
+                }, 50);
+            }
+            
+            // Clean up particles
+            setTimeout(() => {
+                particleContainer.innerHTML = '';
+            }, 1000);
+        }
+
+        async function runScene2() {
+            if (currentScene !== 2) return;
+            
+            // Force redraw lines on window resize to keep architecture diagram accurate
+            window.addEventListener('resize', updateAllLines);
+            updateAllLines();
+
+            // 1. Transition effect from Scene 1 to Scene 2
+            scene2Container.classList.add('visible');
+            
+            // Simulate code collapsing into particles
+            await delayAsync(200, 2);
+            if (currentScene !== 2) return;
+            createParticles();
+            
+            // 2. Packet Formation
+            await delayAsync(600, 2);
+            if (currentScene !== 2) return;
+            dataPacket.style.transition = 'all 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275), opacity 0.5s ease';
+            dataPacket.style.opacity = '1';
+            dataPacket.style.transform = 'translate(-50%, -50%) scale(1)';
+            
+            await delayAsync(1000, 2);
+            if (currentScene !== 2) return;
+
+            // 3. Reveal Architecture Nodes sequentially
+            nodeFE.classList.add('visible');
+            await delayAsync(400, 2);
+            if (currentScene !== 2) return;
+            
+            nodeWS.classList.add('visible');
+            await delayAsync(400, 2);
+            if (currentScene !== 2) return;
+            
+            nodeBE.classList.add('visible');
+            await delayAsync(400, 2);
+            if (currentScene !== 2) return;
+            
+            nodeSession.classList.add('visible');
+            
+            // Small pause before data starts moving
+            await delayAsync(800, 2);
+            if (currentScene !== 2) return;
+
+            // 4. Data flow animation
+            // Move packet to Frontend Node
+            const feRect = nodeFE.getBoundingClientRect();
+            dataPacket.style.transition = 'top 0.5s ease, left 0.5s ease';
+            dataPacket.style.top = (feRect.top + feRect.height/2) + 'px';
+            dataPacket.style.left = (feRect.left + feRect.width/2) + 'px';
+            
+            await delayAsync(600, 2);
+            if (currentScene !== 2) return;
+
+            // Activate line FE -> WS
+            lineFeWs.classList.add('active');
+            
+            // Move packet to WS Node
+            const wsRect = nodeWS.getBoundingClientRect();
+            dataPacket.style.transition = 'top 1s ease-in-out, left 1s ease-in-out';
+            dataPacket.style.top = (wsRect.top + wsRect.height/2) + 'px';
+            dataPacket.style.left = (wsRect.left + wsRect.width/2) + 'px';
+            
+            await delayAsync(1000, 2);
+            if (currentScene !== 2) return;
+            
+            // Packet pulses at WS
+            dataPacket.style.transform = 'translate(-50%, -50%) scale(1.2)';
+            nodeWS.style.boxShadow = '0 0 30px rgba(137, 180, 250, 0.6)';
+            await delayAsync(300, 2);
+            dataPacket.style.transform = 'translate(-50%, -50%) scale(1)';
+            nodeWS.style.boxShadow = '0 0 15px rgba(137, 180, 250, 0.2)';
+            
+            if (currentScene !== 2) return;
+
+            // Activate line WS -> BE
+            lineWsBe.classList.add('active');
+            
+            // Move packet to BE Node
+            const beRect = nodeBE.getBoundingClientRect();
+            dataPacket.style.top = (beRect.top + beRect.height/2) + 'px';
+            dataPacket.style.left = (beRect.left + beRect.width/2) + 'px';
+            
+            await delayAsync(1000, 2);
+            if (currentScene !== 2) return;
+
+            // Packet enters Orchestrator (Backend)
+            dataPacket.style.transform = 'translate(-50%, -50%) scale(0.5)';
+            dataPacket.style.opacity = '0.5';
+            
+            await delayAsync(600, 2);
+            if (currentScene !== 2) return;
+
+            // Activate line BE -> Session
+            lineBeSession.classList.add('active');
+            
+            // Move packet to Session Node
+            const sessionRect = nodeSession.getBoundingClientRect();
+            dataPacket.style.top = (sessionRect.top + sessionRect.height/2) + 'px';
+            dataPacket.style.left = (sessionRect.left + sessionRect.width/2) + 'px';
+            
+            await delayAsync(800, 2);
+            if (currentScene !== 2) return;
+
+            // Session Creation Visualization
+            dataPacket.style.opacity = '0'; // Packet disappears into session
+            
+            nodeSession.style.transform = 'translate(-50%, 0) scale(1.1)';
+            nodeSession.style.boxShadow = '0 0 40px rgba(203, 166, 247, 0.5)';
+            
+            await delayAsync(300, 2);
+        if (currentScene !== 2) return;
+        
+        nodeSession.style.transform = 'translate(-50%, 0) scale(1)';
+        nodeSession.style.boxShadow = '0 10px 30px rgba(0, 0, 0, 0.3)';
+        sessionInfo.classList.add('visible');
+        
+        await delayAsync(1500, 2);
+        if (currentScene !== 2) return;
+
+        // Show transition indicator
+        nextPhaseIndicator.classList.add('visible');
+        
+        // Auto-transition to scene 3
+        await delayAsync(2000, 2);
+        if (currentScene === 2) {
+            nextScene();
+        }
+    }
+
+    async function runScene3() {
+        if (currentScene !== 3) return;
+
+        const containerS3 = document.getElementById('scene3-container');
+        const wrapper = document.getElementById('chamber-wrapper');
+        const core = document.getElementById('chamber-core');
+        const laser = document.getElementById('core-laser');
+        const codeRows = document.querySelectorAll('.code-row');
+        
+        const modSyn = document.getElementById('mod-syntax');
+        const modSem = document.getElementById('mod-semantic');
+        const modComp = document.getElementById('mod-complexity');
+        
+        const beamSyn = document.getElementById('beam-syntax');
+        const beamSem = document.getElementById('beam-semantic');
+        const beamComp = document.getElementById('beam-complexity');
+
+        // 1. Show container & Code Core arrival
+        containerS3.classList.add('visible');
+        await delayAsync(300, 3);
+        if (currentScene !== 3) return;
+        wrapper.classList.add('visible');
+        
+        await delayAsync(800, 3);
+        if (currentScene !== 3) return;
+
+        // 2. Beams activate outwards, modules appear
+        beamSyn.classList.add('active');
+        beamSem.classList.add('active');
+        beamComp.classList.add('active');
+
+        modSyn.classList.add('visible');
+        modSem.classList.add('visible');
+        modComp.classList.add('visible');
+
+        await delayAsync(800, 3);
+        if (currentScene !== 3) return;
+
+        // 3. Central Laser Scanning
+        core.classList.add('scanning');
+        laser.style.opacity = '1';
+        laser.style.transition = 'top 3s linear';
+        laser.style.top = '90%'; // Move to bottom over 3 seconds
+
+        // Orchestrate module activations concurrently with the scan
+        
+        // Start Syntax immediately
+        setTimeout(() => { if(currentScene === 3) modSyn.classList.add('active'); }, 200);
+        
+        // Scan line effects
+        for (let i = 0; i < codeRows.length; i++) {
+            if (currentScene !== 3) break;
+            setTimeout(() => {
+                if (currentScene === 3) codeRows[i].classList.add('scanned');
+            }, i * (3000 / codeRows.length));
+        }
+
+        // Mid-scan: Semantic target hit (around line 9, the for loop)
+        setTimeout(() => {
+            if (currentScene === 3) {
+                modSem.classList.add('active');
+                document.getElementById('core-target-row').classList.add('target');
+                document.getElementById('core-target-row2').classList.add('target');
+                document.getElementById('core-target-row3').classList.add('target');
+            }
+        }, 1500);
+
+        // Late-scan: Complexity calculates
+        setTimeout(() => {
+            if (currentScene === 3) modComp.classList.add('active');
+        }, 2200);
+
+        await delayAsync(3200, 3);
+        if (currentScene !== 3) return;
+
+        // 4. Scan Complete, Beams Return
+        laser.style.opacity = '0';
+        core.classList.remove('scanning');
+        
+        // Mark modules complete visually
+        modSyn.classList.add('complete');
+        modSem.classList.add('complete');
+        modComp.classList.add('complete');
+
+        // Reverse beams
+        beamSyn.classList.remove('active'); beamSyn.classList.add('return');
+        beamSem.classList.remove('active'); beamSem.classList.add('return');
+        beamComp.classList.remove('active'); beamComp.classList.add('return');
+
+        await delayAsync(1200, 3);
+        if (currentScene !== 3) return;
+
+        // Turn off beams
+        beamSyn.classList.remove('return');
+        beamSem.classList.remove('return');
+        beamComp.classList.remove('return');
+
+        // 5. Morph into Baseline Artifact
+        core.style.transform = 'translate(-50%, -50%) scale(0)';
+        core.style.opacity = '0';
+        
+        await delayAsync(500, 3);
+        if (currentScene !== 3) return;
+
+        const artifact = document.getElementById('baseline-artifact-s3');
+        artifact.classList.add('visible');
+
+        // Light up indicators sequentially
+        await delayAsync(400, 3);
+        if(currentScene === 3) document.getElementById('dot-syn').classList.add('syn-pass');
+        await delayAsync(300, 3);
+        if(currentScene === 3) document.getElementById('dot-sem').classList.add('sem-pass');
+        await delayAsync(300, 3);
+        if(currentScene === 3) document.getElementById('dot-comp').classList.add('comp-pass');
+
+        await delayAsync(1000, 3);
+        if (currentScene !== 3) return;
+
+        // 6. Next Phase Indicator
+        document.getElementById('next-phase-indicator-2').classList.add('visible');
+        
+        // Auto-transition to scene 4
+        await delayAsync(2500, 3);
+        if (currentScene === 3) {
+            nextScene();
+        }
+    }
+
+    let currentScene = 1;
+    const totalScenes = 7;
+
+    // Start the animation when the page loads
+    window.addEventListener('load', function() {
+        updateNavButtons();
+        runScene1();
+    });
+
+    function updateNavButtons() {
+        const prevBtn = document.getElementById('prev-btn');
+        const nextBtn = document.getElementById('next-btn');
+
+        if (currentScene <= 1) {
+            prevBtn.style.opacity = '0.2';
+            prevBtn.style.cursor = 'default';
+        } else {
+            prevBtn.style.opacity = '1';
+            prevBtn.style.cursor = 'pointer';
+        }
+
+        if (currentScene >= totalScenes) {
+            nextBtn.style.opacity = '0.2';
+            nextBtn.style.cursor = 'default';
+        } else {
+            nextBtn.style.opacity = '1';
+            nextBtn.style.cursor = 'pointer';
+        }
+    }
+
+    function clearAllTimeouts() {
+        scene1TimeoutIds.forEach(clearTimeout);
+        scene2TimeoutIds.forEach(clearTimeout);
+        scene3TimeoutIds.forEach(clearTimeout);
+        scene4TimeoutIds.forEach(clearTimeout);
+        scene5TimeoutIds.forEach(clearTimeout);
+        scene6TimeoutIds.forEach(clearTimeout);
+        scene7TimeoutIds.forEach(clearTimeout);
+        scene1TimeoutIds = [];
+        scene2TimeoutIds = [];
+        scene3TimeoutIds = [];
+        scene4TimeoutIds = [];
+        scene5TimeoutIds = [];
+        scene6TimeoutIds = [];
+        scene7TimeoutIds = [];
+    }
+
+    async function nextScene() {
+        if (currentScene < totalScenes) {
+            clearAllTimeouts();
+            
+            // Fade out current scene
+            if(currentScene === 1) {
+                container.style.opacity = '0';
+                container.style.transform = 'scale(0.95)';
+                document.getElementById('mouse-cursor').style.opacity = '0';
+            } else if (currentScene === 2) {
+                 scene2Container.style.opacity = '0';
+            } else if (currentScene === 3) {
+                 document.getElementById('scene3-container').style.opacity = '0';
+            } else if (currentScene === 4) {
+                 document.getElementById('scene4-container').style.opacity = '0';
+            } else if (currentScene === 5) {
+                 document.getElementById('scene5-container').style.opacity = '0';
+            } else if (currentScene === 6) {
+                 document.getElementById('scene6-container').style.opacity = '0';
+            } else if (currentScene === 7) {
+                 document.getElementById('scene7-container').style.opacity = '0';
+            }
+            
+            await new Promise(resolve => setTimeout(resolve, 600)); // wait for transition
+
+            currentScene++;
+            updateNavButtons();
+            
+            resetSceneState();
+            
+            if(currentScene === 2) {
+                runScene2();
+            } else if (currentScene === 3) {
+                runScene3();
+            } else if (currentScene === 4) {
+                runScene4();
+            } else if (currentScene === 5) {
+                runScene5();
+            } else if (currentScene === 6) {
+                runScene6();
+            } else if (currentScene === 7) {
+                runScene7();
+            }
+        }
+    }
+
+    async function prevScene() {
+        if (currentScene > 1) {
+            clearAllTimeouts();
+            
+            // Fade out current scene
+             if (currentScene === 2) {
+                 scene2Container.style.opacity = '0';
+            } else if (currentScene === 3) {
+                 document.getElementById('scene3-container').style.opacity = '0';
+            } else if (currentScene === 4) {
+                 document.getElementById('scene4-container').style.opacity = '0';
+            } else if (currentScene === 5) {
+                 document.getElementById('scene5-container').style.opacity = '0';
+            } else if (currentScene === 6) {
+                 document.getElementById('scene6-container').style.opacity = '0';
+            } else if (currentScene === 7) {
+                 document.getElementById('scene7-container').style.opacity = '0';
+            }
+            
+            await new Promise(resolve => setTimeout(resolve, 600));
+
+            currentScene--;
+            updateNavButtons();
+
+            resetSceneState();
+            
+            if(currentScene === 1) {
+                // Ensure scene 1 container is ready to fade in again
+                container.style.opacity = '0';
+                container.style.transform = 'scale(0.95)';
+                runScene1();
+            } else if (currentScene === 2) {
+                runScene2();
+            } else if (currentScene === 3) {
+                runScene3();
+            } else if (currentScene === 4) {
+                runScene4();
+            } else if (currentScene === 5) {
+                runScene5();
+            } else if (currentScene === 6) {
+                runScene6();
+            } else if (currentScene === 7) {
+                runScene7();
+            }
+        }
+    }
+
+    function resetSceneState() {
+        // Reset Scene 1 elements
+        codeElement.innerHTML = '';
+        requestElement.textContent = '';
+        codeCursor.style.display = 'inline-block';
+        requestCursor.style.display = 'none';
+        mouseCursor.style.opacity = '0';
+        mouseCursor.style.top = '100%';
+        mouseCursor.style.left = '50%';
+        document.getElementById('submit-btn').style.opacity = '0.5';
+        document.getElementById('submit-btn').style.transform = 'scale(1)';
+        container.classList.remove('visible');
+        container.style.opacity = '';
+        container.style.transform = '';
+
+        // Reset Scene 2 elements
+        scene2Container.classList.remove('visible');
+        scene2Container.style.opacity = '';
+        dataPacket.style.opacity = '0';
+        dataPacket.style.transform = 'translate(-50%, -50%) scale(0)';
+        // Center packet initially
+        dataPacket.style.top = '50%';
+        dataPacket.style.left = '50%';
+        
+        nodeFE.classList.remove('visible');
+        nodeWS.classList.remove('visible');
+        nodeBE.classList.remove('visible');
+        nodeSession.classList.remove('visible');
+        
+        lineFeWs.classList.remove('active');
+        lineWsBe.classList.remove('active');
+        lineBeSession.classList.remove('active');
+        
+        sessionInfo.classList.remove('visible');
+        nextPhaseIndicator.classList.remove('visible');
+        particleContainer.innerHTML = '';
+        
+        // Reset Scene 3 elements
+        document.getElementById('scene3-container').classList.remove('visible');
+        document.getElementById('scene3-container').style.opacity = '';
+        
+        const wrapper = document.getElementById('chamber-wrapper');
+        if(wrapper) {
+            wrapper.classList.remove('visible');
+            const core = document.getElementById('chamber-core');
+            core.style.transform = '';
+            core.style.opacity = '';
+            core.classList.remove('scanning');
+            
+            document.getElementById('core-laser').style.opacity = '0';
+            document.getElementById('core-laser').style.top = '10%';
+            document.getElementById('core-laser').style.transition = 'none';
+            
+            document.querySelectorAll('.code-row').forEach(row => {
+                row.classList.remove('scanned', 'target');
+            });
+
+            ['mod-syntax', 'mod-semantic', 'mod-complexity'].forEach(id => {
+                const el = document.getElementById(id);
+                if(el) el.classList.remove('visible', 'active', 'complete');
+            });
+
+            ['beam-syntax', 'beam-semantic', 'beam-complexity'].forEach(id => {
+                const el = document.getElementById(id);
+                if(el) el.classList.remove('active', 'return');
+            });
+
+            document.getElementById('baseline-artifact-s3').classList.remove('visible');
+            document.getElementById('dot-syn').classList.remove('syn-pass');
+            document.getElementById('dot-sem').classList.remove('sem-pass');
+            document.getElementById('dot-comp').classList.remove('comp-pass');
+        }
+
+        document.getElementById('next-phase-indicator-2').classList.remove('visible');
+
+        // Reset Scene 4 elements
+        const scene4 = document.getElementById('scene4-container');
+        if (scene4) {
+            scene4.classList.remove('visible');
+            scene4.style.opacity = '';
+            
+            document.getElementById('planner-model-badge').classList.remove('visible');
+            document.getElementById('planner-core').style.opacity = '0';
+            document.querySelector('.core-ring-inner').style.stroke = 'rgba(166, 227, 161, 0.3)';
+            document.querySelector('.core-ring-inner').style.strokeWidth = '2';
+            
+            const inBaseline = document.getElementById('input-baseline');
+            inBaseline.style.opacity = '0'; inBaseline.style.top = '-50px'; inBaseline.style.transform = 'translateX(-50%)';
+            const inInst = document.getElementById('input-instruction');
+            inInst.style.opacity = '0'; inInst.style.top = '-50px'; inInst.style.transform = 'translateX(-50%)';
+            
+            const intentPacket = document.getElementById('intent-packet');
+            intentPacket.style.opacity = '0'; intentPacket.style.transform = 'translate(-50%, -50%) scale(0)';
+            intentPacket.style.top = '50%'; intentPacket.style.left = '50%';
+            
+            const astContainer = document.getElementById('ast-container');
+            astContainer.style.opacity = '0';
+            astContainer.style.transform = 'translate(-50%, -50%) scale(0.5)';
+            
+            // Reset AST highlighting
+            ['ast-root', 'ast-var', 'ast-branch-r', 'ast-issue'].forEach(id => {
+                const el = document.getElementById(id);
+                if(el) el.classList.remove('dim', 'target');
+            });
+            ['ast-edge-left', 'ast-edge-right', 'ast-edge-target'].forEach(id => {
+                const el = document.getElementById(id);
+                if(el) el.classList.remove('dim', 'target');
+            });
+
+            const synthSphere = document.getElementById('synthesis-sphere');
+            synthSphere.style.opacity = '0';
+            synthSphere.style.transform = 'translate(-50%, -50%) scale(0)';
+            
+            const blueprint = document.getElementById('blueprint-artifact');
+            blueprint.style.opacity = '0';
+            blueprint.style.transform = 'translate(-50%, -50%) scale(0)';
+            
+            ['bp-card1', 'bp-card2', 'bp-card3'].forEach(id => {
+                const el = document.getElementById(id);
+                if(el) el.classList.remove('visible');
+            });
+            ['bp-arrow1', 'bp-arrow2'].forEach(id => {
+                const el = document.getElementById(id);
+                if(el) el.classList.remove('visible');
+            });
+
+            const execPack = document.getElementById('execution-package');
+            execPack.style.opacity = '0';
+            execPack.style.transform = 'translate(-50%, -50%) scale(0)';
+            execPack.style.top = '50%';
+        }
+        
+        // Clear remaining planner particles and words
+        document.querySelectorAll('.planner-particle').forEach(el => el.remove());
+
+        // Reset Scene 5 elements
+        const scene5 = document.getElementById('scene5-container');
+        if(scene5) {
+            scene5.classList.remove('visible');
+            scene5.style.opacity = '';
+            document.getElementById('generator-model-badge').classList.remove('visible');
+            document.getElementById('incoming-blueprint').style.top = '-100px';
+            document.getElementById('incoming-blueprint').style.opacity = '0';
+            document.getElementById('incoming-blueprint').style.transform = 'translateX(-50%)';
+            document.getElementById('generator-engine').style.transform = 'translate(-50%, -50%) scale(0)';
+            document.getElementById('generator-engine').style.opacity = '0';
+            document.getElementById('generator-engine').style.top = '25%';
+            document.getElementById('gen-core-hex').classList.remove('active');
+            document.getElementById('code-compare-container').style.opacity = '0';
+            document.getElementById('code-compare-container').style.transform = 'translateY(40px)';
+            document.getElementById('new-code-content').innerHTML = '';
+            document.getElementById('refactor-complete').classList.remove('visible');
+            document.getElementById('gen-status').style.opacity = '0';
+        }
+
+        // Reset Scene 6 elements
+        const scene6 = document.getElementById('scene6-container');
+        if (scene6) {
+            scene6.classList.remove('visible');
+            scene6.style.opacity = '';
+            
+            const core = document.getElementById('val-core');
+            core.style.opacity = '0';
+            core.style.transform = 'translate(-50%, -50%) scale(0)';
+            core.classList.remove('fail-core');
+
+            ['val-syntax', 'val-boundary', 'val-complexity'].forEach(id => {
+                const el = document.getElementById(id);
+                if (el) el.classList.remove('processing', 'pass', 'fail');
+            });
+
+            document.querySelectorAll('.val-beam').forEach(b => { 
+                b.classList.remove('active-beam', 'pass-beam', 'fail-beam'); 
+            });
+
+            document.getElementById('syn-token-1').setAttribute('x', '10');
+            document.getElementById('syn-token-2').setAttribute('x', '40');
+            document.getElementById('syn-token-3').setAttribute('x', '20');
+
+            document.getElementById('bound-shield').style.opacity = '0.2';
+            document.getElementById('bound-shield').style.stroke = 'var(--method-color)';
+
+            document.getElementById('comp-bar-gen').setAttribute('y', '75');
+            document.getElementById('comp-bar-gen').setAttribute('height', '10');
+
+            const fb = document.getElementById('val-feedback');
+            fb.style.opacity = '0';
+            fb.style.transform = 'translate(-50%, -50%) scale(0)';
+            fb.style.top = '50%';
+            fb.style.left = '75%';
+
+            document.getElementById('val-retry-node').classList.remove('active-retry');
+            document.getElementById('val-attempt').textContent = 'Attempt: 1';
+
+            const valPack = document.getElementById('validated-package');
+            valPack.style.opacity = '0';
+            valPack.style.transform = 'translate(-50%, -50%) scale(0)';
+            valPack.style.left = '50%';
+        }
+        
+        // Reset Scene 7 elements
+        const scene7 = document.getElementById('scene7-container');
+        if (scene7) {
+            scene7.classList.remove('visible');
+            scene7.style.opacity = '';
+            
+            document.getElementById('s7-qwen-badge').classList.remove('active-center', 'exit-left');
+            document.getElementById('s7-llama-badge').classList.remove('active-center');
+            document.getElementById('s7-llama-badge').classList.add('enter-right');
+            document.getElementById('s7-llama-badge').style.top = '';
+            document.getElementById('qwen-status').textContent = 'ACTIVE';
+            document.getElementById('qwen-status').style.color = '';
+            document.getElementById('llama-status').textContent = 'STANDBY';
+            document.getElementById('llama-status').style.color = 'var(--class-color)';
+            
+            document.getElementById('s7-box-original').classList.remove('visible');
+            document.getElementById('s7-box-original').removeAttribute('style');
+            document.getElementById('s7-box-refactored').classList.remove('visible');
+            document.getElementById('s7-box-refactored').removeAttribute('style');
+            
+            document.getElementById('judge-core-container').style.opacity = '0';
+            document.getElementById('judge-core-container').style.transform = 'translate(-50%, -50%) scale(0)';
+            document.getElementById('judge-core-container').style.transition = '';
+            document.getElementById('judge-crystal').classList.remove('reject', 'accept');
+            
+            document.querySelectorAll('.eval-beam').forEach(b => {
+                b.classList.remove('active', 'reject', 'accept');
+                b.style.opacity = '';
+                b.style.transition = '';
+            });
+            document.querySelectorAll('.beam-label').forEach(l => {
+                l.style.opacity = '0';
+                l.style.color = '';
+            });
+            
+            document.getElementById('s7-feedback-packet').style.opacity = '0';
+            document.getElementById('s7-feedback-packet').style.transform = 'translate(-50%, -50%) scale(0)';
+            document.getElementById('s7-feedback-packet').style.left = '50%';
+            
+            document.getElementById('s7-iteration-counter').style.opacity = '0';
+            document.getElementById('s7-iteration-counter').style.color = '';
+            document.getElementById('s7-iteration-counter').textContent = 'STRATEGY ITERATION: 1';
+            
+            document.getElementById('s7-llama-badge').style.opacity = '';
+            document.getElementById('fallback-shield').style.opacity = '0';
+            document.getElementById('fallback-text').style.opacity = '0';
+
+            // Hide final comparison panel
+            document.getElementById('s7-final-comparison').classList.remove('visible');
+        }
+    }
+
+    function createClassificationParticles() {
+        const container = document.getElementById('scene4-container');
+        const colors = ['#a6e3a1', '#89b4fa', '#f9e2af']; // Green, Blue, Yellow
+        for(let i = 0; i < 40; i++) {
+            const p = document.createElement('div');
+            p.className = 'planner-particle';
+            p.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
+            
+            p.style.left = '50%';
+            p.style.top = '50%';
+            
+            const angle = Math.random() * Math.PI * 2;
+            const dist = 100 + Math.random() * 120;
+            const tx = Math.cos(angle) * dist;
+            const ty = Math.sin(angle) * dist;
+            
+            p.style.transform = `translate(${tx}px, ${ty}px)`;
+            
+            container.appendChild(p);
+            
+            setTimeout(() => {
+                if (currentScene !== 4) return;
+                p.style.transform = `translate(0px, 0px)`;
+                p.style.opacity = '0';
+            }, 50 + Math.random() * 200);
+            
+            setTimeout(() => p.remove(), 1000);
+        }
+    }
+
+    function createIntentWords() {
+        const container = document.getElementById('scene4-container');
+        const words = ['REFACTOR', 'OPTIMIZE', 'READABILITY'];
+        
+        words.forEach((wordText, index) => {
+            const word = document.createElement('div');
+            word.className = 'intent-word';
+            word.textContent = wordText;
+            
+            // Start positions randomly on edges
+            word.style.left = (Math.random() > 0.5 ? '20%' : '80%');
+            word.style.top = (30 + Math.random() * 40) + '%';
+            
+            container.appendChild(word);
+            
+            // Fly into center (cube)
+            setTimeout(() => {
+                if (currentScene !== 4) return;
+                word.style.opacity = '1';
+                word.style.transform = 'scale(1.2)';
+            }, index * 400);
+
+            setTimeout(() => {
+                if (currentScene !== 4) return;
+                word.style.left = '50%';
+                word.style.top = '50%';
+                word.style.transform = 'translate(-50%, -50%) scale(0)';
+                word.style.opacity = '0';
+            }, index * 400 + 800);
+            
+            setTimeout(() => word.remove(), 3000);
+        });
+    }
+
+    async function runScene4() {
+        if (currentScene !== 4) return;
+        
+        const container = document.getElementById('scene4-container');
+        container.classList.add('visible');
+
+        const badge = document.getElementById('planner-model-badge');
+        const core = document.getElementById('planner-core');
+        const inBaseline = document.getElementById('input-baseline');
+        const inInst = document.getElementById('input-instruction');
+        const intentPacket = document.getElementById('intent-packet');
+        const astContainer = document.getElementById('ast-container');
+        const synthSphere = document.getElementById('synthesis-sphere');
+        const blueprint = document.getElementById('blueprint-artifact');
+        const execPack = document.getElementById('execution-package');
+
+        // Initial entry
+        await delayAsync(300, 4);
+        if (currentScene !== 4) return;
+        
+        // Show Planner Identity
+        badge.classList.add('visible');
+        core.style.opacity = '1';
+        
+        await delayAsync(800, 4);
+        if (currentScene !== 4) return;
+
+        // Step A: Intent Recognition (Inputs -> Intent Packet)
+        inBaseline.style.opacity = '1'; inBaseline.style.top = '15%';
+        inInst.style.opacity = '1'; inInst.style.top = '15%';
+        
+        await delayAsync(400, 4);
+        if (currentScene !== 4) return;
+        
+        inBaseline.style.top = '50%'; inBaseline.style.transform = 'translate(-50%, -50%) scale(0.5)';
+        inInst.style.top = '50%'; inInst.style.transform = 'translate(-50%, -50%) scale(0.5)';
+        
+        await delayAsync(600, 4);
+        if (currentScene !== 4) return;
+        
+        inBaseline.style.opacity = '0'; inInst.style.opacity = '0';
+        
+        // Core pulse and Intent object formation
+        document.querySelector('.core-ring-inner').style.stroke = 'var(--string-color)';
+        document.querySelector('.core-ring-inner').style.strokeWidth = '4';
+        
+        intentPacket.style.opacity = '1';
+        intentPacket.style.transform = 'translate(-50%, -50%) scale(1)';
+        
+        await delayAsync(1200, 4);
+        if (currentScene !== 4) return;
+        
+        // Move intent aside
+        intentPacket.style.transform = 'translate(-250px, -50%) scale(0.8)';
+        
+        // Step B: Structural Targeting (AST map appears and locks target)
+        await delayAsync(400, 4);
+        if (currentScene !== 4) return;
+        
+        astContainer.style.opacity = '1';
+        astContainer.style.transform = 'translate(100px, -50%) scale(0.7)';
+
+        await delayAsync(800, 4);
+        if (currentScene !== 4) return;
+
+        // Dim non-targets
+        document.getElementById('ast-root').classList.add('dim');
+        document.getElementById('ast-var').classList.add('dim');
+        document.getElementById('ast-edge-left').classList.add('dim');
+        
+        // Highlight target path
+        document.getElementById('ast-edge-target').classList.add('target');
+        document.getElementById('ast-issue').classList.add('target');
+
+        await delayAsync(1500, 4);
+        if (currentScene !== 4) return;
+
+        // Step C: Plan Generation (Synthesis and Blueprint Output)
+        // Intent and Target move to center
+        intentPacket.style.transform = 'translate(-50%, -50%) scale(0.5)';
+        astContainer.style.transform = 'translate(-50%, -50%) scale(0.3)';
+        
+        await delayAsync(500, 4);
+        if (currentScene !== 4) return;
+
+        // Synthesis sphere envelops them
+        intentPacket.style.opacity = '0';
+        astContainer.style.opacity = '0';
+        synthSphere.style.opacity = '1';
+        synthSphere.style.transform = 'translate(-50%, -50%) scale(1)';
+
+        await delayAsync(800, 4);
+        if (currentScene !== 4) return;
+
+        // Synthesis pulse
+        synthSphere.style.transform = 'translate(-50%, -50%) scale(1.3)';
+        await delayAsync(300, 4);
+        if (currentScene !== 4) return;
+        synthSphere.style.transform = 'translate(-50%, -50%) scale(0.5)';
+        synthSphere.style.opacity = '0';
+        
+        // Blueprint unfolds
+        blueprint.style.opacity = '1';
+        blueprint.style.transform = 'translate(-50%, -50%) scale(1)';
+        
+        await delayAsync(400, 4);
+        if (currentScene !== 4) return;
+        
+        // Reveal blueprint cards sequentially
+        document.getElementById('bp-card1').classList.add('visible');
+        await delayAsync(400, 4);
+        if (currentScene !== 4) return;
+        
+        document.getElementById('bp-arrow1').classList.add('visible');
+        document.getElementById('bp-card2').classList.add('visible');
+        await delayAsync(400, 4);
+        if (currentScene !== 4) return;
+        
+        document.getElementById('bp-arrow2').classList.add('visible');
+        document.getElementById('bp-card3').classList.add('visible');
+        
+        await delayAsync(2000, 4);
+        if (currentScene !== 4) return;
+
+        // Transition: Package consolidates and exits to Generator
+        blueprint.style.transform = 'translate(-50%, -50%) scale(0)';
+        blueprint.style.opacity = '0';
+        
+        await delayAsync(400, 4);
+        if (currentScene !== 4) return;
+        
+        execPack.style.opacity = '1';
+        execPack.style.transform = 'translate(-50%, -50%) scale(1)';
+        
+        await delayAsync(800, 4);
+        if (currentScene !== 4) return;
+        
+        // Shoot package down out of frame
+        execPack.style.top = '150%';
+        execPack.style.transform = 'translate(-50%, -50%) scale(0.8)';
+        
+        // Auto-transition to scene 5
+        await delayAsync(600, 4);
+        if (currentScene === 4) {
+            nextScene();
+        }
+    }
+
+    async function runScene5() {
+        if (currentScene !== 5) return;
+        
+        const container = document.getElementById('scene5-container');
+        container.classList.add('visible');
+        
+        const badge = document.getElementById('generator-model-badge');
+        const blueprint = document.getElementById('incoming-blueprint');
+        const engine = document.getElementById('generator-engine');
+        const hex = document.getElementById('gen-core-hex');
+        const codeView = document.getElementById('code-compare-container');
+        const newCode = document.getElementById('new-code-content');
+        const oldCode = document.getElementById('old-code-content');
+        const status = document.getElementById('gen-status');
+        const completeBadge = document.getElementById('refactor-complete');
+
+        // Show plain, accurate Java in the original pane — mark the target loop with a wrapper
+        const originalJava = `public class StudentManager {
+
+    private List<Student> students;
+
+    public void addStudent(Student s) {
+        students.add(s);
+    }
+
+    public void displayStudents() {`;
+        const loopBlock = `
+        for (Student s : students) {
+            System.out.println(s.getName());
+        }`;
+        const closingJava = `
+    }
+}`;
+        // Build old pane with the loop block highlighted
+        oldCode.innerHTML =
+            document.createTextNode(originalJava).textContent +
+            `<span id="s5-old-loop" style="display:inline; transition: all 0.5s ease; border-left: 3px solid transparent; padding-left: 4px;">` +
+            document.createTextNode(loopBlock).textContent +
+            `</span>` +
+            document.createTextNode(closingJava).textContent;
+
+        // 1. Bring in Model Identity
+        await delayAsync(300, 5);
+        if (currentScene !== 5) return;
+        badge.classList.add('visible');
+        
+        // 2. Blueprint Enters
+        await delayAsync(600, 5);
+        if (currentScene !== 5) return;
+        
+        status.textContent = 'RECEIVING EXECUTION PACKAGE...';
+        status.style.opacity = '1';
+        
+        blueprint.style.top = '25%';
+        blueprint.style.opacity = '1';
+        blueprint.style.transform = 'translateX(-50%) scale(1)';
+
+        await delayAsync(800, 5);
+        if (currentScene !== 5) return;
+        
+        // 3. Reveal Generator Engine
+        engine.style.opacity = '1';
+        engine.style.transform = 'translate(-50%, -50%) scale(1)';
+        
+        await delayAsync(800, 5);
+        if (currentScene !== 5) return;
+        
+        // 4. Ingest Blueprint & Activate Engine
+        blueprint.style.top = '25%';
+        blueprint.style.transform = 'translateX(-50%) scale(0)';
+        blueprint.style.opacity = '0';
+        
+        // Pulse engine hex core
+        engine.style.transform = 'translate(-50%, -50%) scale(1.2)';
+        hex.classList.add('active');
+        
+        await delayAsync(600, 5);
+        if (currentScene !== 5) return;
+        
+        status.textContent = 'UNPACKING PLAN: TARGETING IMPERATIVE LOOP...';
+        engine.style.transform = 'translate(-50%, -50%) scale(0.9)';
+        
+        await delayAsync(600, 5);
+        if (currentScene !== 5) return;
+        
+        // 5. Show Code Comparison & Move Engine Up
+        engine.style.top = '10%';
+        engine.style.transform = 'translate(-50%, -50%) scale(0.5)';
+        
+        codeView.style.opacity = '1';
+        codeView.style.transform = 'translateY(0)';
+        
+        await delayAsync(1000, 5);
+        if (currentScene !== 5) return;
+
+        // Visual link: Target the old loop (lights up red)
+        const oldLoop = document.getElementById('s5-old-loop');
+        if(oldLoop) {
+            oldLoop.style.backgroundColor = 'rgba(255, 95, 86, 0.15)';
+            oldLoop.style.borderLeftColor = '#ff5f56';
+            oldLoop.style.boxShadow = 'inset 0 0 15px rgba(255, 95, 86, 0.1)';
+        }
+
+        await delayAsync(1000, 5);
+        if (currentScene !== 5) return;
+
+        // 6. Type out new code
+        status.textContent = 'STREAMING DECLARATIVE REFACTOR...';
+        
+        const refactoredCode = `public class StudentManager {
+
+    private List<Student> students;
+
+    public void addStudent(Student student) {
+        students.add(student);
+    }
+
+    public void displayStudents() {
+        students.stream()
+                .map(Student::getName)
+                .forEach(System.out::println);
+    }
+}`;
+        
+        let currentText = '';
+        const streamStart = refactoredCode.indexOf('students.stream()');
+        for (let i = 0; i < refactoredCode.length; i++) {
+            if (currentScene !== 5) return;
+            currentText += refactoredCode[i];
+
+            if (i >= streamStart && streamStart !== -1) {
+                // Stream section: show plain text before stream, green-highlighted stream part
+                const beforeStream = document.createTextNode(refactoredCode.substring(0, streamStart)).textContent;
+                const streamPart  = document.createTextNode(currentText.substring(streamStart)).textContent;
+                newCode.innerHTML =
+                    beforeStream +
+                    `<span class="highlight-green" style="display:inline;">${streamPart}</span>` +
+                    '<span class="blinking-cursor"></span>';
+            } else {
+                newCode.textContent = currentText;
+            }
+
+            await new Promise(resolve => {
+                const id = setTimeout(resolve, 15);
+                scene5TimeoutIds.push(id);
+            });
+        }
+
+        // Final state: plain text with stream section highlighted
+        const beforeStream2 = refactoredCode.substring(0, streamStart);
+        const streamPart2   = refactoredCode.substring(streamStart);
+        newCode.innerHTML =
+            document.createTextNode(beforeStream2).textContent +
+            `<span class="highlight-green" style="display:inline;">${document.createTextNode(streamPart2).textContent}</span>`;
+
+        await delayAsync(600, 5);
+        if (currentScene !== 5) return;
+        
+        // 7. Complete & Stabilize
+        status.textContent = 'GENERATION COMPLETE';
+        hex.classList.remove('active');
+        
+        completeBadge.classList.add('visible');
+    }
+
+    async function runScene6() {
+        if (currentScene !== 6) return;
+        
+        const container = document.getElementById('scene6-container');
+        container.classList.add('visible');
+
+        const core = document.getElementById('val-core');
+        const synMod = document.getElementById('val-syntax');
+        const boundMod = document.getElementById('val-boundary');
+        const compMod = document.getElementById('val-complexity');
+        const fbPacket = document.getElementById('val-feedback');
+        const retryNode = document.getElementById('val-retry-node');
+        const beams = document.querySelectorAll('.val-beam');
+
+        // 1. Initial package arrives from Generator
+        await delayAsync(600, 6);
+        if (currentScene !== 6) return;
+        core.style.opacity = '1';
+        core.style.transform = 'translate(-50%, -50%) scale(1)';
+
+        await delayAsync(800, 6);
+        if (currentScene !== 6) return;
+
+        // Activate beams
+        beams.forEach(b => b.classList.add('active-beam'));
+
+        // 2. Syntax Check (Pass)
+        synMod.classList.add('processing');
+        await delayAsync(800, 6);
+        if (currentScene !== 6) return;
+        
+        document.getElementById('syn-token-1').setAttribute('x', '20'); // tokens align
+        document.getElementById('syn-token-2').setAttribute('x', '20');
+        document.getElementById('syn-token-3').setAttribute('x', '20');
+        
+        await delayAsync(400, 6);
+        synMod.classList.remove('processing');
+        synMod.classList.add('pass');
+        document.getElementById('val-beam-syntax').classList.replace('active-beam', 'pass-beam');
+
+        // 3. Boundary Check (Pass)
+        if (currentScene !== 6) return;
+        boundMod.classList.add('processing');
+        await delayAsync(800, 6);
+        
+        document.getElementById('bound-shield').style.opacity = '1'; 
+        document.getElementById('bound-shield').style.stroke = 'var(--string-color)';
+        
+        await delayAsync(400, 6);
+        boundMod.classList.remove('processing');
+        boundMod.classList.add('pass');
+        document.getElementById('val-beam-boundary').classList.replace('active-beam', 'pass-beam');
+
+        // 4. Complexity Check (FAILURE)
+        if (currentScene !== 6) return;
+        compMod.classList.add('processing');
+        await delayAsync(500, 6);
+        
+        // Bar grows too high (exceeds baseline)
+        document.getElementById('comp-bar-gen').setAttribute('y', '20');
+        document.getElementById('comp-bar-gen').setAttribute('height', '65');
+        
+        await delayAsync(800, 6);
+        if (currentScene !== 6) return;
+        
+        compMod.classList.remove('processing');
+        compMod.classList.add('fail');
+        document.getElementById('val-beam-complexity').classList.replace('active-beam', 'fail-beam');
+        core.classList.add('fail-core'); // Core flashes red
+
+        // 5. Feedback Loop Back to Generator
+        await delayAsync(600, 6);
+        if (currentScene !== 6) return;
+        
+        fbPacket.style.opacity = '1';
+        fbPacket.style.transform = 'translate(-50%, -50%) scale(1)';
+        
+        await delayAsync(800, 6);
+        if (currentScene !== 6) return;
+        
+        // Packet travels to Retry node
+        fbPacket.style.top = '20%';
+        fbPacket.style.left = '20%';
+        
+        await delayAsync(1200, 6);
+        if (currentScene !== 6) return;
+        
+        // 6. Retry triggered
+        fbPacket.style.opacity = '0';
+        retryNode.classList.add('active-retry');
+        document.getElementById('val-attempt').textContent = 'Attempt: 2';
+        
+        // Old code clears
+        core.style.opacity = '0';
+        core.classList.remove('fail-core');
+        
+        // Reset modules for attempt 2
+        synMod.classList.remove('pass'); 
+        boundMod.classList.remove('pass'); 
+        compMod.classList.remove('fail');
+        document.querySelectorAll('.val-beam').forEach(b => { 
+            b.classList.remove('pass-beam', 'fail-beam'); 
+        });
+        document.getElementById('syn-token-1').setAttribute('x', '10');
+        document.getElementById('syn-token-2').setAttribute('x', '40');
+        document.getElementById('comp-bar-gen').setAttribute('y', '75');
+        document.getElementById('comp-bar-gen').setAttribute('height', '10');
+        document.getElementById('bound-shield').style.opacity = '0.2';
+        document.getElementById('bound-shield').style.stroke = 'var(--method-color)';
+
+        await delayAsync(1000, 6);
+        if (currentScene !== 6) return;
+        
+        // 7. New corrected code arrives
+        retryNode.classList.remove('active-retry');
+        core.style.opacity = '1';
+        
+        await delayAsync(800, 6);
+        if (currentScene !== 6) return;
+        
+        // Fast Check (All Pass Simultaneously)
+        document.querySelectorAll('.val-beam').forEach(b => b.classList.add('pass-beam'));
+        synMod.classList.add('pass'); 
+        boundMod.classList.add('pass'); 
+        compMod.classList.add('pass');
+        
+        document.getElementById('syn-token-1').setAttribute('x', '20');
+        document.getElementById('syn-token-2').setAttribute('x', '20');
+        
+        // Complexity bar stays low this time
+        document.getElementById('comp-bar-gen').setAttribute('y', '65');
+        document.getElementById('comp-bar-gen').setAttribute('height', '20');
+        
+        document.getElementById('bound-shield').style.opacity = '1';
+        document.getElementById('bound-shield').style.stroke = 'var(--string-color)';
+
+        // 8. Package Validated and Sent to Scene 7
+        await delayAsync(1200, 6);
+        if (currentScene !== 6) return;
+        
+        core.style.opacity = '0';
+        
+        const validatedPack = document.getElementById('validated-package');
+        validatedPack.style.opacity = '1';
+        validatedPack.style.transform = 'translate(-50%, -50%) scale(1)';
+
+        await delayAsync(1500, 6);
+        if (currentScene !== 6) return;
+        
+        // Exit screen to the right
+        validatedPack.style.left = '150%';
+        
+        await delayAsync(800, 6);
+        if (currentScene === 6) {
+            nextScene();
+        }
+    }
+
+    async function runScene7() {
+        if (currentScene !== 7) return;
+
+        const container = document.getElementById('scene7-container');
+        container.classList.add('visible');
+
+        const qwenBadge = document.getElementById('s7-qwen-badge');
+        const llamaBadge = document.getElementById('s7-llama-badge');
+        const qwenStatus = document.getElementById('qwen-status');
+        const llamaStatus = document.getElementById('llama-status');
+        
+        const originalBox = document.getElementById('s7-box-original');
+        const refactoredBox = document.getElementById('s7-box-refactored');
+        
+        const judgeCore = document.getElementById('judge-core-container');
+        const judgeCrystal = document.getElementById('judge-crystal');
+        
+        const beams = [
+            document.getElementById('s7-beam-logic'),
+            document.getElementById('s7-beam-struct'),
+            document.getElementById('s7-beam-quality')
+        ];
+        const labels = [
+            document.getElementById('s7-label-logic'),
+            document.getElementById('s7-label-struct'),
+            document.getElementById('s7-label-quality')
+        ];
+
+        const feedback = document.getElementById('s7-feedback-packet');
+        const iterCounter = document.getElementById('s7-iteration-counter');
+
+        // 1. Model Swap Visualization
+        await delayAsync(300, 7);
+        if (currentScene !== 7) return;
+        
+        // Qwen enters center
+        qwenBadge.classList.add('active-center');
+        
+        await delayAsync(1000, 7);
+        if (currentScene !== 7) return;
+        
+        qwenStatus.textContent = 'UNLOAD';
+        qwenStatus.style.color = '#ff5f56';
+        
+        await delayAsync(800, 7);
+        if (currentScene !== 7) return;
+        
+        qwenBadge.classList.remove('active-center');
+        qwenBadge.classList.add('exit-left');
+        
+        llamaBadge.classList.remove('enter-right');
+        llamaBadge.classList.add('active-center');
+        
+        await delayAsync(1000, 7);
+        if (currentScene !== 7) return;
+        
+        llamaStatus.textContent = 'LOAD';
+        llamaStatus.style.color = 'var(--string-color)';
+        
+        await delayAsync(800, 7);
+        if (currentScene !== 7) return;
+        
+        // Llama is now active — keep it centered in swap area
+        llamaStatus.textContent = 'ACTIVE';
+        
+        // 2. Code Arrival & Judge Core
+        iterCounter.style.opacity = '1';
+        
+        await delayAsync(500, 7);
+        if (currentScene !== 7) return;
+        
+        originalBox.classList.add('visible');
+        refactoredBox.classList.add('visible');
+        
+        await delayAsync(800, 7);
+        if (currentScene !== 7) return;
+        
+        judgeCore.style.opacity = '1';
+        judgeCore.style.transform = 'translate(-50%, -50%) scale(1)';
+        
+        // 3. Iteration 1 - Revise Path (Failure)
+        await delayAsync(1200, 7);
+        if (currentScene !== 7) return;
+        
+        // Beams activate
+        beams.forEach(b => b.classList.add('active'));
+        labels.forEach(l => l.style.opacity = '1');
+        
+        await delayAsync(1500, 7);
+        if (currentScene !== 7) return;
+        
+        // Refactoring Quality fails
+        beams[2].classList.add('reject');
+        labels[2].style.color = '#ff5f56';
+        judgeCrystal.classList.add('reject');
+        
+        await delayAsync(800, 7);
+        if (currentScene !== 7) return;
+        
+        // Fire Feedback Packet backward
+        feedback.style.opacity = '1';
+        feedback.style.transform = 'translate(-50%, -50%) scale(1)';
+        
+        await delayAsync(800, 7);
+        if (currentScene !== 7) return;
+        
+        feedback.style.left = '-20%'; // flies off left
+        
+        // 4. Iteration 2 — Re-eval: ALL PASS → SUCCESS
+        await delayAsync(1000, 7);
+        if (currentScene !== 7) return;
+
+        // Reset judge state from iteration 1
+        beams.forEach(b => b.classList.remove('active', 'reject'));
+        labels.forEach(l => { l.style.opacity = '0'; l.style.color = 'var(--class-color)'; });
+        judgeCrystal.classList.remove('reject');
+        feedback.style.opacity = '0';
+        feedback.style.left = '50%';
+        feedback.style.transform = 'translate(-50%, -50%) scale(0)';
+
+        refactoredBox.style.opacity = '0';
+        refactoredBox.style.transform = 'translateY(-30px)';
+
+        iterCounter.textContent = 'STRATEGY ITERATION: 2';
+
+        await delayAsync(1200, 7);
+        if (currentScene !== 7) return;
+
+        // New optimised candidate enters
+        refactoredBox.style.transform = 'translateY(30px)';
+        await delayAsync(100, 7);
+        if (currentScene !== 7) return;
+        refactoredBox.style.opacity = '1';
+        refactoredBox.style.transform = 'translateY(0)';
+
+        await delayAsync(800, 7);
+        if (currentScene !== 7) return;
+
+        // All evaluation beams fire
+        beams.forEach(b => b.classList.add('active'));
+        labels.forEach(l => l.style.opacity = '1');
+
+        await delayAsync(1800, 7);
+        if (currentScene !== 7) return;
+
+        // ── ALL CHECKS PASS ──
+        beams.forEach(b => {
+            b.classList.remove('active', 'reject');
+            b.classList.add('accept');
+        });
+        labels.forEach(l => l.style.color = 'var(--string-color)');
+        judgeCrystal.classList.remove('reject');
+        judgeCrystal.classList.add('accept');
+
+        await delayAsync(600, 7);
+        if (currentScene !== 7) return;
+
+        // 5. Success state
+        iterCounter.style.color = 'var(--string-color)';
+        iterCounter.textContent = '✅ VALIDATION SUCCESSFUL — OUTPUT APPROVED';
+
+        await delayAsync(1400, 7);
+        if (currentScene !== 7) return;
+
+        // 6. Transition to final side-by-side comparison
+        judgeCore.style.transition = 'all 0.6s ease';
+        judgeCore.style.opacity = '0';
+        judgeCore.style.transform = 'translate(-50%, -50%) scale(0)';
+        beams.forEach(b => { b.style.transition = 'opacity 0.5s'; b.style.opacity = '0'; });
+        labels.forEach(l => l.style.opacity = '0');
+        originalBox.style.transition = 'opacity 0.5s ease';
+        originalBox.style.opacity = '0';
+        refactoredBox.style.transition = 'opacity 0.5s ease';
+        refactoredBox.style.opacity = '0';
+        iterCounter.style.opacity = '0';
+        // Fade badge out too
+        document.getElementById('s7-llama-badge').style.opacity = '0';
+
+        await delayAsync(700, 7);
+        if (currentScene !== 7) return;
+
+        // Reveal final comparison panel
+        document.getElementById('s7-final-comparison').classList.add('visible');
+    }
+    </script>
+</body>
+</html>
