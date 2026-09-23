@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useRef, useEffect } from "react"
-import { Check, Copy, Sparkles } from "lucide-react"
+import { Check, Copy, Sparkles, ArrowRight } from "lucide-react"
 import { HorizonGlow } from "@/components/horizon-glow"
 import { cn } from "@/lib/utils"
 import gsap from "gsap"
@@ -92,6 +92,17 @@ export function CodeSection() {
         <p className="mt-6 font-mono text-sm text-foreground/70 max-w-2xl leading-relaxed">
           See how the SLM orchestration translates complex, nested conditionals into structured, clean, and optimized Java patterns.
         </p>
+        <div className="mt-8">
+          <button
+            onClick={() => {
+              editorGridRef.current?.scrollIntoView({ behavior: "smooth", block: "center" })
+            }}
+            className="group inline-flex items-center gap-2.5 border border-foreground/20 px-6 py-3 font-mono text-xs uppercase tracking-widest text-foreground hover:border-accent hover:text-accent hover:bg-accent/5 transition-all duration-200 rounded-md shadow-sm"
+          >
+            <span>See how</span>
+            <ArrowRight className="w-3.5 h-3.5 transition-transform duration-200 group-hover:translate-x-1" />
+          </button>
+        </div>
       </div>
 
       {/* Side-by-side IDE Container */}
