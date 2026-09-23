@@ -252,7 +252,7 @@ function renderOrchestrationScene(
 }
 
 /* =========================================================================
-   SCENE 1: User Input (Accelerated Typing & Snappy Click Trigger)
+   SCENE 1: User Input (Accelerated Hybrid Typing & System Activation Cue)
    ========================================================================= */
 function Scene1UserInput({
   subStep,
@@ -263,41 +263,101 @@ function Scene1UserInput({
   payload: OrchestrationPayload
   onNextScene: () => void
 }) {
-  const [typedCode, setTypedCode] = useState("")
-  const [typedPrompt, setTypedPrompt] = useState("")
+  const [typingStage, setTypingStage] = useState(0)
+  const [promptStage, setPromptStage] = useState(0)
+  const [isSystemActivated, setIsSystemActivated] = useState(false)
   const [isClicked, setIsClicked] = useState(false)
 
-  const fullCodeBoilerplate = `public class StudentManager {\n    private List<Student> students;\n\n    public void displayStudents() {\n`
-  const loopCode = `        for (Student s : students) {\n            System.out.println(s.getName());\n        }\n    }\n}`
+  const fullCode = `public class StudentManager {\n    private List<Student> students;\n\n    public void displayStudents() {\n        for (Student s : students) {\n            System.out.println(s.getName());\n        }\n    }\n}`
+
+  const refactorDirective =
+    "Refactor this Java code to improve readability, reduce duplicated logic, and optimize structure."
 
   useEffect(() => {
-    // Fast chunked typing simulator (~1.5 seconds total)
-    setTypedCode(fullCodeBoilerplate)
-    const timer1 = setTimeout(() => {
-      setTypedCode(fullCodeBoilerplate + loopCode)
-    }, 600)
+    // 1. Hybrid Code Typing Sequence (Fast & realistic developer feel, ~600ms total)
+    const t1 = setTimeout(() => setTypingStage(1), 120)
+    const t2 = setTimeout(() => setTypingStage(2), 350)
+    const t3 = setTimeout(() => setTypingStage(3), 600)
 
-    const timer2 = setTimeout(() => {
-      setTypedPrompt(payload.nlDirective)
-    }, 1200)
+    // 2. Rapid Refactoring Directive Typing Burst (~900ms total)
+    const t4 = setTimeout(() => setPromptStage(1), 650)
+    const t5 = setTimeout(() => setPromptStage(2), 900)
+
+    // 3. System Activation Cue (Glow trigger & data packet primed)
+    const t6 = setTimeout(() => setIsSystemActivated(true), 1150)
 
     return () => {
-      clearTimeout(timer1)
-      clearTimeout(timer2)
+      clearTimeout(t1)
+      clearTimeout(t2)
+      clearTimeout(t3)
+      clearTimeout(t4)
+      clearTimeout(t5)
+      clearTimeout(t6)
     }
-  }, [payload.nlDirective, fullCodeBoilerplate, loopCode])
+  }, [])
+
+  const currentDisplayedCode =
+    typingStage === 0
+      ? "pub"
+      : typingStage === 1
+      ? "public class StudentManager {\n"
+      : typingStage === 2
+      ? "public class StudentManager {\n    private List<Student> students;\n\n    public void displayStudents() {\n"
+      : fullCode
+
+  const currentDisplayedPrompt =
+    promptStage === 0
+      ? ""
+      : promptStage === 1
+      ? "Refactor this Java code to improve readability..."
+      : refactorDirective
 
   const handleClickRefactor = () => {
     setIsClicked(true)
+    setIsSystemActivated(true)
     setTimeout(() => {
       onNextScene()
-    }, 300)
+    }, 350)
+  }
+
+  // Syntax Highlighting Renderer for Code Viewer
+  const renderHighlightedLines = (code: string) => {
+    return code.split("\n").map((line, idx) => (
+      <div key={idx} className="flex hover:bg-white/[0.02] px-1 rounded transition-colors">
+        <span className="w-6 text-white/20 select-none text-right pr-3 shrink-0 text-[10px]">
+          {idx + 1}
+        </span>
+        <span className="whitespace-pre">
+          {line.split(/(\bpublic\b|\bclass\b|\bprivate\b|\bvoid\b|\bfor\b|\bList\b|\bStudent\b|\bSystem\b|\bout\b|\bprintln\b)/g).map((token, tIdx) => {
+            if (["public", "class", "private", "void", "for"].includes(token)) {
+              return <span key={tIdx} className="text-[#a855f7] font-bold">{token}</span>
+            }
+            if (["List", "Student", "System"].includes(token)) {
+              return <span key={tIdx} className="text-[#22d3ee] font-bold">{token}</span>
+            }
+            if (["out", "println", "displayStudents", "getName"].includes(token)) {
+              return <span key={tIdx} className="text-[#10B981]">{token}</span>
+            }
+            return <span key={tIdx} className="text-white/90">{token}</span>
+          })}
+        </span>
+      </div>
+    ))
   }
 
   return (
-    <div className="space-y-6">
-      {/* IDE Code Window */}
-      <div className="bg-[#121218] rounded-xl border border-white/15 p-5 shadow-2xl relative overflow-hidden">
+    <div className="space-y-6 font-mono">
+      {/* IDE Code Window with Faint System Activation Glow */}
+      <motion.div
+        animate={{
+          borderColor: isSystemActivated ? "rgba(34,211,238,0.6)" : "rgba(255,255,255,0.15)",
+          boxShadow: isSystemActivated
+            ? "0 0 35px rgba(34,211,238,0.22)"
+            : "0 0 0px rgba(0,0,0,0)",
+        }}
+        transition={{ duration: 0.4 }}
+        className="bg-[#121218] rounded-xl border p-5 shadow-2xl relative overflow-hidden transition-all"
+      >
         <div className="flex items-center justify-between mb-3 pb-2 border-b border-white/10">
           <div className="flex items-center space-x-2">
             <div className="w-3 h-3 rounded-full bg-red-500/80" />
@@ -307,46 +367,79 @@ function Scene1UserInput({
               <Terminal className="w-3.5 h-3.5 text-cyan-400" /> StudentManager.java
             </span>
           </div>
-          <span className="text-[10px] text-emerald-400 font-bold bg-emerald-500/10 px-2 py-0.5 rounded border border-emerald-500/30">
-            FAST INGESTION (1.5s)
-          </span>
+          <div className="flex items-center gap-2">
+            {isSystemActivated ? (
+              <motion.span
+                initial={{ scale: 0.8, opacity: 0 }}
+                animate={{ scale: 1, opacity: 1 }}
+                className="text-[10px] text-cyan-300 font-bold bg-cyan-500/20 px-2.5 py-0.5 rounded border border-cyan-500/40 flex items-center gap-1 shadow-[0_0_12px_rgba(34,211,238,0.3)]"
+              >
+                <Sparkles className="w-3 h-3 text-cyan-400" /> AST PACKET PRIMED
+              </motion.span>
+            ) : (
+              <span className="text-[10px] text-emerald-400 font-bold bg-emerald-500/10 px-2 py-0.5 rounded border border-emerald-500/30">
+                EXPERT TYPING (1.2s)
+              </span>
+            )}
+          </div>
         </div>
 
-        <pre className="text-xs text-white/90 leading-relaxed font-mono overflow-x-auto min-h-[140px]">
-          <code>{typedCode || fullCodeBoilerplate}</code>
+        <pre className="text-xs leading-relaxed font-mono overflow-x-auto min-h-[140px]">
+          <code>{renderHighlightedLines(currentDisplayedCode)}</code>
           <motion.span
             animate={{ opacity: [1, 0, 1] }}
-            transition={{ repeat: Infinity, duration: 0.6 }}
+            transition={{ repeat: Infinity, duration: 0.5 }}
             className="inline-block w-2 h-4 bg-cyan-400 ml-1 translate-y-0.5"
           />
         </pre>
-      </div>
+      </motion.div>
 
-      {/* Prompt Box & Snappy Refactor Action */}
-      <div className="p-4 rounded-xl border border-cyan-500/30 bg-cyan-500/5 flex flex-col md:flex-row items-center justify-between gap-4">
+      {/* Refactoring Directive Box with System Activation Light-Up */}
+      <motion.div
+        animate={{
+          borderColor: isSystemActivated ? "#22d3ee" : "rgba(34,211,238,0.3)",
+          backgroundColor: isSystemActivated ? "rgba(34,211,238,0.08)" : "rgba(34,211,238,0.04)",
+          boxShadow: isSystemActivated
+            ? "0 0 25px rgba(34,211,238,0.25)"
+            : "0 0 0px rgba(0,0,0,0)",
+        }}
+        transition={{ duration: 0.4 }}
+        className="p-4 rounded-xl border flex flex-col md:flex-row items-center justify-between gap-4 transition-all"
+      >
         <div className="flex-1 w-full space-y-1">
           <div className="text-[10px] uppercase text-cyan-300 font-bold tracking-wider flex items-center gap-1.5">
             <Sparkles className="w-3.5 h-3.5 text-cyan-400" /> Refactoring Directive Input
           </div>
-          <div className="text-xs text-white/90 bg-[#070709] px-3.5 py-2.5 rounded-lg border border-white/10 font-mono">
-            {typedPrompt || "Typing directive..."}
+          <div className="text-xs text-white/90 bg-[#070709] px-3.5 py-2.5 rounded-lg border border-white/10 font-mono leading-relaxed">
+            {currentDisplayedPrompt || "Typing directive..."}
+            {promptStage < 2 && (
+              <motion.span
+                animate={{ opacity: [1, 0, 1] }}
+                transition={{ repeat: Infinity, duration: 0.5 }}
+                className="inline-block w-1.5 h-3 bg-cyan-400 ml-1"
+              />
+            )}
           </div>
         </div>
 
+        {/* Refactor Action Button with Pulse & Snappy Feedback */}
         <motion.button
           onClick={handleClickRefactor}
-          animate={{ scale: isClicked ? 0.94 : 1 }}
+          animate={{
+            scale: isClicked ? 0.94 : isSystemActivated ? [1, 1.03, 1] : 1,
+          }}
+          transition={{ duration: 0.3 }}
           className={cn(
             "w-full md:w-auto px-6 py-3 rounded-xl font-bold font-mono text-xs uppercase tracking-wider flex items-center justify-center gap-2 transition-all cursor-pointer shadow-lg shrink-0",
-            isClicked
+            isSystemActivated || isClicked
               ? "bg-emerald-400 text-black border-2 border-emerald-300 shadow-[0_0_20px_#10B981]"
               : "bg-cyan-500 text-black hover:bg-cyan-400 border border-cyan-300"
           )}
         >
           <Zap className="w-4 h-4" />
-          <span>{isClicked ? "Ingesting..." : "Refactor Code"}</span>
+          <span>{isClicked || isSystemActivated ? "System Primed..." : "Refactor Code"}</span>
         </motion.button>
-      </div>
+      </motion.div>
     </div>
   )
 }
