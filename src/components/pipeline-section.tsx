@@ -1,7 +1,9 @@
 "use client"
 
 import { useRef, useState, useEffect } from "react"
+import Link from "next/link"
 import { motion } from "framer-motion"
+import { ArrowRight } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { HorizonGlow } from "@/components/horizon-glow"
 import gsap from "gsap"
@@ -121,9 +123,18 @@ export function PipelineSection() {
       />
 
       {/* Section header */}
-      <div ref={headerRef} className="mb-16 pr-6 md:pr-12">
-        <span className="font-mono text-[10px] uppercase tracking-[0.3em] text-accent">02 / Pipeline</span>
-        <h2 className="mt-4 font-[var(--font-inter)] text-5xl md:text-7xl tracking-tight">PIPELINE PHASES</h2>
+      <div ref={headerRef} className="mb-16 pr-6 md:pr-12 flex flex-col md:flex-row md:items-end justify-between gap-6">
+        <div>
+          <span className="font-mono text-[10px] uppercase tracking-[0.3em] text-accent">02 / Pipeline</span>
+          <h2 className="mt-4 font-[var(--font-inter)] text-5xl md:text-7xl tracking-tight">PIPELINE PHASES</h2>
+        </div>
+        <Link
+          href="/phases"
+          className="group inline-flex items-center gap-2.5 border border-accent/40 bg-accent/10 px-6 py-3 rounded-lg font-mono text-xs uppercase tracking-widest text-accent hover:bg-accent hover:text-accent-foreground transition-all duration-300 shadow-lg"
+        >
+          <span>Explore 6-Phase Architecture</span>
+          <ArrowRight className="w-4 h-4 transition-transform duration-300 group-hover:translate-x-1" />
+        </Link>
       </div>
 
       {/* Infinite Carousel container */}
