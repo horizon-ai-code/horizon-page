@@ -171,65 +171,6 @@ export default function HorizonOrchestrationStudio() {
       <NoiseOverlay opacity={0.03} />
       <HorizonGlow glowPosition="center" glowColor="blue" sparkleCount={10} showHorizonLine={false} />
 
-      {/* Top Glassmorphic Navigation */}
-      <header className="max-w-5xl mx-auto w-full flex flex-col md:flex-row items-center justify-between gap-4 pb-4 border-b border-white/10 relative z-20">
-        <div className="flex items-center gap-4">
-          <Link
-            href="/"
-            className="group inline-flex items-center gap-2 text-xs text-white/60 hover:text-cyan-400 transition-colors"
-          >
-            <ArrowLeft className="w-4 h-4 transition-transform group-hover:-translate-x-1" />
-            <span>Overview</span>
-          </Link>
-          <span className="text-white/20">/</span>
-          <div className="flex items-center gap-2">
-            <div className="w-2.5 h-2.5 rounded-full bg-cyan-400 animate-pulse" />
-            <span className="text-xs tracking-widest text-white/80 uppercase font-bold">
-              HORIZON-AI // KINETIC_ORCHESTRATION_DECK
-            </span>
-          </div>
-        </div>
-
-        {/* Phase Pill Navigation */}
-        <div className="flex items-center gap-1 bg-[#0E0E14] p-1 rounded-lg border border-white/10">
-          {SCENES.map((scene, idx) => (
-            <button
-              key={scene.id}
-              onClick={() => {
-                setCurrentScene(idx)
-                setSubStep(0)
-              }}
-              className={cn(
-                "px-2.5 py-1 rounded text-[11px] font-bold transition-all duration-300 relative cursor-pointer",
-                currentScene === idx
-                  ? "bg-emerald-500/20 text-emerald-300 border border-emerald-500/50 shadow-[0_0_12px_rgba(16,185,129,0.25)]"
-                  : "text-white/40 hover:text-white/80 border border-transparent"
-              )}
-            >
-              {scene.num}
-            </button>
-          ))}
-        </div>
-
-        {/* Transport Controls */}
-        <div className="flex items-center gap-2">
-          <button
-            onClick={() => setIsPlaying(!isPlaying)}
-            className="px-3.5 py-1.5 rounded bg-white/10 hover:bg-white/15 text-xs flex items-center gap-1.5 font-bold transition-colors cursor-pointer"
-          >
-            {isPlaying ? <Pause className="w-3 h-3 text-emerald-400" /> : <Play className="w-3 h-3 text-emerald-400" />}
-            <span>{isPlaying ? "PAUSE" : "PLAY"}</span>
-          </button>
-          <button
-            onClick={() => setSubStep(0)}
-            className="p-1.5 rounded bg-white/5 hover:bg-white/10 text-white/70 transition-colors cursor-pointer"
-            title="Replay Substep"
-          >
-            <RotateCcw className="w-4 h-4 text-cyan-400" />
-          </button>
-        </div>
-      </header>
-
       {/* Main Kinetic Stage */}
       <main className="max-w-5xl mx-auto w-full my-auto flex flex-col justify-center relative z-10 py-4">
         {/* Stage Header Info */}
@@ -280,20 +221,6 @@ export default function HorizonOrchestrationStudio() {
           </button>
         </div>
       </main>
-
-      {/* Bottom Telemetry Footer */}
-      <footer className="max-w-5xl mx-auto w-full flex flex-col sm:flex-row items-center justify-between text-[11px] text-white/50 pt-4 border-t border-white/10 gap-3 relative z-20">
-        <div className="flex items-center gap-6">
-          <span>AST_HASH: <strong className="text-cyan-300 font-bold">{payload.astHash}</strong></span>
-          <span>ACTIVE_MODEL: <strong className="text-purple-300 font-bold">{activeSceneData.activeModel}</strong></span>
-        </div>
-        <div className="flex items-center gap-4">
-          <div className="flex items-center gap-1.5">
-            <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
-            <span>SUBSTEP {subStep + 1}/4</span>
-          </div>
-        </div>
-      </footer>
     </div>
   )
 }
