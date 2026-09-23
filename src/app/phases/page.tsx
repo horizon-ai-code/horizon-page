@@ -28,6 +28,7 @@ import {
 } from "lucide-react"
 import { HorizonGlow } from "@/components/horizon-glow"
 import { NoiseOverlay } from "@/components/noise-overlay"
+import { MotionPhase1 } from "@/components/MotionPhase1"
 import { cn } from "@/lib/utils"
 
 export interface OrchestrationPayload {
@@ -347,89 +348,7 @@ function PhaseStageRouter({
   }
 }
 
-// Phase 1: Ingestion & Baseline (Laser Sweep Scan)
-function MotionPhase1({ sceneStep, payload }: { sceneStep: number; payload: OrchestrationPayload }) {
-  return (
-    <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-stretch">
-      <div className="space-y-4 flex flex-col justify-between">
-        <div>
-          <div className="text-xs uppercase text-cyan-400 tracking-wider font-bold mb-2 flex items-center gap-2">
-            <Terminal className="w-4 h-4" /> Step 1: Input Ingestion & Directive
-          </div>
-          <motion.div
-            animate={{ borderColor: sceneStep >= 1 ? "rgba(34,211,238,0.5)" : "rgba(255,255,255,0.1)" }}
-            className="p-3.5 rounded-xl border bg-cyan-500/5 text-xs text-white/90 font-semibold"
-          >
-            Natural Directive: &ldquo;{payload.nlDirective}&rdquo;
-          </motion.div>
-        </div>
 
-        <div className="relative rounded-xl bg-[#070709] border border-white/15 p-4 overflow-hidden text-xs text-white/80 font-mono shadow-inner min-h-[190px]">
-          <div className="text-[10px] text-white/40 mb-2 border-b border-white/10 pb-1 flex justify-between">
-            <span>Input.java</span>
-            <span>Raw Source</span>
-          </div>
-          <pre className="font-mono overflow-x-auto leading-relaxed text-[11px]">{payload.rawCode}</pre>
-
-          {/* Laser Scan Line Sweep */}
-          <motion.div
-            className="absolute left-0 right-0 h-0.5 bg-cyan-400 shadow-[0_0_12px_#22d3ee] pointer-events-none z-20"
-            animate={{ top: ["0%", "100%", "0%"] }}
-            transition={{ repeat: Infinity, duration: 2.2, ease: "easeInOut" }}
-          />
-        </div>
-      </div>
-
-      <div className="flex flex-col justify-between space-y-4">
-        <div>
-          <div className="text-xs uppercase text-purple-400 tracking-wider font-bold mb-3 flex items-center gap-2">
-            <Activity className="w-4 h-4" /> Step 2: Baseline Telemetry Matrix
-          </div>
-
-          <div className="space-y-2.5">
-            <div className={cn(
-              "p-3 rounded-lg border text-xs flex justify-between items-center transition-all",
-              sceneStep >= 1 ? "border-cyan-500/40 bg-cyan-500/10 text-cyan-300" : "border-white/5 text-white/30"
-            )}>
-              <span className="font-semibold">javalang Structural Unit</span>
-              <span className="px-2 py-0.5 rounded bg-cyan-500/20 text-cyan-200 text-[10px] font-bold">METHOD UNIT</span>
-            </div>
-
-            <div className={cn(
-              "p-3 rounded-lg border text-xs flex justify-between items-center transition-all",
-              sceneStep >= 2 ? "border-emerald-500/40 bg-emerald-500/10 text-emerald-300" : "border-white/5 text-white/30"
-            )}>
-              <span className="font-semibold">javac Compilation Benchmark</span>
-              <span className="px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-300 text-[10px] font-bold">100% CSR PASS</span>
-            </div>
-
-            <div className={cn(
-              "p-3 rounded-lg border text-xs flex justify-between items-center transition-all",
-              sceneStep >= 3 ? "border-amber-500/40 bg-amber-500/10 text-amber-300" : "border-white/5 text-white/30"
-            )}>
-              <span className="font-semibold">lizard Cyclomatic Complexity</span>
-              <span className="px-2 py-0.5 rounded bg-amber-500/20 text-amber-300 text-[10px] font-bold">CC = 14 (HIGH)</span>
-            </div>
-          </div>
-        </div>
-
-        {/* Rubber-stamp seal on baseline capture */}
-        <motion.div
-          animate={{ scale: sceneStep === 3 ? [0, 1.15, 1] : 1 }}
-          transition={{ type: "spring", stiffness: 400, damping: 15 }}
-          className="p-3.5 rounded-xl border border-cyan-500/40 bg-cyan-500/10 text-xs flex justify-between items-center shadow-lg"
-        >
-          <span className="flex items-center gap-2 text-cyan-300 font-bold">
-            <CheckCircle2 className="w-4 h-4" /> AST_0 Grounded Baseline
-          </span>
-          <span className="text-cyan-200 font-mono text-[11px] bg-cyan-500/20 px-2 py-0.5 rounded">
-            {payload.astHash}
-          </span>
-        </motion.div>
-      </div>
-    </div>
-  )
-}
 
 // Phase 2: The Strategy Block (VRAM Morph & Cognitive Reset)
 function MotionPhase2({ sceneStep, payload }: { sceneStep: number; payload: OrchestrationPayload }) {
