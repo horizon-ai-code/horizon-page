@@ -5,15 +5,15 @@ export function PhaseStyles() {
     <>
       <style>{`
         .refactor-animation-root {
-            --bg-color: #0f111a;
-            --editor-bg: #1e1e2e;
-            --text-color: #cdd6f4;
-            --keyword-color: #cba6f7;
-            --class-color: #f9e2af;
-            --string-color: #a6e3a1;
-            --method-color: #89b4fa;
-            --border-color: rgba(255, 255, 255, 0.1);
-            --glow-color: rgba(137, 180, 250, 0.3);
+            --bg-color: transparent;
+            --editor-bg: oklch(0.296 0.006 258.36 / 0.85);
+            --text-color: oklch(0.909 0.006 264.53);
+            --keyword-color: oklch(0.650 0.173 262.72);
+            --class-color: #fbbf24;
+            --string-color: #34d399;
+            --method-color: #38bdf8;
+            --border-color: oklch(0.352 0.009 268.40 / 0.5);
+            --glow-color: rgba(147, 51, 234, 0.25);
         }
 
         .refactor-animation-root * {

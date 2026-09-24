@@ -1,6 +1,9 @@
 'use client';
 
 import React, { useEffect, useRef } from "react";
+import { NavigationSidebar } from "@/components/navigation-sidebar";
+import { NoiseOverlay } from "@/components/noise-overlay";
+import { HorizonGlow } from "@/components/horizon-glow";
 import {
   PhaseStyles,
   PhaseNav,
@@ -124,21 +127,21 @@ export default function RefactorAnimation() {
       let highlighted = codeStr.replace(/</g, "&lt;").replace(/>/g, "&gt;");
 
       keywords.forEach((kw) => {
-        const regex = new RegExp(`\\b${kw}\\b`, "g");
+        const regex = new RegExp(`\\b${kw}\\b(?![^<]*>)`, "g");
         highlighted = highlighted.replace(regex, `<span class="kw">${kw}</span>`);
       });
 
       classes.forEach((cls) => {
-        const regex = new RegExp(`\\b${cls}\\b`, "g");
+        const regex = new RegExp(`\\b${cls}\\b(?![^<]*>)`, "g");
         highlighted = highlighted.replace(regex, `<span class="cl">${cls}</span>`);
       });
 
       methods.forEach((mth) => {
-        const regex = new RegExp(`\\b${mth}\\b`, "g");
+        const regex = new RegExp(`\\b${mth}\\b(?![^<]*>)`, "g");
         highlighted = highlighted.replace(regex, `<span class="mth">${mth}</span>`);
       });
 
-      highlighted = highlighted.replace(/([{}();,])/g, '<span class="sym">$1</span>');
+      highlighted = highlighted.replace(/([{}();,])(?![^<]*>)/g, '<span class="sym">$1</span>');
 
       return highlighted;
     }
@@ -310,7 +313,7 @@ export default function RefactorAnimation() {
         particle.style.left = startX + "px";
         particle.style.top = startY + "px";
 
-        const colors = ["#cba6f7", "#f9e2af", "#a6e3a1", "#89b4fa", "#cdd6f4"];
+        const colors = ["#9368ff", "#38bdf8", "#34d399", "#fbbf24", "#e2e2e8"];
         particle.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
 
         particleContainer.appendChild(particle);
@@ -558,7 +561,7 @@ export default function RefactorAnimation() {
 
     function createClassificationParticles() {
       const container = $("scene4-container");
-      const colors = ["#a6e3a1", "#89b4fa", "#f9e2af"];
+      const colors = ["#34d399", "#38bdf8", "#fbbf24", "#9368ff"];
       for (let i = 0; i < 40; i++) {
         const p = document.createElement("div");
         p.className = "planner-particle";
@@ -1614,17 +1617,24 @@ export default function RefactorAnimation() {
   }, []);
 
   return (
-    <div ref={rootRef} className="refactor-animation-root">
-      <PhaseStyles />
-      <PhaseNav />
-      <Phase1Input />
-      <Phase2Pipeline />
-      <Phase3Analysis />
-      <Phase4Decomposition />
-      <Phase5Generation />
-      <Phase6Validation />
-      <Phase7Evaluation />
-      <div id="mouse-cursor"></div>
-    </div>
+    <main className="relative min-h-screen bg-background text-foreground overflow-x-hidden select-none">
+      <NavigationSidebar />
+      <div className="grid-bg fixed inset-0 opacity-25 pointer-events-none" aria-hidden="true" />
+      <NoiseOverlay opacity={0.03} />
+      <HorizonGlow glowPosition="center" glowColor="mixed" sparkleCount={10} showHorizonLine={true} />
+
+      <div ref={rootRef} className="refactor-animation-root min-h-screen relative z-10">
+        <PhaseStyles />
+        <PhaseNav />
+        <Phase1Input />
+        <Phase2Pipeline />
+        <Phase3Analysis />
+        <Phase4Decomposition />
+        <Phase5Generation />
+        <Phase6Validation />
+        <Phase7Evaluation />
+        <div id="mouse-cursor"></div>
+      </div>
+    </main>
   );
 }
