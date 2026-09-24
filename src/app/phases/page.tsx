@@ -1,7 +1,6 @@
 'use client';
 
 import React, { useEffect, useRef } from "react";
-import { NavigationSidebar } from "@/components/navigation-sidebar";
 import { NoiseOverlay } from "@/components/noise-overlay";
 import { HorizonGlow } from "@/components/horizon-glow";
 import {
@@ -1618,7 +1617,6 @@ export default function RefactorAnimation() {
 
   return (
     <main className="relative min-h-screen bg-background text-foreground overflow-x-hidden select-none">
-      <NavigationSidebar />
       <div className="grid-bg fixed inset-0 opacity-25 pointer-events-none" aria-hidden="true" />
       <NoiseOverlay opacity={0.03} />
       <HorizonGlow glowPosition="center" glowColor="mixed" sparkleCount={10} showHorizonLine={true} />
