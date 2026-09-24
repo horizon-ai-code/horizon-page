@@ -1,222 +1,51 @@
-"use client"
+import React, { useEffect, useRef } from "react";
 
-import React, { useState, useEffect, useRef } from "react"
+/**
+ * RefactorAnimation
+ * -------------------------------------------------------------------------
+ * Faithful React + Tailwind port of the original 7-scene "AI refactor"
+ * animation (StudentManager.java walkthrough).
+ *
+ * Why this isn't 100% Tailwind utility classes:
+ * The original relies heavily on CSS custom properties, keyframe
+ * animations, cubic-bezier transitions, radial/linear gradients, and
+ * absolute-positioned SVG diagrams that are driven by imperative
+ * getBoundingClientRect() math in JS. Tailwind has no equivalent for
+ * custom keyframes, CSS variables, or JS-computed positions, so — to
+ * guarantee the design is pixel-identical, as requested — the original
+ * CSS is kept verbatim in a scoped <style> block (this is the standard,
+ * supported way to combine Tailwind with bespoke CSS; Tailwind's own
+ * utilities are layered on top for the parts that map cleanly, e.g.
+ * fixed/absolute positioning helpers are left as the original classes
+ * so nothing shifts by a pixel). All class names, ids, and structure are
+ * unchanged from the source so the JS animation logic (which selects
+ * elements by id) works exactly as before.
+ *
+ * All the original imperative timeline logic (typeText, moveMouse,
+ * delayAsync, the 7 runScene* functions, nextScene/prevScene, and
+ * resetSceneState) is preserved as-is inside a single useEffect that
+ * mounts once, with a cleanup function that clears all pending timers
+ * and event listeners on unmount.
+ */
+export default function RefactorAnimation() {
+  const rootRef = useRef<HTMLDivElement>(null);
 
-export default function PhasesPage() {
-  const [currentScene, setCurrentScene] = useState<number>(1)
-  const totalScenes = 7
-
-  // --- Scene 1 State ---
-  const [s1ContainerVisible, setS1ContainerVisible] = useState(false)
-  const [s1CodeText, setS1CodeText] = useState("")
-  const [s1CodeCursor, setS1CodeCursor] = useState(true)
-  const [s1RequestText, setS1RequestText] = useState("")
-  const [s1RequestCursor, setS1RequestCursor] = useState(false)
-  const [s1Mouse, setS1Mouse] = useState<{ x: number; y: number; opacity: number; active: boolean }>({
-    x: 50,
-    y: 100,
-    opacity: 0,
-    active: false,
-  })
-  const [s1SubmitBtn, setS1SubmitBtn] = useState({ opacity: 0.5, transform: "scale(1)" })
-
-  // --- Scene 2 State ---
-  const [s2ContainerVisible, setS2ContainerVisible] = useState(false)
-  const [s2DataPacket, setS2DataPacket] = useState({
-    opacity: 0,
-    transform: "translate(-50%, -50%) scale(0)",
-    top: "50%",
-    left: "50%",
-    transition: "all 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275), opacity 0.5s ease",
-  })
-  const [s2Nodes, setS2Nodes] = useState({ fe: false, ws: false, be: false, session: false })
-  const [s2Lines, setS2Lines] = useState({ feWs: false, wsBe: false, beSession: false })
-  const [s2WsShadow, setS2WsShadow] = useState("0 10px 30px rgba(0, 0, 0, 0.3)")
-  const [s2SessionTransform, setS2SessionTransform] = useState("translate(-50%, 0) scale(1)")
-  const [s2SessionShadow, setS2SessionShadow] = useState("0 10px 30px rgba(0, 0, 0, 0.3)")
-  const [s2SessionInfoVisible, setS2SessionInfoVisible] = useState(false)
-  const [s2NextPhaseVisible, setS2NextPhaseVisible] = useState(false)
-  const [s2Particles, setS2Particles] = useState<Array<{ id: number; left: number; top: number; bg: string; targetLeft: number; targetTop: number; scale: number; opacity: number }>>([])
-
-  // --- Scene 3 State ---
-  const [s3ContainerVisible, setS3ContainerVisible] = useState(false)
-  const [s3WrapperVisible, setS3WrapperVisible] = useState(false)
-  const [s3CoreState, setS3CoreState] = useState({ scanning: false, opacity: 1, transform: "translate(-50%, -50%) scale(1)" })
-  const [s3LaserState, setS3LaserState] = useState({ opacity: 0, top: "10%", transition: "none" })
-  const [s3CodeScanned, setS3CodeScanned] = useState<boolean[]>(new Array(14).fill(false))
-  const [s3CodeTarget, setS3CodeTarget] = useState(false)
-  const [s3ModulesVisible, setS3ModulesVisible] = useState({ syn: false, sem: false, comp: false })
-  const [s3ModulesActive, setS3ModulesActive] = useState({ syn: false, sem: false, comp: false })
-  const [s3ModulesComplete, setS3ModulesComplete] = useState({ syn: false, sem: false, comp: false })
-  const [s3Beams, setS3Beams] = useState({
-    syn: "" as "" | "active" | "return",
-    sem: "" as "" | "active" | "return",
-    comp: "" as "" | "active" | "return",
-  })
-  const [s3ArtifactVisible, setS3ArtifactVisible] = useState(false)
-  const [s3Dots, setS3Dots] = useState({ syn: false, sem: false, comp: false })
-  const [s3NextPhaseVisible, setS3NextPhaseVisible] = useState(false)
-
-  // --- Scene 4 State ---
-  const [s4ContainerVisible, setS4ContainerVisible] = useState(false)
-  const [s4BadgeVisible, setS4BadgeVisible] = useState(false)
-  const [s4CoreOpacity, setS4CoreOpacity] = useState(0)
-  const [s4InnerRingStyle, setS4InnerRingStyle] = useState({ stroke: "rgba(166, 227, 161, 0.3)", strokeWidth: "2" })
-  const [s4InputBaseline, setS4InputBaseline] = useState({ opacity: 0, top: "-50px", transform: "translateX(-50%)" })
-  const [s4InputInstruction, setS4InputInstruction] = useState({ opacity: 0, top: "-50px", transform: "translateX(-50%)" })
-  const [s4IntentPacket, setS4IntentPacket] = useState({ opacity: 0, transform: "translate(-50%, -50%) scale(0)", top: "50%", left: "50%" })
-  const [s4AstContainer, setS4AstContainer] = useState({ opacity: 0, transform: "translate(-50%, -50%) scale(0.5)" })
-  const [s4AstHighlight, setS4AstHighlight] = useState({ dim: false, target: false })
-  const [s4SynthSphere, setS4SynthSphere] = useState({ opacity: 0, transform: "translate(-50%, -50%) scale(0)" })
-  const [s4Blueprint, setS4Blueprint] = useState({ opacity: 0, transform: "translate(-50%, -50%) scale(0)" })
-  const [s4BpCards, setS4BpCards] = useState({ c1: false, c2: false, c3: false, a1: false, a2: false })
-  const [s4ExecPack, setS4ExecPack] = useState({ opacity: 0, transform: "translate(-50%, -50%) scale(0)", top: "50%" })
-
-  // --- Scene 5 State ---
-  const [s5ContainerVisible, setS5ContainerVisible] = useState(false)
-  const [s5BadgeVisible, setS5BadgeVisible] = useState(false)
-  const [s5Status, setS5Status] = useState({ text: "RECEIVING EXECUTION PACKAGE...", opacity: 0 })
-  const [s5IncomingBlueprint, setS5IncomingBlueprint] = useState({ top: "-100px", opacity: 0, transform: "translateX(-50%)" })
-  const [s5Engine, setS5Engine] = useState({ opacity: 0, transform: "translate(-50%, -50%) scale(0)", top: "25%", hexActive: false })
-  const [s5CodeCompare, setS5CodeCompare] = useState({ opacity: 0, transform: "translateY(40px)" })
-  const [s5OldLoopHighlight, setS5OldLoopHighlight] = useState(false)
-  const [s5NewCodeHtml, setS5NewCodeHtml] = useState("")
-  const [s5RefactorComplete, setS5RefactorComplete] = useState(false)
-
-  // --- Scene 6 State ---
-  const [s6ContainerVisible, setS6ContainerVisible] = useState(false)
-  const [s6Core, setS6Core] = useState({ opacity: 0, transform: "translate(-50%, -50%) scale(0)", fail: false })
-  const [s6Beams, setS6Beams] = useState({
-    syn: "" as "" | "active-beam" | "pass-beam" | "fail-beam",
-    bound: "" as "" | "active-beam" | "pass-beam" | "fail-beam",
-    comp: "" as "" | "active-beam" | "pass-beam" | "fail-beam",
-  })
-  const [s6Modules, setS6Modules] = useState({
-    syn: "" as "" | "processing" | "pass" | "fail",
-    bound: "" as "" | "processing" | "pass" | "fail",
-    comp: "" as "" | "processing" | "pass" | "fail",
-  })
-  const [s6TokensX, setS6TokensX] = useState({ t1: "10", t2: "40", t3: "20" })
-  const [s6BoundShield, setS6BoundShield] = useState({ opacity: 0.2, stroke: "var(--method-color)" })
-  const [s6CompBar, setS6CompBar] = useState({ y: "75", height: "10" })
-  const [s6Feedback, setS6Feedback] = useState({ opacity: 0, transform: "translate(-50%, -50%) scale(0)", top: "50%", left: "75%" })
-  const [s6RetryNode, setS6RetryNode] = useState({ active: false, attempt: 1 })
-  const [s6ValidatedPackage, setS6ValidatedPackage] = useState({ opacity: 0, transform: "translate(-50%, -50%) scale(0)", left: "50%" })
-
-  // --- Scene 7 State ---
-  const [s7ContainerVisible, setS7ContainerVisible] = useState(false)
-  const [s7IterCounter, setS7IterCounter] = useState({ text: "STRATEGY ITERATION: 1", opacity: 0, color: "" })
-  const [s7QwenBadge, setS7QwenBadge] = useState({ activeCenter: false, exitLeft: false, status: "ACTIVE", statusColor: "" })
-  const [s7LlamaBadge, setS7LlamaBadge] = useState({ enterRight: true, activeCenter: false, opacity: 1, status: "STANDBY", statusColor: "var(--class-color)" })
-  const [s7Boxes, setS7Boxes] = useState({ original: false, refactored: false, refactoredY: "0px", refactoredOpacity: 1 })
-  const [s7JudgeCore, setS7JudgeCore] = useState({ opacity: 0, transform: "translate(-50%, -50%) scale(0)", transition: "" })
-  const [s7JudgeCrystal, setS7JudgeCrystal] = useState({ state: "" as "" | "reject" | "accept" })
-  const [s7Beams, setS7Beams] = useState({ state: "" as "" | "active" | "reject" | "accept", opacity: 1 })
-  const [s7Labels, setS7Labels] = useState({ opacity: 0, color: "" })
-  const [s7Feedback, setS7Feedback] = useState({ opacity: 0, transform: "translate(-50%, -50%) scale(0)", left: "50%" })
-  const [s7FinalCompVisible, setS7FinalCompVisible] = useState(false)
-
-  const timeoutsRef = useRef<NodeJS.Timeout[]>([])
-
-  const clearAllTimeouts = () => {
-    timeoutsRef.current.forEach(clearTimeout)
-    timeoutsRef.current = []
-  }
-
-  const delayAsync = (ms: number, sceneId: number): Promise<void> => {
-    return new Promise((resolve) => {
-      const id = setTimeout(() => {
-        resolve()
-      }, ms)
-      timeoutsRef.current.push(id)
-    })
-  }
-
-  // Helper syntax highlighter for typing
-  const highlightSyntax = (codeStr: string) => {
-    let highlighted = codeStr.replace(/</g, "&lt;").replace(/>/g, "&gt;")
-    const keywords = ["public", "class", "private", "void", "for"]
-    const classes = ["StudentManager", "List", "Student", "System"]
-    const methods = ["addStudent", "displayStudents", "add", "out", "println", "getName"]
-
-    keywords.forEach((kw) => {
-      const regex = new RegExp(`\\b${kw}\\b`, "g")
-      highlighted = highlighted.replace(regex, `<span class="kw">${kw}</span>`)
-    })
-    classes.forEach((cls) => {
-      const regex = new RegExp(`\\b${cls}\\b`, "g")
-      highlighted = highlighted.replace(regex, `<span class="cl">${cls}</span>`)
-    })
-    methods.forEach((mth) => {
-      const regex = new RegExp(`\\b${mth}\\b`, "g")
-      highlighted = highlighted.replace(regex, `<span class="mth">${mth}</span>`)
-    })
-    highlighted = highlighted.replace(/([{}();,])/g, '<span class="sym">$1</span>')
-    return highlighted
-  }
-
-  // Navigation handlers
-  const nextScene = () => {
-    if (currentScene < totalScenes) {
-      clearAllTimeouts()
-      const next = currentScene + 1
-      setCurrentScene(next)
-    }
-  }
-
-  const prevScene = () => {
-    if (currentScene > 1) {
-      clearAllTimeouts()
-      const prev = currentScene - 1
-      setCurrentScene(prev)
-    }
-  }
-
-  // Scene runner dispatcher
   useEffect(() => {
-    clearAllTimeouts()
+    // Google Fonts (JetBrains Mono) — load once
+    const fontLink = document.createElement("link");
+    fontLink.href =
+      "https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&display=swap";
+    fontLink.rel = "stylesheet";
+    document.head.appendChild(fontLink);
 
-    if (currentScene === 1) {
-      runScene1()
-    } else if (currentScene === 2) {
-      runScene2()
-    } else if (currentScene === 3) {
-      runScene3()
-    } else if (currentScene === 4) {
-      runScene4()
-    } else if (currentScene === 5) {
-      runScene5()
-    } else if (currentScene === 6) {
-      runScene6()
-    } else if (currentScene === 7) {
-      runScene7()
-    }
+    const root = rootRef.current;
+    if (!root) return undefined;
 
-    return () => clearAllTimeouts()
-  }, [currentScene])
+    // Scope all getElementById calls to this component instance so the
+    // component can be safely mounted more than once on a page.
+    const $ = (id: string): any => root.querySelector(`#${id}`);
+    const $$ = (sel: string): any => root.querySelectorAll(sel);
 
-  // --- SCENE 1 EXECUTION ---
-  const runScene1 = async () => {
-    // Reset state
-    setS1ContainerVisible(false)
-    setS1CodeText("")
-    setS1RequestText("")
-    setS1CodeCursor(true)
-    setS1RequestCursor(false)
-    setS1Mouse({ x: 50, y: 100, opacity: 0, active: false })
-    setS1SubmitBtn({ opacity: 0.5, transform: "scale(1)" })
-
-    await delayAsync(200, 1)
-    setS1ContainerVisible(true)
-    await delayAsync(600, 1)
-
-    // Mouse enters
-    setS1Mouse({ x: 250, y: 150, opacity: 1, active: true })
-    await delayAsync(400, 1)
-    setS1Mouse((prev) => ({ ...prev, opacity: 0 }))
-    await delayAsync(100, 1)
-
-    // Type java code
     const javaCode = `public class StudentManager {
 
     private List<Student> students;
@@ -230,336 +59,791 @@ export default function PhasesPage() {
             System.out.println(s.getName());
         }
     }
-}`
-    let currentCode = ""
-    for (let i = 0; i < javaCode.length; i++) {
-      currentCode += javaCode[i]
-      setS1CodeText(highlightSyntax(currentCode))
-      await delayAsync(javaCode[i] === "\n" || javaCode[i] === ";" ? 50 : 8, 1)
+}`;
+
+    const requestText =
+      "Refactor this Java code to improve readability, reduce duplicated code, and optimize performance.";
+
+    const keywords = ["public", "class", "private", "void", "for"];
+    const classes = ["StudentManager", "List", "Student", "System"];
+    const methods = [
+      "addStudent",
+      "displayStudents",
+      "add",
+      "out",
+      "println",
+      "getName",
+    ];
+
+    const codeElement = $("code-content");
+    const codeCursor = $("code-cursor");
+    const requestElement = $("request-text");
+    const requestCursor = $("request-cursor");
+    const mouseCursor = $("mouse-cursor");
+    const editorArea = $("editor-area");
+    const container = $("container"); // Scene 1
+    const scene2Container = $("scene2-container");
+    const requestInputContainer = $("request-input-container");
+
+    // Scene 2 elements
+    const dataPacket = $("data-packet");
+    const nodeFE = $("node-frontend");
+    const nodeWS = $("node-ws");
+    const nodeBE = $("node-backend");
+    const nodeSession = $("node-session");
+    const lineFeWs = $("line-fe-ws");
+    const lineWsBe = $("line-ws-be");
+    const lineBeSession = $("line-be-session");
+    const sessionInfo = $("session-info");
+    const nextPhaseIndicator = $("next-phase-indicator");
+    const particleContainer = $("particle-container");
+
+    let isAnimating = false;
+    let scene1TimeoutIds: ReturnType<typeof setTimeout>[] = [];
+    let scene2TimeoutIds: ReturnType<typeof setTimeout>[] = [];
+    let scene3TimeoutIds: ReturnType<typeof setTimeout>[] = [];
+    let scene4TimeoutIds: ReturnType<typeof setTimeout>[] = [];
+    let scene5TimeoutIds: ReturnType<typeof setTimeout>[] = [];
+    let scene6TimeoutIds: ReturnType<typeof setTimeout>[] = [];
+    let scene7TimeoutIds: ReturnType<typeof setTimeout>[] = [];
+
+    function highlightSyntax(codeStr: string) {
+      let highlighted = codeStr.replace(/</g, "&lt;").replace(/>/g, "&gt;");
+
+      keywords.forEach((kw) => {
+        const regex = new RegExp(`\\b${kw}\\b`, "g");
+        highlighted = highlighted.replace(regex, `<span class="kw">${kw}</span>`);
+      });
+
+      classes.forEach((cls) => {
+        const regex = new RegExp(`\\b${cls}\\b`, "g");
+        highlighted = highlighted.replace(regex, `<span class="cl">${cls}</span>`);
+      });
+
+      methods.forEach((mth) => {
+        const regex = new RegExp(`\\b${mth}\\b`, "g");
+        highlighted = highlighted.replace(regex, `<span class="mth">${mth}</span>`);
+      });
+
+      highlighted = highlighted.replace(/([{}();,])/g, '<span class="sym">$1</span>');
+
+      return highlighted;
     }
 
-    await delayAsync(300, 1)
-    setS1CodeCursor(false)
-    setS1Mouse({ x: 300, y: 380, opacity: 1, active: true })
-    await delayAsync(400, 1)
+    async function typeText(text: string, element: any, minDelay = 20, maxDelay = 80, isCode = false, sceneId?: number) {
+      let currentText = "";
+      for (let i = 0; i < text.length; i++) {
+        if (currentScene !== sceneId) return;
 
-    setS1Mouse((prev) => ({ ...prev, opacity: 0 }))
-    setS1RequestCursor(true)
-    await delayAsync(100, 1)
+        currentText += text[i];
 
-    // Type request
-    const reqText = "Refactor this Java code to improve readability, reduce duplicated code, and optimize performance."
-    let currentReq = ""
-    for (let i = 0; i < reqText.length; i++) {
-      currentReq += reqText[i]
-      setS1RequestText(currentReq)
-      await delayAsync(12, 1)
+        if (isCode) {
+          element.innerHTML = highlightSyntax(currentText);
+          editorArea.scrollTop = editorArea.scrollHeight;
+        } else {
+          element.textContent = currentText;
+        }
+
+        let delay = Math.random() * (maxDelay - minDelay) + minDelay;
+
+        if (text[i] === "\n" || text[i] === "." || text[i] === ";") {
+          delay += 200;
+        }
+
+        await new Promise((resolve) => {
+          const id = setTimeout(resolve, delay);
+          if (sceneId === 1) scene1TimeoutIds.push(id);
+        });
+      }
     }
 
-    await delayAsync(200, 1)
-    setS1RequestCursor(false)
-    setS1Mouse({ x: 750, y: 390, opacity: 1, active: true })
-    await delayAsync(350, 1)
-
-    setS1SubmitBtn({ opacity: 1, transform: "scale(1)" })
-    await delayAsync(150, 1)
-    setS1SubmitBtn({ opacity: 1, transform: "scale(0.95)" })
-    await delayAsync(100, 1)
-    setS1SubmitBtn({ opacity: 1, transform: "scale(1)" })
-
-    await delayAsync(600, 1)
-    setCurrentScene(2)
-  }
-
-  // --- SCENE 2 EXECUTION ---
-  const runScene2 = async () => {
-    // Reset state
-    setS2ContainerVisible(true)
-    setS2DataPacket({
-      opacity: 0,
-      transform: "translate(-50%, -50%) scale(0)",
-      top: "50%",
-      left: "50%",
-      transition: "all 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275), opacity 0.5s ease",
-    })
-    setS2Nodes({ fe: false, ws: false, be: false, session: false })
-    setS2Lines({ feWs: false, wsBe: false, beSession: false })
-    setS2SessionInfoVisible(false)
-    setS2NextPhaseVisible(false)
-
-    await delayAsync(200, 2)
-
-    // Burst particles
-    const newParticles = []
-    const colors = ["#cba6f7", "#f9e2af", "#a6e3a1", "#89b4fa", "#cdd6f4"]
-    for (let i = 0; i < 25; i++) {
-      newParticles.push({
-        id: i,
-        left: 50 + (Math.random() - 0.5) * 10,
-        top: 50 + (Math.random() - 0.5) * 10,
-        bg: colors[Math.floor(Math.random() * colors.length)],
-        targetLeft: 50,
-        targetTop: 50,
-        scale: Math.random() * 2,
-        opacity: 1,
-      })
+    async function moveMouse(x: number, y: number, duration = 1000, sceneId?: number) {
+      if (currentScene !== sceneId) return;
+      mouseCursor.style.transition = `top ${duration}ms ease-in-out, left ${duration}ms ease-in-out`;
+      mouseCursor.style.left = `${x}px`;
+      mouseCursor.style.top = `${y}px`;
+      await new Promise((resolve) => {
+        const id = setTimeout(resolve, duration);
+        if (sceneId === 1) scene1TimeoutIds.push(id);
+      });
     }
-    setS2Particles(newParticles)
 
-    await delayAsync(600, 2)
-    setS2DataPacket((prev) => ({ ...prev, opacity: 1, transform: "translate(-50%, -50%) scale(1)" }))
+    function delayAsync(ms: number, sceneId?: number) {
+      return new Promise<void>((resolve) => {
+        const id = setTimeout(() => {
+          if (currentScene === sceneId) resolve();
+        }, ms);
+        if (sceneId === 1) scene1TimeoutIds.push(id);
+        else if (sceneId === 2) scene2TimeoutIds.push(id);
+        else if (sceneId === 3) scene3TimeoutIds.push(id);
+        else if (sceneId === 4) scene4TimeoutIds.push(id);
+        else if (sceneId === 5) scene5TimeoutIds.push(id);
+        else if (sceneId === 6) scene6TimeoutIds.push(id);
+        else if (sceneId === 7) scene7TimeoutIds.push(id);
+      });
+    }
 
-    await delayAsync(1000, 2)
-    setS2Nodes((prev) => ({ ...prev, fe: true }))
-    await delayAsync(400, 2)
-    setS2Nodes((prev) => ({ ...prev, ws: true }))
-    await delayAsync(400, 2)
-    setS2Nodes((prev) => ({ ...prev, be: true }))
-    await delayAsync(400, 2)
-    setS2Nodes((prev) => ({ ...prev, session: true }))
+    async function runScene1() {
+      if (currentScene !== 1) return;
+      isAnimating = true;
 
-    await delayAsync(800, 2)
-    // Packet -> FE
-    setS2DataPacket((prev) => ({ ...prev, transition: "top 0.5s ease, left 0.5s ease", top: "15%", left: "50%" }))
+      await delayAsync(200, 1);
+      if (currentScene !== 1) return;
+      container.classList.add("visible");
+      await delayAsync(600, 1);
+      if (currentScene !== 1) return;
 
-    await delayAsync(600, 2)
-    setS2Lines((prev) => ({ ...prev, feWs: true }))
-    // Packet -> WS
-    setS2DataPacket((prev) => ({ ...prev, transition: "top 1s ease-in-out, left 1s ease-in-out", top: "40%", left: "50%" }))
+      mouseCursor.classList.add("active");
+      const editorRect = editorArea.getBoundingClientRect();
+      await moveMouse(editorRect.left + 50, editorRect.top + 50, 400, 1);
+      if (currentScene !== 1) return;
 
-    await delayAsync(1000, 2)
-    setS2DataPacket((prev) => ({ ...prev, transform: "translate(-50%, -50%) scale(1.2)" }))
-    setS2WsShadow("0 0 30px rgba(137, 180, 250, 0.6)")
-    await delayAsync(300, 2)
-    setS2DataPacket((prev) => ({ ...prev, transform: "translate(-50%, -50%) scale(1)" }))
-    setS2WsShadow("0 0 15px rgba(137, 180, 250, 0.2)")
+      mouseCursor.style.opacity = "0";
+      await delayAsync(100, 1);
+      if (currentScene !== 1) return;
 
-    setS2Lines((prev) => ({ ...prev, wsBe: true }))
-    // Packet -> BE
-    setS2DataPacket((prev) => ({ ...prev, top: "65%", left: "30%" }))
+      await typeText(javaCode, codeElement, 1, 8, true, 1);
+      if (currentScene !== 1) return;
 
-    await delayAsync(1000, 2)
-    setS2DataPacket((prev) => ({ ...prev, transform: "translate(-50%, -50%) scale(0.5)", opacity: 0.5 }))
+      await delayAsync(300, 1);
+      if (currentScene !== 1) return;
 
-    await delayAsync(600, 2)
-    setS2Lines((prev) => ({ ...prev, beSession: true }))
-    // Packet -> Session
-    setS2DataPacket((prev) => ({ ...prev, top: "65%", left: "70%" }))
+      codeCursor.style.display = "none";
+      mouseCursor.style.opacity = "1";
+      const inputRect = requestInputContainer.getBoundingClientRect();
+      await moveMouse(inputRect.left + 50, inputRect.top + 30, 400, 1);
+      if (currentScene !== 1) return;
 
-    await delayAsync(800, 2)
-    setS2DataPacket((prev) => ({ ...prev, opacity: 0 }))
-    setS2SessionTransform("translate(-50%, 0) scale(1.1)")
-    setS2SessionShadow("0 0 40px rgba(203, 166, 247, 0.5)")
+      mouseCursor.style.opacity = "0";
+      requestCursor.style.display = "inline-block";
+      await delayAsync(100, 1);
+      if (currentScene !== 1) return;
 
-    await delayAsync(300, 2)
-    setS2SessionTransform("translate(-50%, 0) scale(1)")
-    setS2SessionShadow("0 10px 30px rgba(0, 0, 0, 0.3)")
-    setS2SessionInfoVisible(true)
+      await typeText(requestText, requestElement, 3, 12, false, 1);
+      if (currentScene !== 1) return;
 
-    await delayAsync(1500, 2)
-    setS2NextPhaseVisible(true)
+      await delayAsync(200, 1);
+      if (currentScene !== 1) return;
 
-    await delayAsync(2000, 2)
-    setCurrentScene(3)
-  }
+      requestCursor.style.display = "none";
+      mouseCursor.style.opacity = "1";
+      const btnRect = $("submit-btn").getBoundingClientRect();
+      await moveMouse(btnRect.left + btnRect.width / 2, btnRect.top + btnRect.height / 2, 350, 1);
+      if (currentScene !== 1) return;
 
-  // --- SCENE 3 EXECUTION ---
-  const runScene3 = async () => {
-    setS3ContainerVisible(true)
-    setS3CoreState({ scanning: false, opacity: 1, transform: "translate(-50%, -50%) scale(1)" })
-    setS3LaserState({ opacity: 0, top: "10%", transition: "none" })
-    setS3CodeScanned(new Array(14).fill(false))
-    setS3CodeTarget(false)
-    setS3ModulesVisible({ syn: false, sem: false, comp: false })
-    setS3ModulesActive({ syn: false, sem: false, comp: false })
-    setS3ModulesComplete({ syn: false, sem: false, comp: false })
-    setS3Beams({ syn: "", sem: "", comp: "" })
-    setS3ArtifactVisible(false)
-    setS3Dots({ syn: false, sem: false, comp: false })
-    setS3NextPhaseVisible(false)
+      $("submit-btn").style.opacity = "1";
+      await delayAsync(150, 1);
+      if (currentScene !== 1) return;
+      $("submit-btn").style.transform = "scale(0.95)";
+      await delayAsync(100, 1);
+      if (currentScene !== 1) return;
+      $("submit-btn").style.transform = "scale(1)";
 
-    await delayAsync(300, 3)
-    setS3WrapperVisible(true)
+      await delayAsync(600, 1);
+      if (currentScene === 1) {
+        nextScene();
+      }
+    }
 
-    await delayAsync(800, 3)
-    setS3Beams({ syn: "active", sem: "active", comp: "active" })
-    setS3ModulesVisible({ syn: true, sem: true, comp: true })
+    function drawLine(lineElem: any, startElem: any, endElem: any) {
+      const rect1 = startElem.getBoundingClientRect();
+      const rect2 = endElem.getBoundingClientRect();
 
-    await delayAsync(800, 3)
-    setS3CoreState((prev) => ({ ...prev, scanning: true }))
-    setS3LaserState({ opacity: 1, top: "90%", transition: "top 3s linear" })
-    setS3ModulesActive((prev) => ({ ...prev, syn: true }))
+      const startX = rect1.left + rect1.width / 2;
+      const startY = rect1.top + rect1.height / 2;
+      const endX = rect2.left + rect2.width / 2;
+      const endY = rect2.top + rect2.height / 2;
 
-    // Scanned lines sequence
-    for (let i = 0; i < 14; i++) {
+      const controlY = startY + (endY - startY) / 2;
+      const path = `M ${startX} ${startY} C ${startX} ${controlY}, ${endX} ${controlY}, ${endX} ${endY}`;
+
+      lineElem.setAttribute("d", path);
+    }
+
+    function updateAllLines() {
+      drawLine(lineFeWs, nodeFE, nodeWS);
+
+      const wsRect = nodeWS.getBoundingClientRect();
+      const beRect = nodeBE.getBoundingClientRect();
+
+      const startX = wsRect.left + wsRect.width / 2;
+      const startY = wsRect.top + wsRect.height / 2;
+
+      const endBeX = beRect.left + beRect.width / 2;
+      const endBeY = beRect.top;
+
+      const pathWsBe = `M ${startX} ${startY} C ${startX} ${endBeY - 50}, ${endBeX} ${endBeY - 50}, ${endBeX} ${endBeY}`;
+      lineWsBe.setAttribute("d", pathWsBe);
+
+      const beRectRight = beRect.right;
+      const beCenterY = beRect.top + beRect.height / 2;
+      const sessionRectLeft = nodeSession.getBoundingClientRect().left;
+
+      const pathBeSession = `M ${beRectRight} ${beCenterY} L ${sessionRectLeft} ${beCenterY}`;
+      lineBeSession.setAttribute("d", pathBeSession);
+    }
+
+    function createParticles() {
+      const centerX = window.innerWidth / 2;
+      const centerY = window.innerHeight / 2;
+
+      for (let i = 0; i < 30; i++) {
+        const particle = document.createElement("div");
+        particle.className = "particle";
+
+        const startX = centerX + (Math.random() - 0.5) * 100;
+        const startY = centerY + (Math.random() - 0.5) * 100;
+
+        particle.style.left = startX + "px";
+        particle.style.top = startY + "px";
+
+        const colors = ["#cba6f7", "#f9e2af", "#a6e3a1", "#89b4fa", "#cdd6f4"];
+        particle.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
+
+        particleContainer.appendChild(particle);
+
+        setTimeout(() => {
+          particle.style.transition = "all 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275)";
+          particle.style.left = centerX + "px";
+          particle.style.top = centerY + "px";
+          particle.style.opacity = "0";
+          particle.style.transform = `scale(${Math.random() * 2})`;
+        }, 50);
+      }
+
       setTimeout(() => {
-        setS3CodeScanned((prev) => {
-          const next = [...prev]
-          next[i] = true
-          return next
-        })
-      }, i * (3000 / 14))
+        particleContainer.innerHTML = "";
+      }, 1000);
     }
 
-    setTimeout(() => {
-      setS3ModulesActive((prev) => ({ ...prev, sem: true }))
-      setS3CodeTarget(true)
-    }, 1500)
+    async function runScene2() {
+      if (currentScene !== 2) return;
 
-    setTimeout(() => {
-      setS3ModulesActive((prev) => ({ ...prev, comp: true }))
-    }, 2200)
+      window.addEventListener("resize", updateAllLines);
+      updateAllLines();
 
-    await delayAsync(3200, 3)
-    setS3LaserState((prev) => ({ ...prev, opacity: 0 }))
-    setS3CoreState((prev) => ({ ...prev, scanning: false }))
-    setS3ModulesComplete({ syn: true, sem: true, comp: true })
+      scene2Container.classList.add("visible");
 
-    setS3Beams({ syn: "return", sem: "return", comp: "return" })
+      await delayAsync(200, 2);
+      if (currentScene !== 2) return;
+      createParticles();
 
-    await delayAsync(1200, 3)
-    setS3Beams({ syn: "", sem: "", comp: "" })
+      await delayAsync(600, 2);
+      if (currentScene !== 2) return;
+      dataPacket.style.transition = "all 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275), opacity 0.5s ease";
+      dataPacket.style.opacity = "1";
+      dataPacket.style.transform = "translate(-50%, -50%) scale(1)";
 
-    setS3CoreState({ scanning: false, opacity: 0, transform: "translate(-50%, -50%) scale(0)" })
+      await delayAsync(1000, 2);
+      if (currentScene !== 2) return;
 
-    await delayAsync(500, 3)
-    setS3ArtifactVisible(true)
+      nodeFE.classList.add("visible");
+      await delayAsync(400, 2);
+      if (currentScene !== 2) return;
 
-    await delayAsync(400, 3)
-    setS3Dots((prev) => ({ ...prev, syn: true }))
-    await delayAsync(300, 3)
-    setS3Dots((prev) => ({ ...prev, sem: true }))
-    await delayAsync(300, 3)
-    setS3Dots((prev) => ({ ...prev, comp: true }))
+      nodeWS.classList.add("visible");
+      await delayAsync(400, 2);
+      if (currentScene !== 2) return;
 
-    await delayAsync(1000, 3)
-    setS3NextPhaseVisible(true)
+      nodeBE.classList.add("visible");
+      await delayAsync(400, 2);
+      if (currentScene !== 2) return;
 
-    await delayAsync(2500, 3)
-    setCurrentScene(4)
-  }
+      nodeSession.classList.add("visible");
 
-  // --- SCENE 4 EXECUTION ---
-  const runScene4 = async () => {
-    setS4ContainerVisible(true)
-    setS4BadgeVisible(false)
-    setS4CoreOpacity(0)
-    setS4InnerRingStyle({ stroke: "rgba(166, 227, 161, 0.3)", strokeWidth: "2" })
-    setS4InputBaseline({ opacity: 0, top: "-50px", transform: "translateX(-50%)" })
-    setS4InputInstruction({ opacity: 0, top: "-50px", transform: "translateX(-50%)" })
-    setS4IntentPacket({ opacity: 0, transform: "translate(-50%, -50%) scale(0)", top: "50%", left: "50%" })
-    setS4AstContainer({ opacity: 0, transform: "translate(-50%, -50%) scale(0.5)" })
-    setS4AstHighlight({ dim: false, target: false })
-    setS4SynthSphere({ opacity: 0, transform: "translate(-50%, -50%) scale(0)" })
-    setS4Blueprint({ opacity: 0, transform: "translate(-50%, -50%) scale(0)" })
-    setS4BpCards({ c1: false, c2: false, c3: false, a1: false, a2: false })
-    setS4ExecPack({ opacity: 0, transform: "translate(-50%, -50%) scale(0)", top: "50%" })
+      await delayAsync(800, 2);
+      if (currentScene !== 2) return;
 
-    await delayAsync(300, 4)
-    setS4BadgeVisible(true)
-    setS4CoreOpacity(1)
+      const feRect = nodeFE.getBoundingClientRect();
+      dataPacket.style.transition = "top 0.5s ease, left 0.5s ease";
+      dataPacket.style.top = feRect.top + feRect.height / 2 + "px";
+      dataPacket.style.left = feRect.left + feRect.width / 2 + "px";
 
-    await delayAsync(800, 4)
-    setS4InputBaseline({ opacity: 1, top: "15%", transform: "translateX(-50%)" })
-    setS4InputInstruction({ opacity: 1, top: "15%", transform: "translateX(-50%)" })
+      await delayAsync(600, 2);
+      if (currentScene !== 2) return;
 
-    await delayAsync(400, 4)
-    setS4InputBaseline({ opacity: 1, top: "50%", transform: "translate(-50%, -50%) scale(0.5)" })
-    setS4InputInstruction({ opacity: 1, top: "50%", transform: "translate(-50%, -50%) scale(0.5)" })
+      lineFeWs.classList.add("active");
 
-    await delayAsync(600, 4)
-    setS4InputBaseline((prev) => ({ ...prev, opacity: 0 }))
-    setS4InputInstruction((prev) => ({ ...prev, opacity: 0 }))
+      const wsRect = nodeWS.getBoundingClientRect();
+      dataPacket.style.transition = "top 1s ease-in-out, left 1s ease-in-out";
+      dataPacket.style.top = wsRect.top + wsRect.height / 2 + "px";
+      dataPacket.style.left = wsRect.left + wsRect.width / 2 + "px";
 
-    setS4InnerRingStyle({ stroke: "var(--string-color)", strokeWidth: "4" })
-    setS4IntentPacket({ opacity: 1, transform: "translate(-50%, -50%) scale(1)", top: "50%", left: "50%" })
+      await delayAsync(1000, 2);
+      if (currentScene !== 2) return;
 
-    await delayAsync(1200, 4)
-    setS4IntentPacket((prev) => ({ ...prev, transform: "translate(-250px, -50%) scale(0.8)" }))
+      dataPacket.style.transform = "translate(-50%, -50%) scale(1.2)";
+      nodeWS.style.boxShadow = "0 0 30px rgba(137, 180, 250, 0.6)";
+      await delayAsync(300, 2);
+      dataPacket.style.transform = "translate(-50%, -50%) scale(1)";
+      nodeWS.style.boxShadow = "0 0 15px rgba(137, 180, 250, 0.2)";
 
-    await delayAsync(400, 4)
-    setS4AstContainer({ opacity: 1, transform: "translate(100px, -50%) scale(0.7)" })
+      if (currentScene !== 2) return;
 
-    await delayAsync(800, 4)
-    setS4AstHighlight({ dim: true, target: true })
+      lineWsBe.classList.add("active");
 
-    await delayAsync(1500, 4)
-    setS4IntentPacket((prev) => ({ ...prev, transform: "translate(-50%, -50%) scale(0.5)" }))
-    setS4AstContainer({ opacity: 1, transform: "translate(-50%, -50%) scale(0.3)" })
+      const beRect = nodeBE.getBoundingClientRect();
+      dataPacket.style.top = beRect.top + beRect.height / 2 + "px";
+      dataPacket.style.left = beRect.left + beRect.width / 2 + "px";
 
-    await delayAsync(500, 4)
-    setS4IntentPacket((prev) => ({ ...prev, opacity: 0 }))
-    setS4AstContainer((prev) => ({ ...prev, opacity: 0 }))
-    setS4SynthSphere({ opacity: 1, transform: "translate(-50%, -50%) scale(1)" })
+      await delayAsync(1000, 2);
+      if (currentScene !== 2) return;
 
-    await delayAsync(800, 4)
-    setS4SynthSphere({ opacity: 1, transform: "translate(-50%, -50%) scale(1.3)" })
-    await delayAsync(300, 4)
-    setS4SynthSphere({ opacity: 0, transform: "translate(-50%, -50%) scale(0.5)" })
+      dataPacket.style.transform = "translate(-50%, -50%) scale(0.5)";
+      dataPacket.style.opacity = "0.5";
 
-    setS4Blueprint({ opacity: 1, transform: "translate(-50%, -50%) scale(1)" })
+      await delayAsync(600, 2);
+      if (currentScene !== 2) return;
 
-    await delayAsync(400, 4)
-    setS4BpCards((prev) => ({ ...prev, c1: true }))
-    await delayAsync(400, 4)
-    setS4BpCards((prev) => ({ ...prev, a1: true, c2: true }))
-    await delayAsync(400, 4)
-    setS4BpCards((prev) => ({ ...prev, a2: true, c3: true }))
+      lineBeSession.classList.add("active");
 
-    await delayAsync(2000, 4)
-    setS4Blueprint({ opacity: 0, transform: "translate(-50%, -50%) scale(0)" })
+      const sessionRect = nodeSession.getBoundingClientRect();
+      dataPacket.style.top = sessionRect.top + sessionRect.height / 2 + "px";
+      dataPacket.style.left = sessionRect.left + sessionRect.width / 2 + "px";
 
-    await delayAsync(400, 4)
-    setS4ExecPack({ opacity: 1, transform: "translate(-50%, -50%) scale(1)", top: "50%" })
+      await delayAsync(800, 2);
+      if (currentScene !== 2) return;
 
-    await delayAsync(800, 4)
-    setS4ExecPack({ opacity: 0.8, transform: "translate(-50%, -50%) scale(0.8)", top: "150%" })
+      dataPacket.style.opacity = "0";
 
-    await delayAsync(600, 4)
-    setCurrentScene(5)
-  }
+      nodeSession.style.transform = "translate(-50%, 0) scale(1.1)";
+      nodeSession.style.boxShadow = "0 0 40px rgba(203, 166, 247, 0.5)";
 
-  // --- SCENE 5 EXECUTION ---
-  const runScene5 = async () => {
-    setS5ContainerVisible(true)
-    setS5BadgeVisible(false)
-    setS5Status({ text: "RECEIVING EXECUTION PACKAGE...", opacity: 0 })
-    setS5IncomingBlueprint({ top: "-100px", opacity: 0, transform: "translateX(-50%)" })
-    setS5Engine({ opacity: 0, transform: "translate(-50%, -50%) scale(0)", top: "25%", hexActive: false })
-    setS5CodeCompare({ opacity: 0, transform: "translateY(40px)" })
-    setS5OldLoopHighlight(false)
-    setS5NewCodeHtml("")
-    setS5RefactorComplete(false)
+      await delayAsync(300, 2);
+      if (currentScene !== 2) return;
 
-    await delayAsync(300, 5)
-    setS5BadgeVisible(true)
+      nodeSession.style.transform = "translate(-50%, 0) scale(1)";
+      nodeSession.style.boxShadow = "0 10px 30px rgba(0, 0, 0, 0.3)";
+      sessionInfo.classList.add("visible");
 
-    await delayAsync(600, 5)
-    setS5Status({ text: "RECEIVING EXECUTION PACKAGE...", opacity: 1 })
-    setS5IncomingBlueprint({ top: "25%", opacity: 1, transform: "translateX(-50%) scale(1)" })
+      await delayAsync(1500, 2);
+      if (currentScene !== 2) return;
 
-    await delayAsync(800, 5)
-    setS5Engine({ opacity: 1, transform: "translate(-50%, -50%) scale(1)", top: "25%", hexActive: false })
+      nextPhaseIndicator.classList.add("visible");
 
-    await delayAsync(800, 5)
-    setS5IncomingBlueprint({ top: "25%", opacity: 0, transform: "translateX(-50%) scale(0)" })
-    setS5Engine({ opacity: 1, transform: "translate(-50%, -50%) scale(1.2)", top: "25%", hexActive: true })
+      await delayAsync(2000, 2);
+      if (currentScene === 2) {
+        nextScene();
+      }
+    }
 
-    await delayAsync(600, 5)
-    setS5Status({ text: "UNPACKING PLAN: TARGETING IMPERATIVE LOOP...", opacity: 1 })
-    setS5Engine({ opacity: 1, transform: "translate(-50%, -50%) scale(0.9)", top: "25%", hexActive: true })
+    async function runScene3() {
+      if (currentScene !== 3) return;
 
-    await delayAsync(600, 5)
-    setS5Engine({ opacity: 1, transform: "translate(-50%, -50%) scale(0.5)", top: "10%", hexActive: true })
-    setS5CodeCompare({ opacity: 1, transform: "translateY(0)" })
+      const containerS3 = $("scene3-container");
+      const wrapper = $("chamber-wrapper");
+      const core = $("chamber-core");
+      const laser = $("core-laser");
+      const codeRows = $$(".code-row");
 
-    await delayAsync(1000, 5)
-    setS5OldLoopHighlight(true)
+      const modSyn = $("mod-syntax");
+      const modSem = $("mod-semantic");
+      const modComp = $("mod-complexity");
 
-    await delayAsync(1000, 5)
-    setS5Status({ text: "STREAMING DECLARATIVE REFACTOR...", opacity: 1 })
+      const beamSyn = $("beam-syntax");
+      const beamSem = $("beam-semantic");
+      const beamComp = $("beam-complexity");
 
-    const refactoredCode = `public class StudentManager {
+      containerS3.classList.add("visible");
+      await delayAsync(300, 3);
+      if (currentScene !== 3) return;
+      wrapper.classList.add("visible");
+
+      await delayAsync(800, 3);
+      if (currentScene !== 3) return;
+
+      beamSyn.classList.add("active");
+      beamSem.classList.add("active");
+      beamComp.classList.add("active");
+
+      modSyn.classList.add("visible");
+      modSem.classList.add("visible");
+      modComp.classList.add("visible");
+
+      await delayAsync(800, 3);
+      if (currentScene !== 3) return;
+
+      core.classList.add("scanning");
+      laser.style.opacity = "1";
+      laser.style.transition = "top 3s linear";
+      laser.style.top = "90%";
+
+      setTimeout(() => {
+        if (currentScene === 3) modSyn.classList.add("active");
+      }, 200);
+
+      for (let i = 0; i < codeRows.length; i++) {
+        if (currentScene !== 3) break;
+        setTimeout(() => {
+          if (currentScene === 3) codeRows[i].classList.add("scanned");
+        }, i * (3000 / codeRows.length));
+      }
+
+      setTimeout(() => {
+        if (currentScene === 3) {
+          modSem.classList.add("active");
+          $("core-target-row").classList.add("target");
+          $("core-target-row2").classList.add("target");
+          $("core-target-row3").classList.add("target");
+        }
+      }, 1500);
+
+      setTimeout(() => {
+        if (currentScene === 3) modComp.classList.add("active");
+      }, 2200);
+
+      await delayAsync(3200, 3);
+      if (currentScene !== 3) return;
+
+      laser.style.opacity = "0";
+      core.classList.remove("scanning");
+
+      modSyn.classList.add("complete");
+      modSem.classList.add("complete");
+      modComp.classList.add("complete");
+
+      beamSyn.classList.remove("active");
+      beamSyn.classList.add("return");
+      beamSem.classList.remove("active");
+      beamSem.classList.add("return");
+      beamComp.classList.remove("active");
+      beamComp.classList.add("return");
+
+      await delayAsync(1200, 3);
+      if (currentScene !== 3) return;
+
+      beamSyn.classList.remove("return");
+      beamSem.classList.remove("return");
+      beamComp.classList.remove("return");
+
+      core.style.transform = "translate(-50%, -50%) scale(0)";
+      core.style.opacity = "0";
+
+      await delayAsync(500, 3);
+      if (currentScene !== 3) return;
+
+      const artifact = $("baseline-artifact-s3");
+      artifact.classList.add("visible");
+
+      await delayAsync(400, 3);
+      if (currentScene === 3) $("dot-syn").classList.add("syn-pass");
+      await delayAsync(300, 3);
+      if (currentScene === 3) $("dot-sem").classList.add("sem-pass");
+      await delayAsync(300, 3);
+      if (currentScene === 3) $("dot-comp").classList.add("comp-pass");
+
+      await delayAsync(1000, 3);
+      if (currentScene !== 3) return;
+
+      $("next-phase-indicator-2").classList.add("visible");
+
+      await delayAsync(2500, 3);
+      if (currentScene === 3) {
+        nextScene();
+      }
+    }
+
+    function createClassificationParticles() {
+      const container = $("scene4-container");
+      const colors = ["#a6e3a1", "#89b4fa", "#f9e2af"];
+      for (let i = 0; i < 40; i++) {
+        const p = document.createElement("div");
+        p.className = "planner-particle";
+        p.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
+
+        p.style.left = "50%";
+        p.style.top = "50%";
+
+        const angle = Math.random() * Math.PI * 2;
+        const dist = 100 + Math.random() * 120;
+        const tx = Math.cos(angle) * dist;
+        const ty = Math.sin(angle) * dist;
+
+        p.style.transform = `translate(${tx}px, ${ty}px)`;
+
+        container.appendChild(p);
+
+        setTimeout(() => {
+          if (currentScene !== 4) return;
+          p.style.transform = `translate(0px, 0px)`;
+          p.style.opacity = "0";
+        }, 50 + Math.random() * 200);
+
+        setTimeout(() => p.remove(), 1000);
+      }
+    }
+
+    function createIntentWords() {
+      const container = $("scene4-container");
+      const words = ["REFACTOR", "OPTIMIZE", "READABILITY"];
+
+      words.forEach((wordText, index) => {
+        const word = document.createElement("div");
+        word.className = "intent-word";
+        word.textContent = wordText;
+
+        word.style.left = Math.random() > 0.5 ? "20%" : "80%";
+        word.style.top = 30 + Math.random() * 40 + "%";
+
+        container.appendChild(word);
+
+        setTimeout(() => {
+          if (currentScene !== 4) return;
+          word.style.opacity = "1";
+          word.style.transform = "scale(1.2)";
+        }, index * 400);
+
+        setTimeout(() => {
+          if (currentScene !== 4) return;
+          word.style.left = "50%";
+          word.style.top = "50%";
+          word.style.transform = "translate(-50%, -50%) scale(0)";
+          word.style.opacity = "0";
+        }, index * 400 + 800);
+
+        setTimeout(() => word.remove(), 3000);
+      });
+    }
+
+    async function runScene4() {
+      if (currentScene !== 4) return;
+
+      const container4 = $("scene4-container");
+      container4.classList.add("visible");
+
+      const badge = $("planner-model-badge");
+      const core = $("planner-core");
+      const inBaseline = $("input-baseline");
+      const inInst = $("input-instruction");
+      const intentPacket = $("intent-packet");
+      const astContainer = $("ast-container");
+      const synthSphere = $("synthesis-sphere");
+      const blueprint = $("blueprint-artifact");
+      const execPack = $("execution-package");
+
+      await delayAsync(300, 4);
+      if (currentScene !== 4) return;
+
+      badge.classList.add("visible");
+      core.style.opacity = "1";
+
+      await delayAsync(800, 4);
+      if (currentScene !== 4) return;
+
+      inBaseline.style.opacity = "1";
+      inBaseline.style.top = "15%";
+      inInst.style.opacity = "1";
+      inInst.style.top = "15%";
+
+      await delayAsync(400, 4);
+      if (currentScene !== 4) return;
+
+      inBaseline.style.top = "50%";
+      inBaseline.style.transform = "translate(-50%, -50%) scale(0.5)";
+      inInst.style.top = "50%";
+      inInst.style.transform = "translate(-50%, -50%) scale(0.5)";
+
+      await delayAsync(600, 4);
+      if (currentScene !== 4) return;
+
+      inBaseline.style.opacity = "0";
+      inInst.style.opacity = "0";
+
+      const ringInnerS4 = root!.querySelector(".core-ring-inner") as HTMLElement | SVGElement | null;
+      if (ringInnerS4) {
+        ringInnerS4.style.stroke = "var(--string-color)";
+        ringInnerS4.style.strokeWidth = "4";
+      }
+
+      intentPacket.style.opacity = "1";
+      intentPacket.style.transform = "translate(-50%, -50%) scale(1)";
+
+      await delayAsync(1200, 4);
+      if (currentScene !== 4) return;
+
+      intentPacket.style.transform = "translate(-250px, -50%) scale(0.8)";
+
+      await delayAsync(400, 4);
+      if (currentScene !== 4) return;
+
+      astContainer.style.opacity = "1";
+      astContainer.style.transform = "translate(100px, -50%) scale(0.7)";
+
+      await delayAsync(800, 4);
+      if (currentScene !== 4) return;
+
+      $("ast-root").classList.add("dim");
+      $("ast-var").classList.add("dim");
+      $("ast-edge-left").classList.add("dim");
+
+      $("ast-edge-target").classList.add("target");
+      $("ast-issue").classList.add("target");
+
+      await delayAsync(1500, 4);
+      if (currentScene !== 4) return;
+
+      intentPacket.style.transform = "translate(-50%, -50%) scale(0.5)";
+      astContainer.style.transform = "translate(-50%, -50%) scale(0.3)";
+
+      await delayAsync(500, 4);
+      if (currentScene !== 4) return;
+
+      intentPacket.style.opacity = "0";
+      astContainer.style.opacity = "0";
+      synthSphere.style.opacity = "1";
+      synthSphere.style.transform = "translate(-50%, -50%) scale(1)";
+
+      await delayAsync(800, 4);
+      if (currentScene !== 4) return;
+
+      synthSphere.style.transform = "translate(-50%, -50%) scale(1.3)";
+      await delayAsync(300, 4);
+      if (currentScene !== 4) return;
+      synthSphere.style.transform = "translate(-50%, -50%) scale(0.5)";
+      synthSphere.style.opacity = "0";
+
+      blueprint.style.opacity = "1";
+      blueprint.style.transform = "translate(-50%, -50%) scale(1)";
+
+      await delayAsync(400, 4);
+      if (currentScene !== 4) return;
+
+      $("bp-card1").classList.add("visible");
+      await delayAsync(400, 4);
+      if (currentScene !== 4) return;
+
+      $("bp-arrow1").classList.add("visible");
+      $("bp-card2").classList.add("visible");
+      await delayAsync(400, 4);
+      if (currentScene !== 4) return;
+
+      $("bp-arrow2").classList.add("visible");
+      $("bp-card3").classList.add("visible");
+
+      await delayAsync(2000, 4);
+      if (currentScene !== 4) return;
+
+      blueprint.style.transform = "translate(-50%, -50%) scale(0)";
+      blueprint.style.opacity = "0";
+
+      await delayAsync(400, 4);
+      if (currentScene !== 4) return;
+
+      execPack.style.opacity = "1";
+      execPack.style.transform = "translate(-50%, -50%) scale(1)";
+
+      await delayAsync(800, 4);
+      if (currentScene !== 4) return;
+
+      execPack.style.top = "150%";
+      execPack.style.transform = "translate(-50%, -50%) scale(0.8)";
+
+      await delayAsync(600, 4);
+      if (currentScene === 4) {
+        nextScene();
+      }
+    }
+
+    async function runScene5() {
+      if (currentScene !== 5) return;
+
+      const container5 = $("scene5-container");
+      container5.classList.add("visible");
+
+      const badge = $("generator-model-badge");
+      const blueprint = $("incoming-blueprint");
+      const engine = $("generator-engine");
+      const hex = $("gen-core-hex");
+      const codeView = $("code-compare-container");
+      const newCode = $("new-code-content");
+      const oldCode = $("old-code-content");
+      const status = $("gen-status");
+      const completeBadge = $("refactor-complete");
+
+      const originalJava = `public class StudentManager {
+
+    private List<Student> students;
+
+    public void addStudent(Student s) {
+        students.add(s);
+    }
+
+    public void displayStudents() {`;
+      const loopBlock = `
+        for (Student s : students) {
+            System.out.println(s.getName());
+        }`;
+      const closingJava = `
+    }
+}`;
+      oldCode.innerHTML =
+        document.createTextNode(originalJava).textContent +
+        `<span id="s5-old-loop" style="display:inline; transition: all 0.5s ease; border-left: 3px solid transparent; padding-left: 4px;">` +
+        document.createTextNode(loopBlock).textContent +
+        `</span>` +
+        document.createTextNode(closingJava).textContent;
+
+      await delayAsync(300, 5);
+      if (currentScene !== 5) return;
+      badge.classList.add("visible");
+
+      await delayAsync(600, 5);
+      if (currentScene !== 5) return;
+
+      status.textContent = "RECEIVING EXECUTION PACKAGE...";
+      status.style.opacity = "1";
+
+      blueprint.style.top = "25%";
+      blueprint.style.opacity = "1";
+      blueprint.style.transform = "translateX(-50%) scale(1)";
+
+      await delayAsync(800, 5);
+      if (currentScene !== 5) return;
+
+      engine.style.opacity = "1";
+      engine.style.transform = "translate(-50%, -50%) scale(1)";
+
+      await delayAsync(800, 5);
+      if (currentScene !== 5) return;
+
+      blueprint.style.top = "25%";
+      blueprint.style.transform = "translateX(-50%) scale(0)";
+      blueprint.style.opacity = "0";
+
+      engine.style.transform = "translate(-50%, -50%) scale(1.2)";
+      hex.classList.add("active");
+
+      await delayAsync(600, 5);
+      if (currentScene !== 5) return;
+
+      status.textContent = "UNPACKING PLAN: TARGETING IMPERATIVE LOOP...";
+      engine.style.transform = "translate(-50%, -50%) scale(0.9)";
+
+      await delayAsync(600, 5);
+      if (currentScene !== 5) return;
+
+      engine.style.top = "10%";
+      engine.style.transform = "translate(-50%, -50%) scale(0.5)";
+
+      codeView.style.opacity = "1";
+      codeView.style.transform = "translateY(0)";
+
+      await delayAsync(1000, 5);
+      if (currentScene !== 5) return;
+
+      const oldLoop = $("s5-old-loop");
+      if (oldLoop) {
+        oldLoop.style.backgroundColor = "rgba(255, 95, 86, 0.15)";
+        oldLoop.style.borderLeftColor = "#ff5f56";
+        oldLoop.style.boxShadow = "inset 0 0 15px rgba(255, 95, 86, 0.1)";
+      }
+
+      await delayAsync(1000, 5);
+      if (currentScene !== 5) return;
+
+      status.textContent = "STREAMING DECLARATIVE REFACTOR...";
+
+      const refactoredCode = `public class StudentManager {
 
     private List<Student> students;
 
@@ -570,1062 +854,3005 @@ export default function PhasesPage() {
     public void displayStudents() {
         students.stream()
                 .map(Student::getName)
-                .forEach(System::println);
+                .forEach(System.out::println);
     }
-}`
-    const streamStart = refactoredCode.indexOf("students.stream()")
-    let currentText = ""
+}`;
 
-    for (let i = 0; i < refactoredCode.length; i++) {
-      currentText += refactoredCode[i]
-      if (i >= streamStart && streamStart !== -1) {
-        const beforeStream = refactoredCode.substring(0, streamStart)
-        const streamPart = currentText.substring(streamStart)
-        setS5NewCodeHtml(beforeStream + `<span class="highlight-green" style="display:inline;">${streamPart}</span><span class="blinking-cursor"></span>`)
-      } else {
-        setS5NewCodeHtml(currentText)
+      let currentText = "";
+      const streamStart = refactoredCode.indexOf("students.stream()");
+      for (let i = 0; i < refactoredCode.length; i++) {
+        if (currentScene !== 5) return;
+        currentText += refactoredCode[i];
+
+        if (i >= streamStart && streamStart !== -1) {
+          const beforeStream = document.createTextNode(refactoredCode.substring(0, streamStart)).textContent;
+          const streamPart = document.createTextNode(currentText.substring(streamStart)).textContent;
+          newCode.innerHTML =
+            beforeStream +
+            `<span class="highlight-green" style="display:inline;">${streamPart}</span>` +
+            '<span class="blinking-cursor"></span>';
+        } else {
+          newCode.textContent = currentText;
+        }
+
+        await new Promise((resolve) => {
+          const id = setTimeout(resolve, 15);
+          scene5TimeoutIds.push(id);
+        });
       }
-      await delayAsync(15, 5)
+
+      const beforeStream2 = refactoredCode.substring(0, streamStart);
+      const streamPart2 = refactoredCode.substring(streamStart);
+      newCode.innerHTML =
+        document.createTextNode(beforeStream2).textContent +
+        `<span class="highlight-green" style="display:inline;">${document.createTextNode(streamPart2).textContent}</span>`;
+
+      await delayAsync(600, 5);
+      if (currentScene !== 5) return;
+
+      status.textContent = "GENERATION COMPLETE";
+      hex.classList.remove("active");
+
+      completeBadge.classList.add("visible");
     }
 
-    const beforeStream2 = refactoredCode.substring(0, streamStart)
-    const streamPart2 = refactoredCode.substring(streamStart)
-    setS5NewCodeHtml(beforeStream2 + `<span class="highlight-green" style="display:inline;">${streamPart2}</span>`)
+    async function runScene6() {
+      if (currentScene !== 6) return;
 
-    await delayAsync(600, 5)
-    setS5Status({ text: "GENERATION COMPLETE", opacity: 1 })
-    setS5Engine((prev) => ({ ...prev, hexActive: false }))
-    setS5RefactorComplete(true)
-  }
+      const container6 = $("scene6-container");
+      container6.classList.add("visible");
 
-  // --- SCENE 6 EXECUTION ---
-  const runScene6 = async () => {
-    setS6ContainerVisible(true)
-    setS6Core({ opacity: 0, transform: "translate(-50%, -50%) scale(0)", fail: false })
-    setS6Beams({ syn: "", bound: "", comp: "" })
-    setS6Modules({ syn: "", bound: "", comp: "" })
-    setS6TokensX({ t1: "10", t2: "40", t3: "20" })
-    setS6BoundShield({ opacity: 0.2, stroke: "var(--method-color)" })
-    setS6CompBar({ y: "75", height: "10" })
-    setS6Feedback({ opacity: 0, transform: "translate(-50%, -50%) scale(0)", top: "50%", left: "75%" })
-    setS6RetryNode({ active: false, attempt: 1 })
-    setS6ValidatedPackage({ opacity: 0, transform: "translate(-50%, -50%) scale(0)", left: "50%" })
+      const core = $("val-core");
+      const synMod = $("val-syntax");
+      const boundMod = $("val-boundary");
+      const compMod = $("val-complexity");
+      const fbPacket = $("val-feedback");
+      const retryNode = $("val-retry-node");
+      const beams = $$(".val-beam");
 
-    await delayAsync(600, 6)
-    setS6Core({ opacity: 1, transform: "translate(-50%, -50%) scale(1)", fail: false })
+      await delayAsync(600, 6);
+      if (currentScene !== 6) return;
+      core.style.opacity = "1";
+      core.style.transform = "translate(-50%, -50%) scale(1)";
 
-    await delayAsync(800, 6)
-    setS6Beams({ syn: "active-beam", bound: "active-beam", comp: "active-beam" })
+      await delayAsync(800, 6);
+      if (currentScene !== 6) return;
 
-    // Syntax Check Pass
-    setS6Modules((prev) => ({ ...prev, syn: "processing" }))
-    await delayAsync(800, 6)
-    setS6TokensX({ t1: "20", t2: "20", t3: "20" })
-    await delayAsync(400, 6)
-    setS6Modules((prev) => ({ ...prev, syn: "pass" }))
-    setS6Beams((prev) => ({ ...prev, syn: "pass-beam" }))
+      beams.forEach((b: any) => b.classList.add("active-beam"));
 
-    // Boundary Check Pass
-    setS6Modules((prev) => ({ ...prev, bound: "processing" }))
-    await delayAsync(800, 6)
-    setS6BoundShield({ opacity: 1, stroke: "var(--string-color)" })
-    await delayAsync(400, 6)
-    setS6Modules((prev) => ({ ...prev, bound: "pass" }))
-    setS6Beams((prev) => ({ ...prev, bound: "pass-beam" }))
+      synMod.classList.add("processing");
+      await delayAsync(800, 6);
+      if (currentScene !== 6) return;
 
-    // Complexity Check Fail
-    setS6Modules((prev) => ({ ...prev, comp: "processing" }))
-    await delayAsync(500, 6)
-    setS6CompBar({ y: "20", height: "65" })
-    await delayAsync(800, 6)
-    setS6Modules((prev) => ({ ...prev, comp: "fail" }))
-    setS6Beams((prev) => ({ ...prev, comp: "fail-beam" }))
-    setS6Core((prev) => ({ ...prev, fail: true }))
+      $("syn-token-1").setAttribute("x", "20");
+      $("syn-token-2").setAttribute("x", "20");
+      $("syn-token-3").setAttribute("x", "20");
 
-    // Feedback Packet to Retry Node
-    await delayAsync(600, 6)
-    setS6Feedback({ opacity: 1, transform: "translate(-50%, -50%) scale(1)", top: "50%", left: "75%" })
-    await delayAsync(800, 6)
-    setS6Feedback({ opacity: 1, transform: "translate(-50%, -50%) scale(1)", top: "20%", left: "20%" })
+      await delayAsync(400, 6);
+      synMod.classList.remove("processing");
+      synMod.classList.add("pass");
+      $("val-beam-syntax").classList.replace("active-beam", "pass-beam");
 
-    await delayAsync(1200, 6)
-    setS6Feedback((prev) => ({ ...prev, opacity: 0 }))
-    setS6RetryNode({ active: true, attempt: 2 })
+      if (currentScene !== 6) return;
+      boundMod.classList.add("processing");
+      await delayAsync(800, 6);
 
-    setS6Core({ opacity: 0, transform: "translate(-50%, -50%) scale(1)", fail: false })
-    setS6Modules({ syn: "", bound: "", comp: "" })
-    setS6Beams({ syn: "", bound: "", comp: "" })
-    setS6TokensX({ t1: "10", t2: "40", t3: "20" })
-    setS6CompBar({ y: "75", height: "10" })
-    setS6BoundShield({ opacity: 0.2, stroke: "var(--method-color)" })
+      $("bound-shield").style.opacity = "1";
+      $("bound-shield").style.stroke = "var(--string-color)";
 
-    await delayAsync(1000, 6)
-    setS6RetryNode({ active: false, attempt: 2 })
-    setS6Core({ opacity: 1, transform: "translate(-50%, -50%) scale(1)", fail: false })
+      await delayAsync(400, 6);
+      boundMod.classList.remove("processing");
+      boundMod.classList.add("pass");
+      $("val-beam-boundary").classList.replace("active-beam", "pass-beam");
 
-    await delayAsync(800, 6)
-    setS6Beams({ syn: "pass-beam", bound: "pass-beam", comp: "pass-beam" })
-    setS6Modules({ syn: "pass", bound: "pass", comp: "pass" })
-    setS6TokensX({ t1: "20", t2: "20", t3: "20" })
-    setS6CompBar({ y: "65", height: "20" })
-    setS6BoundShield({ opacity: 1, stroke: "var(--string-color)" })
+      if (currentScene !== 6) return;
+      compMod.classList.add("processing");
+      await delayAsync(500, 6);
 
-    await delayAsync(1200, 6)
-    setS6Core((prev) => ({ ...prev, opacity: 0 }))
-    setS6ValidatedPackage({ opacity: 1, transform: "translate(-50%, -50%) scale(1)", left: "50%" })
+      $("comp-bar-gen").setAttribute("y", "20");
+      $("comp-bar-gen").setAttribute("height", "65");
 
-    await delayAsync(1500, 6)
-    setS6ValidatedPackage({ opacity: 1, transform: "translate(-50%, -50%) scale(1)", left: "150%" })
+      await delayAsync(800, 6);
+      if (currentScene !== 6) return;
 
-    await delayAsync(800, 6)
-    setCurrentScene(7)
-  }
+      compMod.classList.remove("processing");
+      compMod.classList.add("fail");
+      $("val-beam-complexity").classList.replace("active-beam", "fail-beam");
+      core.classList.add("fail-core");
 
-  // --- SCENE 7 EXECUTION ---
-  const runScene7 = async () => {
-    setS7ContainerVisible(true)
-    setS7IterCounter({ text: "STRATEGY ITERATION: 1", opacity: 0, color: "" })
-    setS7QwenBadge({ activeCenter: false, exitLeft: false, status: "ACTIVE", statusColor: "" })
-    setS7LlamaBadge({ enterRight: true, activeCenter: false, opacity: 1, status: "STANDBY", statusColor: "var(--class-color)" })
-    setS7Boxes({ original: false, refactored: false, refactoredY: "0px", refactoredOpacity: 1 })
-    setS7JudgeCore({ opacity: 0, transform: "translate(-50%, -50%) scale(0)", transition: "" })
-    setS7JudgeCrystal({ state: "" })
-    setS7Beams({ state: "", opacity: 1 })
-    setS7Labels({ opacity: 0, color: "" })
-    setS7Feedback({ opacity: 0, transform: "translate(-50%, -50%) scale(0)", left: "50%" })
-    setS7FinalCompVisible(false)
+      await delayAsync(600, 6);
+      if (currentScene !== 6) return;
 
-    await delayAsync(300, 7)
-    setS7QwenBadge((prev) => ({ ...prev, activeCenter: true }))
+      fbPacket.style.opacity = "1";
+      fbPacket.style.transform = "translate(-50%, -50%) scale(1)";
 
-    await delayAsync(1000, 7)
-    setS7QwenBadge((prev) => ({ ...prev, status: "UNLOAD", statusColor: "#ff5f56" }))
+      await delayAsync(800, 6);
+      if (currentScene !== 6) return;
 
-    await delayAsync(800, 7)
-    setS7QwenBadge((prev) => ({ ...prev, activeCenter: false, exitLeft: true }))
-    setS7LlamaBadge((prev) => ({ ...prev, enterRight: false, activeCenter: true }))
+      fbPacket.style.top = "20%";
+      fbPacket.style.left = "20%";
 
-    await delayAsync(1000, 7)
-    setS7LlamaBadge((prev) => ({ ...prev, status: "LOAD", statusColor: "var(--string-color)" }))
+      await delayAsync(1200, 6);
+      if (currentScene !== 6) return;
 
-    await delayAsync(800, 7)
-    setS7LlamaBadge((prev) => ({ ...prev, status: "ACTIVE" }))
+      fbPacket.style.opacity = "0";
+      retryNode.classList.add("active-retry");
+      $("val-attempt").textContent = "Attempt: 2";
 
-    setS7IterCounter({ text: "STRATEGY ITERATION: 1", opacity: 1, color: "" })
+      core.style.opacity = "0";
+      core.classList.remove("fail-core");
 
-    await delayAsync(500, 7)
-    setS7Boxes((prev) => ({ ...prev, original: true, refactored: true }))
+      synMod.classList.remove("pass");
+      boundMod.classList.remove("pass");
+      compMod.classList.remove("fail");
+      $$(".val-beam").forEach((b: any) => {
+        b.classList.remove("pass-beam", "fail-beam");
+      });
+      $("syn-token-1").setAttribute("x", "10");
+      $("syn-token-2").setAttribute("x", "40");
+      $("comp-bar-gen").setAttribute("y", "75");
+      $("comp-bar-gen").setAttribute("height", "10");
+      $("bound-shield").style.opacity = "0.2";
+      $("bound-shield").style.stroke = "var(--method-color)";
 
-    await delayAsync(800, 7)
-    setS7JudgeCore({ opacity: 1, transform: "translate(-50%, -50%) scale(1)", transition: "" })
+      await delayAsync(1000, 6);
+      if (currentScene !== 6) return;
 
-    await delayAsync(1200, 7)
-    setS7Beams({ state: "active", opacity: 1 })
-    setS7Labels({ opacity: 1, color: "" })
+      retryNode.classList.remove("active-retry");
+      core.style.opacity = "1";
 
-    await delayAsync(1500, 7)
-    setS7Beams({ state: "reject", opacity: 1 })
-    setS7Labels({ opacity: 1, color: "#ff5f56" })
-    setS7JudgeCrystal({ state: "reject" })
+      await delayAsync(800, 6);
+      if (currentScene !== 6) return;
 
-    await delayAsync(800, 7)
-    setS7Feedback({ opacity: 1, transform: "translate(-50%, -50%) scale(1)", left: "50%" })
+      $$(".val-beam").forEach((b: any) => b.classList.add("pass-beam"));
+      synMod.classList.add("pass");
+      boundMod.classList.add("pass");
+      compMod.classList.add("pass");
 
-    await delayAsync(800, 7)
-    setS7Feedback((prev) => ({ ...prev, left: "-20%" }))
+      $("syn-token-1").setAttribute("x", "20");
+      $("syn-token-2").setAttribute("x", "20");
 
-    await delayAsync(1000, 7)
-    setS7Beams({ state: "", opacity: 1 })
-    setS7Labels({ opacity: 0, color: "var(--class-color)" })
-    setS7JudgeCrystal({ state: "" })
-    setS7Feedback({ opacity: 0, transform: "translate(-50%, -50%) scale(0)", left: "50%" })
+      $("comp-bar-gen").setAttribute("y", "65");
+      $("comp-bar-gen").setAttribute("height", "20");
 
-    setS7Boxes((prev) => ({ ...prev, refactoredOpacity: 0, refactoredY: "-30px" }))
-    setS7IterCounter({ text: "STRATEGY ITERATION: 2", opacity: 1, color: "" })
+      $("bound-shield").style.opacity = "1";
+      $("bound-shield").style.stroke = "var(--string-color)";
 
-    await delayAsync(1200, 7)
-    setS7Boxes((prev) => ({ ...prev, refactoredY: "30px" }))
-    await delayAsync(100, 7)
-    setS7Boxes((prev) => ({ ...prev, refactoredOpacity: 1, refactoredY: "0px" }))
+      await delayAsync(1200, 6);
+      if (currentScene !== 6) return;
 
-    await delayAsync(800, 7)
-    setS7Beams({ state: "active", opacity: 1 })
-    setS7Labels({ opacity: 1, color: "" })
+      core.style.opacity = "0";
 
-    await delayAsync(1800, 7)
-    setS7Beams({ state: "accept", opacity: 1 })
-    setS7Labels({ opacity: 1, color: "var(--string-color)" })
-    setS7JudgeCrystal({ state: "accept" })
+      const validatedPack = $("validated-package");
+      validatedPack.style.opacity = "1";
+      validatedPack.style.transform = "translate(-50%, -50%) scale(1)";
 
-    await delayAsync(600, 7)
-    setS7IterCounter({ text: "✅ VALIDATION SUCCESSFUL — OUTPUT APPROVED", opacity: 1, color: "var(--string-color)" })
+      await delayAsync(1500, 6);
+      if (currentScene !== 6) return;
 
-    await delayAsync(1400, 7)
-    setS7JudgeCore({ opacity: 0, transform: "translate(-50%, -50%) scale(0)", transition: "all 0.6s ease" })
-    setS7Beams((prev) => ({ ...prev, opacity: 0 }))
-    setS7Labels((prev) => ({ ...prev, opacity: 0 }))
-    setS7Boxes((prev) => ({ ...prev, original: false, refactored: false }))
-    setS7IterCounter((prev) => ({ ...prev, opacity: 0 }))
-    setS7LlamaBadge((prev) => ({ ...prev, opacity: 0 }))
+      validatedPack.style.left = "150%";
 
-    await delayAsync(700, 7)
-    setS7FinalCompVisible(true)
-  }
+      await delayAsync(800, 6);
+      if (currentScene === 6) {
+        nextScene();
+      }
+    }
+
+    async function runScene7() {
+      if (currentScene !== 7) return;
+
+      const container7 = $("scene7-container");
+      container7.classList.add("visible");
+
+      const qwenBadge = $("s7-qwen-badge");
+      const llamaBadge = $("s7-llama-badge");
+      const qwenStatus = $("qwen-status");
+      const llamaStatus = $("llama-status");
+
+      const originalBox = $("s7-box-original");
+      const refactoredBox = $("s7-box-refactored");
+
+      const judgeCore = $("judge-core-container");
+      const judgeCrystal = $("judge-crystal");
+
+      const beams = [$("s7-beam-logic"), $("s7-beam-struct"), $("s7-beam-quality")];
+      const labels = [$("s7-label-logic"), $("s7-label-struct"), $("s7-label-quality")];
+
+      const feedback = $("s7-feedback-packet");
+      const iterCounter = $("s7-iteration-counter");
+
+      await delayAsync(300, 7);
+      if (currentScene !== 7) return;
+
+      qwenBadge.classList.add("active-center");
+
+      await delayAsync(1000, 7);
+      if (currentScene !== 7) return;
+
+      qwenStatus.textContent = "UNLOAD";
+      qwenStatus.style.color = "#ff5f56";
+
+      await delayAsync(800, 7);
+      if (currentScene !== 7) return;
+
+      qwenBadge.classList.remove("active-center");
+      qwenBadge.classList.add("exit-left");
+
+      llamaBadge.classList.remove("enter-right");
+      llamaBadge.classList.add("active-center");
+
+      await delayAsync(1000, 7);
+      if (currentScene !== 7) return;
+
+      llamaStatus.textContent = "LOAD";
+      llamaStatus.style.color = "var(--string-color)";
+
+      await delayAsync(800, 7);
+      if (currentScene !== 7) return;
+
+      llamaStatus.textContent = "ACTIVE";
+
+      iterCounter.style.opacity = "1";
+
+      await delayAsync(500, 7);
+      if (currentScene !== 7) return;
+
+      originalBox.classList.add("visible");
+      refactoredBox.classList.add("visible");
+
+      await delayAsync(800, 7);
+      if (currentScene !== 7) return;
+
+      judgeCore.style.opacity = "1";
+      judgeCore.style.transform = "translate(-50%, -50%) scale(1)";
+
+      await delayAsync(1200, 7);
+      if (currentScene !== 7) return;
+
+      beams.forEach((b) => b.classList.add("active"));
+      labels.forEach((l) => (l.style.opacity = "1"));
+
+      await delayAsync(1500, 7);
+      if (currentScene !== 7) return;
+
+      beams[2].classList.add("reject");
+      labels[2].style.color = "#ff5f56";
+      judgeCrystal.classList.add("reject");
+
+      await delayAsync(800, 7);
+      if (currentScene !== 7) return;
+
+      feedback.style.opacity = "1";
+      feedback.style.transform = "translate(-50%, -50%) scale(1)";
+
+      await delayAsync(800, 7);
+      if (currentScene !== 7) return;
+
+      feedback.style.left = "-20%";
+
+      await delayAsync(1000, 7);
+      if (currentScene !== 7) return;
+
+      beams.forEach((b) => b.classList.remove("active", "reject"));
+      labels.forEach((l) => {
+        l.style.opacity = "0";
+        l.style.color = "var(--class-color)";
+      });
+      judgeCrystal.classList.remove("reject");
+      feedback.style.opacity = "0";
+      feedback.style.left = "50%";
+      feedback.style.transform = "translate(-50%, -50%) scale(0)";
+
+      refactoredBox.style.opacity = "0";
+      refactoredBox.style.transform = "translateY(-30px)";
+
+      iterCounter.textContent = "STRATEGY ITERATION: 2";
+
+      await delayAsync(1200, 7);
+      if (currentScene !== 7) return;
+
+      refactoredBox.style.transform = "translateY(30px)";
+      await delayAsync(100, 7);
+      if (currentScene !== 7) return;
+      refactoredBox.style.opacity = "1";
+      refactoredBox.style.transform = "translateY(0)";
+
+      await delayAsync(800, 7);
+      if (currentScene !== 7) return;
+
+      beams.forEach((b) => b.classList.add("active"));
+      labels.forEach((l) => (l.style.opacity = "1"));
+
+      await delayAsync(1800, 7);
+      if (currentScene !== 7) return;
+
+      beams.forEach((b) => {
+        b.classList.remove("active", "reject");
+        b.classList.add("accept");
+      });
+      labels.forEach((l) => (l.style.color = "var(--string-color)"));
+      judgeCrystal.classList.remove("reject");
+      judgeCrystal.classList.add("accept");
+
+      await delayAsync(600, 7);
+      if (currentScene !== 7) return;
+
+      iterCounter.style.color = "var(--string-color)";
+      iterCounter.textContent = "✅ VALIDATION SUCCESSFUL — OUTPUT APPROVED";
+
+      await delayAsync(1400, 7);
+      if (currentScene !== 7) return;
+
+      judgeCore.style.transition = "all 0.6s ease";
+      judgeCore.style.opacity = "0";
+      judgeCore.style.transform = "translate(-50%, -50%) scale(0)";
+      beams.forEach((b) => {
+        b.style.transition = "opacity 0.5s";
+        b.style.opacity = "0";
+      });
+      labels.forEach((l) => (l.style.opacity = "0"));
+      originalBox.style.transition = "opacity 0.5s ease";
+      originalBox.style.opacity = "0";
+      refactoredBox.style.transition = "opacity 0.5s ease";
+      refactoredBox.style.opacity = "0";
+      iterCounter.style.opacity = "0";
+      $("s7-llama-badge").style.opacity = "0";
+
+      await delayAsync(700, 7);
+      if (currentScene !== 7) return;
+
+      $("s7-final-comparison").classList.add("visible");
+    }
+
+    let currentScene = 1;
+    const totalScenes = 7;
+
+    function updateNavButtons() {
+      const prevBtn = $("prev-btn");
+      const nextBtn = $("next-btn");
+
+      if (currentScene <= 1) {
+        prevBtn.style.opacity = "0.2";
+        prevBtn.style.cursor = "default";
+      } else {
+        prevBtn.style.opacity = "1";
+        prevBtn.style.cursor = "pointer";
+      }
+
+      if (currentScene >= totalScenes) {
+        nextBtn.style.opacity = "0.2";
+        nextBtn.style.cursor = "default";
+      } else {
+        nextBtn.style.opacity = "1";
+        nextBtn.style.cursor = "pointer";
+      }
+    }
+
+    function clearAllTimeouts() {
+      scene1TimeoutIds.forEach(clearTimeout);
+      scene2TimeoutIds.forEach(clearTimeout);
+      scene3TimeoutIds.forEach(clearTimeout);
+      scene4TimeoutIds.forEach(clearTimeout);
+      scene5TimeoutIds.forEach(clearTimeout);
+      scene6TimeoutIds.forEach(clearTimeout);
+      scene7TimeoutIds.forEach(clearTimeout);
+      scene1TimeoutIds = [];
+      scene2TimeoutIds = [];
+      scene3TimeoutIds = [];
+      scene4TimeoutIds = [];
+      scene5TimeoutIds = [];
+      scene6TimeoutIds = [];
+      scene7TimeoutIds = [];
+    }
+
+    async function nextScene() {
+      if (currentScene < totalScenes) {
+        clearAllTimeouts();
+
+        if (currentScene === 1) {
+          container.style.opacity = "0";
+          container.style.transform = "scale(0.95)";
+          $("mouse-cursor").style.opacity = "0";
+        } else if (currentScene === 2) {
+          scene2Container.style.opacity = "0";
+        } else if (currentScene === 3) {
+          $("scene3-container").style.opacity = "0";
+        } else if (currentScene === 4) {
+          $("scene4-container").style.opacity = "0";
+        } else if (currentScene === 5) {
+          $("scene5-container").style.opacity = "0";
+        } else if (currentScene === 6) {
+          $("scene6-container").style.opacity = "0";
+        } else if (currentScene === 7) {
+          $("scene7-container").style.opacity = "0";
+        }
+
+        await new Promise((resolve) => setTimeout(resolve, 600));
+
+        currentScene++;
+        updateNavButtons();
+
+        resetSceneState();
+
+        if (currentScene === 2) runScene2();
+        else if (currentScene === 3) runScene3();
+        else if (currentScene === 4) runScene4();
+        else if (currentScene === 5) runScene5();
+        else if (currentScene === 6) runScene6();
+        else if (currentScene === 7) runScene7();
+      }
+    }
+
+    async function prevScene() {
+      if (currentScene > 1) {
+        clearAllTimeouts();
+
+        if (currentScene === 2) {
+          scene2Container.style.opacity = "0";
+        } else if (currentScene === 3) {
+          $("scene3-container").style.opacity = "0";
+        } else if (currentScene === 4) {
+          $("scene4-container").style.opacity = "0";
+        } else if (currentScene === 5) {
+          $("scene5-container").style.opacity = "0";
+        } else if (currentScene === 6) {
+          $("scene6-container").style.opacity = "0";
+        } else if (currentScene === 7) {
+          $("scene7-container").style.opacity = "0";
+        }
+
+        await new Promise((resolve) => setTimeout(resolve, 600));
+
+        currentScene--;
+        updateNavButtons();
+
+        resetSceneState();
+
+        if (currentScene === 1) {
+          container.style.opacity = "0";
+          container.style.transform = "scale(0.95)";
+          runScene1();
+        } else if (currentScene === 2) runScene2();
+        else if (currentScene === 3) runScene3();
+        else if (currentScene === 4) runScene4();
+        else if (currentScene === 5) runScene5();
+        else if (currentScene === 6) runScene6();
+        else if (currentScene === 7) runScene7();
+      }
+    }
+
+    function resetSceneState() {
+      // Reset Scene 1 elements
+      codeElement.innerHTML = "";
+      requestElement.textContent = "";
+      codeCursor.style.display = "inline-block";
+      requestCursor.style.display = "none";
+      mouseCursor.style.opacity = "0";
+      mouseCursor.style.top = "100%";
+      mouseCursor.style.left = "50%";
+      $("submit-btn").style.opacity = "0.5";
+      $("submit-btn").style.transform = "scale(1)";
+      container.classList.remove("visible");
+      container.style.opacity = "";
+      container.style.transform = "";
+
+      // Reset Scene 2 elements
+      scene2Container.classList.remove("visible");
+      scene2Container.style.opacity = "";
+      dataPacket.style.opacity = "0";
+      dataPacket.style.transform = "translate(-50%, -50%) scale(0)";
+      dataPacket.style.top = "50%";
+      dataPacket.style.left = "50%";
+
+      nodeFE.classList.remove("visible");
+      nodeWS.classList.remove("visible");
+      nodeBE.classList.remove("visible");
+      nodeSession.classList.remove("visible");
+
+      lineFeWs.classList.remove("active");
+      lineWsBe.classList.remove("active");
+      lineBeSession.classList.remove("active");
+
+      sessionInfo.classList.remove("visible");
+      nextPhaseIndicator.classList.remove("visible");
+      particleContainer.innerHTML = "";
+
+      // Reset Scene 3 elements
+      $("scene3-container").classList.remove("visible");
+      $("scene3-container").style.opacity = "";
+
+      const wrapper = $("chamber-wrapper");
+      if (wrapper) {
+        wrapper.classList.remove("visible");
+        const core = $("chamber-core");
+        core.style.transform = "";
+        core.style.opacity = "";
+        core.classList.remove("scanning");
+
+        $("core-laser").style.opacity = "0";
+        $("core-laser").style.top = "10%";
+        $("core-laser").style.transition = "none";
+
+        $$(".code-row").forEach((row: any) => {
+          row.classList.remove("scanned", "target");
+        });
+
+        ["mod-syntax", "mod-semantic", "mod-complexity"].forEach((id) => {
+          const el = $(id);
+          if (el) el.classList.remove("visible", "active", "complete");
+        });
+
+        ["beam-syntax", "beam-semantic", "beam-complexity"].forEach((id) => {
+          const el = $(id);
+          if (el) el.classList.remove("active", "return");
+        });
+
+        $("baseline-artifact-s3").classList.remove("visible");
+        $("dot-syn").classList.remove("syn-pass");
+        $("dot-sem").classList.remove("sem-pass");
+        $("dot-comp").classList.remove("comp-pass");
+      }
+
+      $("next-phase-indicator-2").classList.remove("visible");
+
+      // Reset Scene 4 elements
+      const scene4 = $("scene4-container");
+      if (scene4) {
+        scene4.classList.remove("visible");
+        scene4.style.opacity = "";
+
+        $("planner-model-badge").classList.remove("visible");
+        $("planner-core").style.opacity = "0";
+        const ringInnerReset = root!.querySelector(".core-ring-inner") as HTMLElement | SVGElement | null;
+        if (ringInnerReset) {
+          ringInnerReset.style.stroke = "rgba(166, 227, 161, 0.3)";
+          ringInnerReset.style.strokeWidth = "2";
+        }
+
+        const inBaseline = $("input-baseline");
+        inBaseline.style.opacity = "0";
+        inBaseline.style.top = "-50px";
+        inBaseline.style.transform = "translateX(-50%)";
+        const inInst = $("input-instruction");
+        inInst.style.opacity = "0";
+        inInst.style.top = "-50px";
+        inInst.style.transform = "translateX(-50%)";
+
+        const intentPacket = $("intent-packet");
+        intentPacket.style.opacity = "0";
+        intentPacket.style.transform = "translate(-50%, -50%) scale(0)";
+        intentPacket.style.top = "50%";
+        intentPacket.style.left = "50%";
+
+        const astContainer = $("ast-container");
+        astContainer.style.opacity = "0";
+        astContainer.style.transform = "translate(-50%, -50%) scale(0.5)";
+
+        ["ast-root", "ast-var", "ast-branch-r", "ast-issue"].forEach((id) => {
+          const el = $(id);
+          if (el) el.classList.remove("dim", "target");
+        });
+        ["ast-edge-left", "ast-edge-right", "ast-edge-target"].forEach((id) => {
+          const el = $(id);
+          if (el) el.classList.remove("dim", "target");
+        });
+
+        const synthSphere = $("synthesis-sphere");
+        synthSphere.style.opacity = "0";
+        synthSphere.style.transform = "translate(-50%, -50%) scale(0)";
+
+        const blueprint = $("blueprint-artifact");
+        blueprint.style.opacity = "0";
+        blueprint.style.transform = "translate(-50%, -50%) scale(0)";
+
+        ["bp-card1", "bp-card2", "bp-card3"].forEach((id) => {
+          const el = $(id);
+          if (el) el.classList.remove("visible");
+        });
+        ["bp-arrow1", "bp-arrow2"].forEach((id) => {
+          const el = $(id);
+          if (el) el.classList.remove("visible");
+        });
+
+        const execPack = $("execution-package");
+        execPack.style.opacity = "0";
+        execPack.style.transform = "translate(-50%, -50%) scale(0)";
+        execPack.style.top = "50%";
+      }
+
+      $$(".planner-particle").forEach((el: any) => el.remove());
+
+      // Reset Scene 5 elements
+      const scene5 = $("scene5-container");
+      if (scene5) {
+        scene5.classList.remove("visible");
+        scene5.style.opacity = "";
+        $("generator-model-badge").classList.remove("visible");
+        $("incoming-blueprint").style.top = "-100px";
+        $("incoming-blueprint").style.opacity = "0";
+        $("incoming-blueprint").style.transform = "translateX(-50%)";
+        $("generator-engine").style.transform = "translate(-50%, -50%) scale(0)";
+        $("generator-engine").style.opacity = "0";
+        $("generator-engine").style.top = "25%";
+        $("gen-core-hex").classList.remove("active");
+        $("code-compare-container").style.opacity = "0";
+        $("code-compare-container").style.transform = "translateY(40px)";
+        $("new-code-content").innerHTML = "";
+        $("refactor-complete").classList.remove("visible");
+        $("gen-status").style.opacity = "0";
+      }
+
+      // Reset Scene 6 elements
+      const scene6 = $("scene6-container");
+      if (scene6) {
+        scene6.classList.remove("visible");
+        scene6.style.opacity = "";
+
+        const core = $("val-core");
+        core.style.opacity = "0";
+        core.style.transform = "translate(-50%, -50%) scale(0)";
+        core.classList.remove("fail-core");
+
+        ["val-syntax", "val-boundary", "val-complexity"].forEach((id) => {
+          const el = $(id);
+          if (el) el.classList.remove("processing", "pass", "fail");
+        });
+
+        $$(".val-beam").forEach((b: any) => {
+          b.classList.remove("active-beam", "pass-beam", "fail-beam");
+        });
+
+        $("syn-token-1").setAttribute("x", "10");
+        $("syn-token-2").setAttribute("x", "40");
+        $("syn-token-3").setAttribute("x", "20");
+
+        $("bound-shield").style.opacity = "0.2";
+        $("bound-shield").style.stroke = "var(--method-color)";
+
+        $("comp-bar-gen").setAttribute("y", "75");
+        $("comp-bar-gen").setAttribute("height", "10");
+
+        const fb = $("val-feedback");
+        fb.style.opacity = "0";
+        fb.style.transform = "translate(-50%, -50%) scale(0)";
+        fb.style.top = "50%";
+        fb.style.left = "75%";
+
+        $("val-retry-node").classList.remove("active-retry");
+        $("val-attempt").textContent = "Attempt: 1";
+
+        const valPack = $("validated-package");
+        valPack.style.opacity = "0";
+        valPack.style.transform = "translate(-50%, -50%) scale(0)";
+        valPack.style.left = "50%";
+      }
+
+      // Reset Scene 7 elements
+      const scene7 = $("scene7-container");
+      if (scene7) {
+        scene7.classList.remove("visible");
+        scene7.style.opacity = "";
+
+        $("s7-qwen-badge").classList.remove("active-center", "exit-left");
+        $("s7-llama-badge").classList.remove("active-center");
+        $("s7-llama-badge").classList.add("enter-right");
+        $("s7-llama-badge").style.top = "";
+        $("qwen-status").textContent = "ACTIVE";
+        $("qwen-status").style.color = "";
+        $("llama-status").textContent = "STANDBY";
+        $("llama-status").style.color = "var(--class-color)";
+
+        $("s7-box-original").classList.remove("visible");
+        $("s7-box-original").removeAttribute("style");
+        $("s7-box-refactored").classList.remove("visible");
+        $("s7-box-refactored").removeAttribute("style");
+
+        $("judge-core-container").style.opacity = "0";
+        $("judge-core-container").style.transform = "translate(-50%, -50%) scale(0)";
+        $("judge-core-container").style.transition = "";
+        $("judge-crystal").classList.remove("reject", "accept");
+
+        $$(".eval-beam").forEach((b: any) => {
+          b.classList.remove("active", "reject", "accept");
+          b.style.opacity = "";
+          b.style.transition = "";
+        });
+        $$(".beam-label").forEach((l: any) => {
+          l.style.opacity = "0";
+          l.style.color = "";
+        });
+
+        $("s7-feedback-packet").style.opacity = "0";
+        $("s7-feedback-packet").style.transform = "translate(-50%, -50%) scale(0)";
+        $("s7-feedback-packet").style.left = "50%";
+
+        $("s7-iteration-counter").style.opacity = "0";
+        $("s7-iteration-counter").style.color = "";
+        $("s7-iteration-counter").textContent = "STRATEGY ITERATION: 1";
+
+        $("s7-llama-badge").style.opacity = "";
+        $("fallback-shield").style.opacity = "0";
+        $("fallback-text").style.opacity = "0";
+
+        $("s7-final-comparison").classList.remove("visible");
+      }
+    }
+
+    // Wire up nav buttons (originally inline onclick="")
+    const prevBtnEl = $("prev-btn");
+    const nextBtnEl = $("next-btn");
+    prevBtnEl.addEventListener("click", prevScene);
+    nextBtnEl.addEventListener("click", nextScene);
+
+    // Kick off (originally window.addEventListener('load', ...))
+    updateNavButtons();
+    runScene1();
+
+    return () => {
+      currentScene = -1; // stop any in-flight async loops from proceeding
+      clearAllTimeouts();
+      window.removeEventListener("resize", updateAllLines);
+      prevBtnEl.removeEventListener("click", prevScene);
+      nextBtnEl.removeEventListener("click", nextScene);
+      particleContainer.innerHTML = "";
+      if (fontLink.parentNode) fontLink.parentNode.removeChild(fontLink);
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   return (
-    <div className="w-full min-h-screen bg-[#0f111a] text-[#cdd6f4] font-mono select-none overflow-hidden relative">
-      <style jsx global>{`
-        :root {
-          --bg-color: #0f111a;
-          --editor-bg: #1e1e2e;
-          --text-color: #cdd6f4;
-          --keyword-color: #cba6f7;
-          --class-color: #f9e2af;
-          --string-color: #a6e3a1;
-          --method-color: #89b4fa;
-          --border-color: rgba(255, 255, 255, 0.1);
-          --glow-color: rgba(137, 180, 250, 0.3);
+    <div ref={rootRef} className="refactor-animation-root">
+      <style>{`
+        .refactor-animation-root {
+            --bg-color: #0f111a;
+            --editor-bg: #1e1e2e;
+            --text-color: #cdd6f4;
+            --keyword-color: #cba6f7;
+            --class-color: #f9e2af;
+            --string-color: #a6e3a1;
+            --method-color: #89b4fa;
+            --border-color: rgba(255, 255, 255, 0.1);
+            --glow-color: rgba(137, 180, 250, 0.3);
         }
 
-        .kw { color: var(--keyword-color); font-weight: bold; }
-        .cl { color: var(--class-color); }
-        .str { color: var(--string-color); }
-        .mth { color: var(--method-color); }
-        .sym { color: #89dceb; }
-
-        .blinking-cursor {
-          display: inline-block;
-          width: 10px;
-          height: 20px;
-          background-color: var(--text-color);
-          vertical-align: middle;
-          animation: blink 1s step-end infinite;
+        .refactor-animation-root * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
         }
 
-        @keyframes blink {
-          0%, 100% { opacity: 1; }
-          50% { opacity: 0; }
+        .refactor-animation-root {
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            overflow: hidden;
+            position: relative;
         }
 
-        .flow-line {
-          stroke: var(--border-color);
-          stroke-width: 2;
-          stroke-dasharray: 5, 5;
-          fill: none;
-        }
-        .flow-line.active {
-          stroke: var(--keyword-color);
-          animation: dash 20s linear infinite;
-        }
-        @keyframes dash {
-          to { stroke-dashoffset: -1000; }
+        .refactor-animation-root #container {
+            width: 80%;
+            max-width: 1000px;
+            display: flex;
+            flex-direction: column;
+            gap: 24px;
+            opacity: 0;
+            transform: scale(0.95);
+            transition: opacity 1.5s ease-out, transform 1.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
         }
 
-        @keyframes spin {
-          from { transform: rotate(0deg); }
-          to { transform: rotate(360deg); }
-        }
-        @keyframes spin-reverse {
-          from { transform: rotate(0deg); }
-          to { transform: rotate(-360deg); }
+        .refactor-animation-root #container.visible {
+            opacity: 1;
+            transform: scale(1);
         }
 
-        @keyframes pulsePlanner {
-          from { box-shadow: 0 0 10px rgba(203, 166, 247, 0.15); }
-          to { box-shadow: 0 0 25px rgba(203, 166, 247, 0.4); }
-        }
-        @keyframes pulseGenerator {
-          from { box-shadow: 0 0 10px rgba(166, 227, 161, 0.15); }
-          to { box-shadow: 0 0 25px rgba(166, 227, 161, 0.4); }
-        }
-        @keyframes pulseJudge {
-          from { box-shadow: 0 0 10px rgba(249, 226, 175, 0.15); }
-          to { box-shadow: 0 0 25px rgba(249, 226, 175, 0.4); }
-        }
-        @keyframes pulseJudgeCore {
-          from { box-shadow: 0 0 20px rgba(249, 226, 175, 0.2); }
-          to { box-shadow: 0 0 50px rgba(249, 226, 175, 0.5); }
-        }
-        @keyframes pulseHex {
-          from { transform: translate(-50%, -50%) scale(1); box-shadow: 0 0 10px rgba(166, 227, 161, 0.2); }
-          to { transform: translate(-50%, -50%) scale(1.05); box-shadow: 0 0 20px rgba(166, 227, 161, 0.4); }
-        }
-        @keyframes pulseHexFast {
-          from { transform: translate(-50%, -50%) scale(1.05); box-shadow: 0 0 20px var(--string-color); }
-          to { transform: translate(-50%, -50%) scale(1.15); box-shadow: 0 0 40px var(--string-color); }
-        }
-        @keyframes shake {
-          0%, 100% { transform: translate(-50%, -50%) scale(1); }
-          25% { transform: translate(-55%, -50%) scale(1); }
-          75% { transform: translate(-45%, -50%) scale(1); }
+        .refactor-animation-root .window {
+            background-color: var(--editor-bg);
+            border-radius: 12px;
+            border: 1px solid var(--border-color);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5), 0 0 20px var(--glow-color);
+            overflow: hidden;
+            position: relative;
         }
 
-        .highlight-green {
-          background-color: rgba(166, 227, 161, 0.15);
-          border-radius: 4px;
-          display: inline-block;
-          width: 100%;
-          padding: 2px 0;
-          border-left: 3px solid var(--string-color);
+        .refactor-animation-root .window-header {
+            height: 36px;
+            background-color: rgba(0, 0, 0, 0.2);
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            align-items: center;
+            padding: 0 16px;
+        }
+
+        .refactor-animation-root .window-controls {
+            display: flex;
+            gap: 8px;
+        }
+
+        .refactor-animation-root .control-dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+        }
+
+        .refactor-animation-root .dot-red { background-color: #ff5f56; }
+        .refactor-animation-root .dot-yellow { background-color: #ffbd2e; }
+        .refactor-animation-root .dot-green { background-color: #27c93f; }
+
+        .refactor-animation-root .window-title {
+            margin-left: 16px;
+            font-size: 13px;
+            color: rgba(255, 255, 255, 0.5);
+            font-family: monospace;
+        }
+
+        .refactor-animation-root #editor-area {
+            height: 400px;
+            padding: 24px;
+            font-family: 'JetBrains Mono', 'Fira Code', 'Courier New', monospace;
+            font-size: 16px;
+            line-height: 1.6;
+            overflow-y: auto;
+            position: relative;
+        }
+
+        .refactor-animation-root #editor-area::-webkit-scrollbar {
+            width: 10px;
+        }
+        .refactor-animation-root #editor-area::-webkit-scrollbar-track {
+            background: rgba(0,0,0,0.1);
+        }
+        .refactor-animation-root #editor-area::-webkit-scrollbar-thumb {
+            background: rgba(255,255,255,0.2);
+            border-radius: 5px;
+        }
+
+        .refactor-animation-root #code-content {
+            white-space: pre-wrap;
+            tab-size: 4;
+        }
+
+        .refactor-animation-root .kw { color: var(--keyword-color); font-weight: bold; }
+        .refactor-animation-root .cl { color: var(--class-color); }
+        .refactor-animation-root .str { color: var(--string-color); }
+        .refactor-animation-root .mth { color: var(--method-color); }
+        .refactor-animation-root .sym { color: #89dceb; }
+
+        .refactor-animation-root #request-area {
+            padding: 20px;
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .refactor-animation-root #request-input-container {
+            flex-grow: 1;
+            background-color: rgba(0, 0, 0, 0.2);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 16px;
+            min-height: 60px;
+            display: flex;
+            align-items: center;
+        }
+
+        .refactor-animation-root #request-text {
+            font-size: 16px;
+            color: #bac2de;
+            white-space: pre-wrap;
+        }
+
+        .refactor-animation-root .submit-btn {
+            background-color: var(--keyword-color);
+            color: #11111b;
+            border: none;
+            border-radius: 8px;
+            padding: 12px 24px;
+            font-weight: bold;
+            font-size: 14px;
+            cursor: pointer;
+            opacity: 0.5;
+            transition: opacity 0.3s;
+        }
+
+        .refactor-animation-root .blinking-cursor {
+            display: inline-block;
+            width: 10px;
+            height: 20px;
+            background-color: var(--text-color);
+            vertical-align: middle;
+            animation: ra-blink 1s step-end infinite;
+        }
+
+        @keyframes ra-blink {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0; }
+        }
+
+        .refactor-animation-root #mouse-cursor {
+            position: absolute;
+            width: 24px;
+            height: 24px;
+            background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="white" stroke="black" stroke-width="1.5"><path d="M3 3l7 19 3-8 8-3z"/></svg>');
+            pointer-events: none;
+            z-index: 1000;
+            top: 100%;
+            left: 50%;
+            transition: top 1s ease-in-out, left 1s ease-in-out;
+            opacity: 0;
+            filter: drop-shadow(2px 4px 4px rgba(0,0,0,0.5));
+        }
+
+        .refactor-animation-root #mouse-cursor.active {
+            opacity: 1;
+        }
+
+        .refactor-animation-root .nav-btn {
+            position: fixed;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: rgba(30, 30, 46, 0.5);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: rgba(255, 255, 255, 0.5);
+            font-size: 24px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+            z-index: 2000;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+        }
+
+        .refactor-animation-root .nav-btn:hover {
+            background: rgba(40, 40, 60, 0.8);
+            color: rgba(255, 255, 255, 0.9);
+            border-color: rgba(255, 255, 255, 0.3);
+            box-shadow: 0 0 15px rgba(137, 180, 250, 0.4);
+            transform: translateY(-50%) scale(1.1);
+        }
+
+        .refactor-animation-root #prev-btn { left: 20px; }
+        .refactor-animation-root #next-btn { right: 20px; }
+
+        .refactor-animation-root #scene2-container {
+            position: absolute;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 1s ease-out;
+            z-index: 10;
+        }
+
+        .refactor-animation-root #scene2-container.visible {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .refactor-animation-root .data-packet {
+            width: 80px;
+            height: 60px;
+            background: linear-gradient(135deg, var(--keyword-color), var(--method-color));
+            border-radius: 8px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: #11111b;
+            font-weight: bold;
+            font-size: 12px;
+            box-shadow: 0 0 20px var(--glow-color);
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%) scale(0);
+            opacity: 0;
+            z-index: 100;
+        }
+
+        .refactor-animation-root #arch-canvas {
+            position: absolute;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            pointer-events: none;
+            z-index: 5;
+        }
+
+        .refactor-animation-root .flow-line {
+            stroke: var(--border-color);
+            stroke-width: 2;
+            stroke-dasharray: 5, 5;
+            fill: none;
+        }
+
+        .refactor-animation-root .flow-line.active {
+            stroke: var(--keyword-color);
+            animation: ra-dash 20s linear infinite;
+        }
+
+        @keyframes ra-dash {
+            to { stroke-dashoffset: -1000; }
+        }
+
+        .refactor-animation-root .arch-node {
+            background-color: var(--editor-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            position: absolute;
+            opacity: 0;
+            transform: scale(0.9);
+            transition: all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            text-align: center;
+            z-index: 10;
+        }
+
+        .refactor-animation-root .arch-node.visible {
+            opacity: 1;
+            transform: scale(1);
+        }
+
+        .refactor-animation-root .node-title {
+            font-size: 14px;
+            color: var(--text-color);
+            font-weight: bold;
+            margin-bottom: 8px;
+            letter-spacing: 1px;
+        }
+
+        .refactor-animation-root .node-icon {
+            font-size: 32px;
+            margin-bottom: 12px;
+        }
+
+        .refactor-animation-root #node-frontend {
+            top: 15%; left: 50%;
+            transform: translate(-50%, 0) scale(0.9);
+            width: 200px;
+        }
+        .refactor-animation-root #node-frontend.visible {
+            transform: translate(-50%, 0) scale(1);
+        }
+
+        .refactor-animation-root #node-ws {
+            top: 40%; left: 50%;
+            transform: translate(-50%, 0) scale(0.9);
+            width: 180px;
+            background-color: rgba(30, 30, 46, 0.8);
+            border-color: var(--method-color);
+            box-shadow: 0 0 15px rgba(137, 180, 250, 0.2);
+        }
+        .refactor-animation-root #node-ws.visible {
+            transform: translate(-50%, 0) scale(1);
+        }
+
+        .refactor-animation-root #node-backend {
+            top: 65%; left: 30%;
+            transform: translate(-50%, 0) scale(0.9);
+            width: 220px;
+            border-color: var(--keyword-color);
+        }
+        .refactor-animation-root #node-backend.visible {
+            transform: translate(-50%, 0) scale(1);
+        }
+
+        .refactor-animation-root #node-session {
+            top: 65%; left: 70%;
+            transform: translate(-50%, 0) scale(0.9);
+            width: 200px;
+            background-color: rgba(203, 166, 247, 0.1);
+            border-color: var(--keyword-color);
+        }
+        .refactor-animation-root #node-session.visible {
+            transform: translate(-50%, 0) scale(1);
+        }
+
+        .refactor-animation-root .session-details {
+            font-family: monospace;
+            font-size: 12px;
+            color: var(--string-color);
+            margin-top: 10px;
+            background: rgba(0,0,0,0.3);
+            padding: 8px;
+            border-radius: 4px;
+            opacity: 0;
+            transition: opacity 0.5s ease;
+        }
+
+        .refactor-animation-root .session-details.visible {
+            opacity: 1;
+        }
+
+        .refactor-animation-root #next-phase-indicator {
+            position: absolute;
+            bottom: 10%; left: 50%;
+            transform: translate(-50%, 20px);
+            opacity: 0;
+            text-align: center;
+            transition: all 1s ease;
+        }
+
+        .refactor-animation-root #next-phase-indicator.visible {
+            opacity: 1;
+            transform: translate(-50%, 0);
+        }
+
+        .refactor-animation-root .phase-text {
+            color: var(--class-color);
+            font-weight: bold;
+            font-size: 16px;
+            letter-spacing: 2px;
+            margin-top: 10px;
+        }
+
+        .refactor-animation-root .arrow-down {
+            font-size: 24px;
+            color: var(--class-color);
+            animation: ra-bounce 2s infinite;
+        }
+
+        @keyframes ra-bounce {
+            0%, 20%, 50%, 80%, 100% { transform: translateY(0); }
+            40% { transform: translateY(-10px); }
+            60% { transform: translateY(-5px); }
+        }
+
+        .refactor-animation-root #particle-container {
+            position: absolute;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            pointer-events: none;
+            z-index: 90;
+        }
+      `}</style>
+      <style>{`
+        .refactor-animation-root #scene3-container {
+            position: absolute;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 1s ease-out;
+            z-index: 20;
+        }
+
+        .refactor-animation-root #scene3-container.visible {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .refactor-animation-root .chamber-wrapper {
+            position: relative;
+            width: 1000px;
+            height: 600px;
+            opacity: 0;
+            transform: scale(0.95);
+            transition: all 1s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        .refactor-animation-root .chamber-wrapper.visible {
+            opacity: 1;
+            transform: scale(1);
+        }
+
+        .refactor-animation-root #chamber-svg-layer {
+            position: absolute;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            pointer-events: none;
+            z-index: 1;
+        }
+
+        .refactor-animation-root .analysis-beam {
+            fill: none;
+            stroke: var(--border-color);
+            stroke-width: 2;
+            stroke-dasharray: 10, 10;
+            opacity: 0.3;
+            transition: all 0.5s ease;
+        }
+
+        .refactor-animation-root .analysis-beam.active {
+            stroke: var(--keyword-color);
+            opacity: 0.8;
+            animation: ra-beamFlow 1s linear infinite;
+        }
+
+        .refactor-animation-root .analysis-beam.return {
+            stroke: var(--string-color);
+            opacity: 1;
+            animation: ra-beamFlowReverse 0.8s linear infinite;
+        }
+
+        @keyframes ra-beamFlow { to { stroke-dashoffset: -20; } }
+        @keyframes ra-beamFlowReverse { to { stroke-dashoffset: 20; } }
+
+        .refactor-animation-root .chamber-core {
+            position: absolute;
+            top: 45%; left: 50%;
+            transform: translate(-50%, -50%);
+            width: 320px;
+            background-color: var(--editor-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.6), 0 0 20px rgba(137, 180, 250, 0.1);
+            z-index: 10;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 13px;
+            line-height: 1.6;
+            color: rgba(255,255,255,0.6);
+            transition: all 0.8s ease;
+            overflow: hidden;
+        }
+
+        .refactor-animation-root .chamber-core.scanning {
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.6), 0 0 30px rgba(137, 180, 250, 0.3);
+            border-color: var(--method-color);
+        }
+
+        .refactor-animation-root .core-laser {
+            position: absolute;
+            left: 0; width: 100%; height: 2px;
+            background-color: var(--method-color);
+            box-shadow: 0 0 15px 5px rgba(137, 180, 250, 0.5);
+            top: 10%;
+            opacity: 0;
+            z-index: 5;
+        }
+
+        .refactor-animation-root .code-row { transition: all 0.2s ease; padding: 0 5px; border-radius: 4px; }
+        .refactor-animation-root .code-row.scanned { color: var(--text-color); text-shadow: 0 0 5px rgba(255,255,255,0.2); }
+        .refactor-animation-root .code-row.target { color: var(--class-color); background: rgba(249, 226, 175, 0.15); }
+
+        .refactor-animation-root .chamber-module {
+            position: absolute;
+            width: 180px; height: 180px;
+            background: rgba(30, 30, 46, 0.8);
+            backdrop-filter: blur(10px);
+            border: 1px solid var(--border-color);
+            border-radius: 50%;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 5;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.4);
+            transition: all 0.5s ease;
+            transform: translate(-50%, -50%) scale(0.9);
+            opacity: 0;
+        }
+
+        .refactor-animation-root .chamber-module.visible { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+        .refactor-animation-root .chamber-module.active { border-color: var(--keyword-color); box-shadow: 0 0 30px rgba(203, 166, 247, 0.2); }
+        .refactor-animation-root .chamber-module.complete { border-color: var(--string-color); box-shadow: 0 0 30px rgba(166, 227, 161, 0.2); }
+
+        .refactor-animation-root .chamber-module.mod-syntax { top: 45%; left: 15%; }
+        .refactor-animation-root .chamber-module.mod-semantic { top: 45%; left: 85%; }
+        .refactor-animation-root .chamber-module.mod-complexity { top: 85%; left: 50%; width: 220px; height: 120px; border-radius: 16px; }
+
+        .refactor-animation-root .module-label {
+            position: absolute;
+            top: -25px;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 11px;
+            color: rgba(255,255,255,0.5);
+            letter-spacing: 2px;
+            text-transform: uppercase;
+        }
+        .refactor-animation-root .mod-complexity .module-label { top: -20px; }
+
+        .refactor-animation-root .syn-node { fill: var(--editor-bg); stroke: var(--border-color); stroke-width: 2; transition: all 0.3s ease; }
+        .refactor-animation-root .syn-edge { stroke: var(--border-color); stroke-width: 2; transition: all 0.3s ease; }
+
+        .refactor-animation-root .chamber-module.active .syn-node.a1 { fill: var(--string-color); stroke: var(--string-color); filter: drop-shadow(0 0 5px var(--string-color)); }
+        .refactor-animation-root .chamber-module.active .syn-node.a2 { fill: var(--keyword-color); stroke: var(--keyword-color); filter: drop-shadow(0 0 5px var(--keyword-color)); transition-delay: 0.3s; }
+        .refactor-animation-root .chamber-module.active .syn-node.a3 { fill: var(--method-color); stroke: var(--method-color); filter: drop-shadow(0 0 5px var(--method-color)); transition-delay: 0.6s; }
+        .refactor-animation-root .chamber-module.active .syn-edge { stroke: var(--string-color); opacity: 0.5; }
+
+        .refactor-animation-root .sem-target-ring { fill: none; stroke: var(--border-color); stroke-width: 1; stroke-dasharray: 4 4; animation: ra-spin 10s linear infinite; }
+        .refactor-animation-root .sem-icon { fill: rgba(255,255,255,0.2); transition: all 0.5s ease; }
+        .refactor-animation-root .sem-pulse { fill: none; stroke: var(--class-color); stroke-width: 2; opacity: 0; transform-origin: center; }
+
+        .refactor-animation-root .chamber-module.active .sem-target-ring { stroke: var(--class-color); stroke-width: 2; }
+        .refactor-animation-root .chamber-module.active .sem-icon { fill: var(--class-color); filter: drop-shadow(0 0 8px var(--class-color)); transform: scale(1.1); }
+        .refactor-animation-root .chamber-module.active .sem-pulse { animation: ra-radarPulse 1.5s ease-out infinite; }
+
+        @keyframes ra-radarPulse {
+            0% { transform: scale(0.5); opacity: 1; }
+            100% { transform: scale(2); opacity: 0; }
+        }
+
+        .refactor-animation-root .comp-track { fill: none; stroke: rgba(0,0,0,0.5); stroke-width: 8; stroke-linecap: round; }
+        .refactor-animation-root .comp-fill { fill: none; stroke: var(--class-color); stroke-width: 8; stroke-linecap: round; stroke-dasharray: 200; stroke-dashoffset: 200; transition: stroke-dashoffset 1.5s cubic-bezier(0.25, 1, 0.5, 1); }
+        .refactor-animation-root .comp-text { fill: var(--text-color); font-family: monospace; font-size: 20px; font-weight: bold; opacity: 0; transition: opacity 0.5s; text-anchor: middle; dominant-baseline: middle;}
+
+        .refactor-animation-root .chamber-module.active .comp-fill { stroke-dashoffset: 70; }
+        .refactor-animation-root .chamber-module.active .comp-text { opacity: 1; }
+
+        .refactor-animation-root .baseline-artifact-s3 {
+            position: absolute;
+            top: 45%; left: 50%;
+            transform: translate(-50%, -50%) scale(0);
+            width: 240px;
+            background: rgba(30, 30, 46, 0.95);
+            border: 2px solid var(--string-color);
+            border-radius: 16px;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            box-shadow: 0 0 40px rgba(166, 227, 161, 0.3);
+            backdrop-filter: blur(10px);
+            z-index: 20;
+            opacity: 0;
+            transition: all 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        .refactor-animation-root .baseline-artifact-s3.visible {
+            opacity: 1;
+            transform: translate(-50%, -50%) scale(1);
+        }
+
+        .refactor-animation-root .art-title {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 14px;
+            color: var(--string-color);
+            font-weight: bold;
+            margin-bottom: 15px;
+            letter-spacing: 1px;
+        }
+
+        .refactor-animation-root .art-indicators { display: flex; gap: 15px; }
+
+        .refactor-animation-root .art-dot-group { display: flex; flex-direction: column; align-items: center; gap: 6px; }
+        .refactor-animation-root .art-dot { width: 14px; height: 14px; border-radius: 50%; background: var(--editor-bg); border: 2px solid var(--border-color); }
+        .refactor-animation-root .art-label { font-family: monospace; font-size: 9px; color: rgba(255,255,255,0.5); text-transform: uppercase; }
+
+        .refactor-animation-root .art-dot.syn-pass { background: var(--string-color); border-color: var(--string-color); box-shadow: 0 0 10px var(--string-color); }
+        .refactor-animation-root .art-dot.sem-pass { background: var(--string-color); border-color: var(--string-color); box-shadow: 0 0 10px var(--string-color); }
+        .refactor-animation-root .art-dot.comp-pass { background: var(--class-color); border-color: var(--class-color); box-shadow: 0 0 10px var(--class-color); }
+
+        .refactor-animation-root #next-phase-indicator-2 {
+            position: absolute;
+            bottom: 5%; left: 50%;
+            transform: translate(-50%, 20px);
+            opacity: 0;
+            text-align: center;
+            transition: all 1s ease;
+            z-index: 10;
+        }
+
+        .refactor-animation-root #next-phase-indicator-2.visible {
+            opacity: 1;
+            transform: translate(-50%, 0);
+        }
+
+        .refactor-animation-root #scene4-container {
+            position: absolute;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 1s ease-out;
+            z-index: 25;
+            overflow: hidden;
+        }
+
+        .refactor-animation-root #scene4-container.visible {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .refactor-animation-root .model-badge {
+            position: absolute;
+            top: -80px; left: 50%;
+            transform: translateX(-50%);
+            background: rgba(30, 30, 46, 0.85);
+            border: 1px solid var(--border-color);
+            border-radius: 50px;
+            padding: 8px 24px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            backdrop-filter: blur(10px);
+            z-index: 100;
+            opacity: 0;
+            transition: all 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        .refactor-animation-root .model-badge.visible {
+            top: 30px;
+            opacity: 1;
+        }
+
+        .refactor-animation-root .badge-planner { border-color: var(--keyword-color); animation: ra-pulsePlanner 3s infinite alternate ease-in-out; }
+        .refactor-animation-root .badge-planner .badge-title, .refactor-animation-root .badge-planner .badge-icon { color: var(--keyword-color); }
+
+        .refactor-animation-root .badge-generator { border-color: var(--string-color); animation: ra-pulseGenerator 3s infinite alternate ease-in-out; }
+        .refactor-animation-root .badge-generator .badge-title, .refactor-animation-root .badge-generator .badge-icon { color: var(--string-color); }
+
+        .refactor-animation-root .badge-judge { border-color: var(--class-color); animation: ra-pulseJudge 3s infinite alternate ease-in-out; }
+        .refactor-animation-root .badge-judge .badge-title, .refactor-animation-root .badge-judge .badge-icon { color: var(--class-color); }
+
+        @keyframes ra-pulsePlanner {
+            from { box-shadow: 0 0 10px rgba(203, 166, 247, 0.15); }
+            to { box-shadow: 0 0 25px rgba(203, 166, 247, 0.4); }
+        }
+        @keyframes ra-pulseGenerator {
+            from { box-shadow: 0 0 10px rgba(166, 227, 161, 0.15); }
+            to { box-shadow: 0 0 25px rgba(166, 227, 161, 0.4); }
+        }
+        @keyframes ra-pulseJudge {
+            from { box-shadow: 0 0 10px rgba(249, 226, 175, 0.15); }
+            to { box-shadow: 0 0 25px rgba(249, 226, 175, 0.4); }
+        }
+
+        .refactor-animation-root .badge-icon { font-size: 24px; filter: drop-shadow(0 0 8px currentColor); }
+        .refactor-animation-root .badge-details { display: flex; flex-direction: column; }
+        .refactor-animation-root .badge-title { font-family: 'JetBrains Mono', monospace; font-size: 10px; letter-spacing: 1px; font-weight: bold; }
+        .refactor-animation-root .badge-model { font-family: 'Inter', sans-serif; font-size: 14px; color: var(--text-color); font-weight: bold; }
+        .refactor-animation-root .badge-type { font-family: monospace; font-size: 9px; color: rgba(255,255,255,0.5); text-transform: uppercase; }
+
+        .refactor-animation-root #planner-core {
+            position: absolute;
+            top: 50%; left: 50%;
+            transform: translate(-50%, -50%);
+            width: 500px; height: 500px;
+            opacity: 0;
+            transition: opacity 1s;
+            z-index: 1;
+        }
+
+        .refactor-animation-root .core-ring {
+            fill: none;
+            stroke-width: 2;
+            transform-origin: center;
+        }
+
+        .refactor-animation-root .core-ring-outer {
+            stroke: rgba(137, 180, 250, 0.2);
+            stroke-dasharray: 20 30;
+            animation: ra-spin 20s linear infinite;
+        }
+
+        .refactor-animation-root .core-ring-middle {
+            stroke: rgba(249, 226, 175, 0.2);
+            stroke-dasharray: 10 15;
+            animation: ra-spin-reverse 15s linear infinite;
+        }
+
+        .refactor-animation-root .core-ring-inner {
+            stroke: rgba(166, 227, 161, 0.3);
+            stroke-dasharray: 5 10;
+            animation: ra-spin 10s linear infinite;
+        }
+
+        .refactor-animation-root #intent-packet {
+            position: absolute;
+            top: 50%; left: 50%;
+            transform: translate(-50%, -50%) scale(0);
+            width: 80px; height: 80px;
+            background: radial-gradient(circle, rgba(166, 227, 161, 0.3) 0%, transparent 70%);
+            border: 2px solid var(--string-color);
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: var(--string-color);
+            font-size: 24px;
+            box-shadow: 0 0 30px var(--string-color);
+            opacity: 0;
+            z-index: 10;
+            transition: all 1s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        .refactor-animation-root #ast-container {
+            position: absolute;
+            top: 50%; left: 50%;
+            transform: translate(-50%, -50%) scale(0.5);
+            width: 500px; height: 350px;
+            opacity: 0;
+            z-index: 10;
+            transition: all 1s ease-in-out;
+            background: rgba(30, 30, 46, 0.8);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            box-shadow: 0 0 40px rgba(0,0,0,0.6);
+            backdrop-filter: blur(5px);
+        }
+
+        .refactor-animation-root .ast-rect {
+            fill: var(--editor-bg);
+            stroke: rgba(255, 255, 255, 0.3);
+            stroke-width: 2;
+            transition: all 0.5s ease;
+        }
+
+        .refactor-animation-root .ast-text {
+            fill: var(--text-color);
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 12px;
+            text-anchor: middle;
+            transition: all 0.5s ease;
+        }
+
+        .refactor-animation-root .ast-edge {
+            stroke: rgba(255, 255, 255, 0.2);
+            stroke-width: 2;
+            transition: all 0.5s ease;
+            fill: none;
+        }
+
+        .refactor-animation-root .ast-node-group.dim .ast-rect { fill: rgba(0,0,0,0.5); stroke: rgba(255,255,255,0.1); }
+        .refactor-animation-root .ast-node-group.dim .ast-text { fill: rgba(255,255,255,0.2); }
+        .refactor-animation-root .ast-edge.dim { stroke: rgba(255,255,255,0.05); }
+
+        .refactor-animation-root .ast-node-group.target .ast-rect {
+            fill: rgba(255, 95, 86, 0.15);
+            stroke: #ff5f56;
+            filter: drop-shadow(0 0 15px #ff5f56);
+        }
+
+        .refactor-animation-root .ast-node-group.target .ast-text {
+            fill: #ff5f56;
+            font-weight: bold;
+        }
+
+        .refactor-animation-root .ast-edge.target {
+            stroke: #ff5f56;
+            stroke-width: 3;
+            stroke-dasharray: 5 5;
+            animation: ra-flowDash 1s linear infinite;
+        }
+
+        .refactor-animation-root #synthesis-sphere {
+            position: absolute;
+            top: 50%; left: 50%;
+            transform: translate(-50%, -50%) scale(0);
+            width: 150px; height: 150px;
+            border-radius: 50%;
+            background: radial-gradient(circle, rgba(203, 166, 247, 0.8) 0%, transparent 70%);
+            box-shadow: 0 0 60px var(--keyword-color);
+            opacity: 0;
+            z-index: 20;
+            transition: all 1s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        .refactor-animation-root #blueprint-artifact {
+            position: absolute;
+            top: 50%; left: 50%;
+            transform: translate(-50%, -50%) scale(0);
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            opacity: 0;
+            z-index: 30;
+            transition: all 1s ease-in-out;
+        }
+
+        .refactor-animation-root .bp-card {
+            background: rgba(30, 30, 46, 0.95);
+            border: 1px solid var(--border-color);
+            border-top: 3px solid var(--class-color);
+            border-radius: 12px;
+            padding: 15px;
+            width: 130px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            opacity: 0;
+            transform: translateY(20px);
+            transition: all 0.5s ease;
+        }
+
+        .refactor-animation-root .bp-card.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .refactor-animation-root .bp-icon-large {
+            font-size: 24px;
+            margin-bottom: 10px;
+            color: var(--class-color);
+        }
+
+        .refactor-animation-root .bp-card-title {
+            font-family: monospace;
+            font-size: 11px;
+            color: var(--text-color);
+            font-weight: bold;
+            text-transform: uppercase;
+        }
+
+        .refactor-animation-root .bp-arrow {
+            color: var(--class-color);
+            font-size: 24px;
+            opacity: 0;
+            transform: translateX(-10px);
+            transition: all 0.3s ease;
+        }
+
+        .refactor-animation-root .bp-arrow.visible {
+            opacity: 1;
+            transform: translateX(0);
+        }
+
+        .refactor-animation-root .execution-package {
+            position: absolute;
+            top: 50%; left: 50%;
+            transform: translate(-50%, -50%) scale(0);
+            width: 200px; height: 60px;
+            background: linear-gradient(90deg, var(--keyword-color), var(--class-color));
+            border-radius: 30px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: #11111b;
+            font-family: monospace;
+            font-weight: bold;
+            font-size: 14px;
+            box-shadow: 0 0 40px rgba(203, 166, 247, 0.6);
+            opacity: 0;
+            z-index: 40;
+            transition: all 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        .refactor-animation-root .intent-word {
+            position: absolute;
+            font-family: monospace;
+            font-size: 14px;
+            color: var(--string-color);
+            opacity: 0;
+            transition: all 1s ease-in-out;
+            z-index: 15;
+            font-weight: bold;
+            text-shadow: 0 0 5px rgba(166, 227, 161, 0.8);
+        }
+
+        .refactor-animation-root .planner-particle {
+            position: absolute;
+            width: 6px; height: 6px;
+            border-radius: 50%;
+            opacity: 1;
+            transition: all 0.6s cubic-bezier(0.25, 1, 0.5, 1);
+            z-index: 5;
+            pointer-events: none;
+        }
+
+        .refactor-animation-root #intent-cube-container {
+            position: absolute;
+            top: 50%; left: 50%;
+            transform: translate(-50%, -50%) scale(0);
+            perspective: 800px;
+            z-index: 10;
+            opacity: 0;
+            transition: all 1s ease-in-out;
+        }
+
+        .refactor-animation-root .intent-cube {
+            width: 80px; height: 80px;
+            transform-style: preserve-3d;
+            animation: ra-rotateCube 8s infinite linear;
+        }
+
+        .refactor-animation-root .intent-cube .face {
+            position: absolute;
+            width: 80px; height: 80px;
+            background: rgba(137, 180, 250, 0.15);
+            border: 2px solid var(--method-color);
+            box-shadow: inset 0 0 15px rgba(137, 180, 250, 0.5), 0 0 10px rgba(137, 180, 250, 0.3);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 24px;
+            color: rgba(255,255,255,0.2);
+        }
+
+        .refactor-animation-root .intent-cube .front  { transform: translateZ(40px); }
+        .refactor-animation-root .intent-cube .back   { transform: rotateY(180deg) translateZ(40px); }
+        .refactor-animation-root .intent-cube .right  { transform: rotateY(90deg) translateZ(40px); }
+        .refactor-animation-root .intent-cube .left   { transform: rotateY(-90deg) translateZ(40px); }
+        .refactor-animation-root .intent-cube .top    { transform: rotateX(90deg) translateZ(40px); }
+        .refactor-animation-root .intent-cube .bottom { transform: rotateX(-90deg) translateZ(40px); }
+        @keyframes ra-rotateCube {
+            0% { transform: rotateX(0) rotateY(0) rotateZ(0); }
+            100% { transform: rotateX(360deg) rotateY(360deg) rotateZ(360deg); }
+        }
+
+        .refactor-animation-root .ast-node-group.highlight .ast-rect {
+            fill: rgba(203, 166, 247, 0.2);
+            stroke: var(--keyword-color);
+            filter: drop-shadow(0 0 10px var(--keyword-color));
+        }
+
+        .refactor-animation-root .ast-node-group.highlight .ast-text {
+            fill: var(--keyword-color);
+            font-weight: bold;
+        }
+
+        .refactor-animation-root .ast-node-group.target .ast-rect {
+            fill: rgba(249, 226, 175, 0.15);
+            stroke: var(--class-color);
+            filter: drop-shadow(0 0 15px var(--class-color));
+        }
+
+        .refactor-animation-root .ast-node-group.target .ast-text {
+            fill: var(--class-color);
+            font-weight: bold;
+        }
+
+        .refactor-animation-root .ast-edge.highlight {
+            stroke: var(--keyword-color);
+            stroke-width: 3;
+        }
+
+        .refactor-animation-root .ast-edge.target {
+            stroke: var(--class-color);
+            stroke-width: 3;
+            stroke-dasharray: 5 5;
+            animation: ra-flowDash 1s linear infinite;
+        }
+
+        @keyframes ra-flowDash {
+            to { stroke-dashoffset: -10; }
+        }
+
+        .refactor-animation-root .ast-node-group.dim { opacity: 0.2; }
+        .refactor-animation-root .ast-edge.dim { opacity: 0.2; }
+
+        .refactor-animation-root .phase-indicator {
+            position: absolute;
+            bottom: 5%; left: 50%;
+            transform: translate(-50%, 20px);
+            opacity: 0;
+            text-align: center;
+            transition: all 1s ease;
+        }
+
+        .refactor-animation-root .phase-indicator.visible {
+            opacity: 1;
+            transform: translate(-50%, 0);
+        }
+      `}</style>
+      <style>{`
+        .refactor-animation-root #scene5-container {
+            position: absolute;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 1s ease-out;
+            z-index: 30;
+        }
+
+        .refactor-animation-root #scene5-container.visible {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .refactor-animation-root .blueprint-mini {
+            position: absolute;
+            top: -100px; left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 12px;
+            background: rgba(30, 30, 46, 0.95);
+            border: 2px solid var(--class-color);
+            padding: 10px 24px;
+            border-radius: 20px;
+            box-shadow: 0 0 20px rgba(249, 226, 175, 0.4);
+            opacity: 0;
+            z-index: 100;
+            transition: all 1s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        .refactor-animation-root #generator-engine {
+            position: absolute;
+            top: 30%; left: 50%;
+            transform: translate(-50%, -50%) scale(0);
+            width: 140px; height: 140px;
+            opacity: 0;
+            z-index: 50;
+            transition: all 1s ease;
+        }
+
+        .refactor-animation-root .gen-ring {
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            border-radius: 50%;
+            border: 2px dashed var(--string-color);
+        }
+
+        .refactor-animation-root .gen-ring.outer {
+            border: 2px solid transparent;
+            border-top-color: var(--string-color);
+            border-bottom-color: var(--string-color);
+            animation: ra-spin 6s linear infinite;
+            box-shadow: 0 0 30px rgba(166, 227, 161, 0.2);
+        }
+        .refactor-animation-root .gen-ring.middle {
+            border: 2px solid transparent;
+            border-left-color: var(--method-color);
+            border-right-color: var(--method-color);
+            animation: ra-spin-reverse 4s linear infinite;
+            transform: scale(0.85);
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            border-radius: 50%;
+        }
+        .refactor-animation-root .gen-ring.inner {
+            border: 2px dashed var(--keyword-color);
+            animation: ra-spin 8s linear infinite;
+            transform: scale(0.7);
+        }
+
+        .refactor-animation-root .gen-center {
+            position: absolute;
+            top: 50%; left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 50px;
+            filter: drop-shadow(0 0 15px var(--string-color));
+            transition: all 0.5s ease;
+        }
+
+        .refactor-animation-root .gen-core-hex {
+            position: absolute;
+            top: 50%; left: 50%;
+            transform: translate(-50%, -50%);
+            width: 70px; height: 70px;
+            background: rgba(166, 227, 161, 0.05);
+            border: 2px solid var(--string-color);
+            clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);
+            transition: all 0.5s ease;
+            animation: ra-pulseHex 3s infinite alternate;
+        }
+
+        .refactor-animation-root .gen-core-hex.active {
+            background: rgba(166, 227, 161, 0.3);
+            box-shadow: 0 0 30px var(--string-color);
+            transform: translate(-50%, -50%) scale(1.1);
+            animation: ra-pulseHexFast 0.5s infinite alternate;
+        }
+
+        @keyframes ra-pulseHex {
+            from { transform: translate(-50%, -50%) scale(1); box-shadow: 0 0 10px rgba(166, 227, 161, 0.2); }
+            to { transform: translate(-50%, -50%) scale(1.05); box-shadow: 0 0 20px rgba(166, 227, 161, 0.4); }
+        }
+
+        @keyframes ra-pulseHexFast {
+            from { transform: translate(-50%, -50%) scale(1.05); box-shadow: 0 0 20px var(--string-color); }
+            to { transform: translate(-50%, -50%) scale(1.15); box-shadow: 0 0 40px var(--string-color); }
+        }
+
+        .refactor-animation-root #code-compare-container {
+            display: flex;
+            gap: 20px;
+            width: 90%;
+            max-width: 1100px;
+            height: 450px;
+            margin-top: 80px;
+            opacity: 0;
+            transform: translateY(40px);
+            transition: all 1s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            z-index: 10;
+        }
+
+        .refactor-animation-root .code-pane {
+            flex: 1;
+            background-color: var(--editor-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.4);
+        }
+
+        .refactor-animation-root .old-pane { opacity: 0.6; filter: grayscale(0.5); }
+        .refactor-animation-root .new-pane { border-color: rgba(166, 227, 161, 0.5); box-shadow: 0 0 25px rgba(166, 227, 161, 0.15); }
+
+        .refactor-animation-root .pane-header {
+            height: 40px;
+            background: rgba(0,0,0,0.3);
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            align-items: center;
+            padding: 0 16px;
+            font-family: monospace;
+            font-size: 14px;
+            color: rgba(255,255,255,0.7);
+            font-weight: bold;
+        }
+
+        .refactor-animation-root .pane-content {
+            padding: 20px;
+            font-family: 'JetBrains Mono', 'Courier New', monospace;
+            font-size: 14.5px;
+            line-height: 1.6;
+            overflow-y: auto;
+            color: var(--text-color);
+            white-space: pre-wrap;
+            flex-grow: 1;
+        }
+
+        .refactor-animation-root .highlight-red {
+            background-color: rgba(255, 95, 86, 0.15);
+            border-radius: 4px;
+            display: inline-block;
+            width: 100%;
+            padding: 2px 0;
+            border-left: 3px solid #ff5f56;
+        }
+        .refactor-animation-root .highlight-green {
+            background-color: rgba(166, 227, 161, 0.15);
+            border-radius: 4px;
+            display: inline-block;
+            width: 100%;
+            padding: 2px 0;
+            border-left: 3px solid var(--string-color);
+        }
+
+        .refactor-animation-root #scene6-container {
+            position: absolute;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 1s ease-out;
+            z-index: 35;
+        }
+
+        .refactor-animation-root #scene6-container.visible {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .refactor-animation-root .val-title {
+            position: absolute;
+            top: 5%;
+            color: rgba(255,255,255,0.4);
+            font-family: 'JetBrains Mono', monospace;
+            letter-spacing: 2px;
+            font-size: 14px;
+        }
+
+        .refactor-animation-root .val-module {
+            position: absolute;
+            background: rgba(30, 30, 46, 0.85);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            width: 120px; height: 140px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            backdrop-filter: blur(10px);
+            transition: all 0.5s ease;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            z-index: 10;
+        }
+
+        .refactor-animation-root .val-mod-title {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 11px;
+            color: var(--text-color);
+            margin-bottom: 10px;
+            text-transform: uppercase;
+        }
+
+        .refactor-animation-root .val-module.processing { border-color: var(--keyword-color); box-shadow: 0 0 20px rgba(203, 166, 247, 0.3); }
+        .refactor-animation-root .val-module.pass { border-color: var(--string-color); box-shadow: 0 0 20px rgba(166, 227, 161, 0.3); }
+        .refactor-animation-root .val-module.fail { border-color: #ff5f56; box-shadow: 0 0 20px rgba(255, 95, 86, 0.4); }
+
+        .refactor-animation-root .syntax-mod { top: 25%; left: 50%; transform: translate(-50%, -50%); }
+        .refactor-animation-root .boundary-mod { top: 50%; left: 25%; transform: translate(-50%, -50%); }
+        .refactor-animation-root .complexity-mod { top: 50%; left: 75%; transform: translate(-50%, -50%); }
+
+        .refactor-animation-root .val-core {
+            position: absolute;
+            top: 50%; left: 50%;
+            transform: translate(-50%, -50%) scale(0);
+            background: var(--editor-bg);
+            padding: 20px;
+            border-radius: 12px;
+            border: 1px solid var(--border-color);
+            color: rgba(255,255,255,0.8);
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 13px;
+            line-height: 1.5;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.6);
+            opacity: 0;
+            transition: all 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            z-index: 15;
+        }
+
+        .refactor-animation-root .val-core.fail-core {
+            border-color: #ff5f56;
+            color: #ff5f56;
+            box-shadow: 0 0 30px rgba(255, 95, 86, 0.2);
+            animation: ra-shake 0.5s;
+        }
+
+        @keyframes ra-shake {
+            0%, 100% { transform: translate(-50%, -50%) scale(1); }
+            25% { transform: translate(-55%, -50%) scale(1); }
+            75% { transform: translate(-45%, -50%) scale(1); }
+        }
+
+        .refactor-animation-root .val-beam {
+            stroke: rgba(255,255,255,0.1);
+            stroke-width: 2;
+            stroke-dasharray: 5 5;
+            transition: all 0.5s ease;
+        }
+
+        .refactor-animation-root .val-beam.active-beam { stroke: var(--keyword-color); stroke-width: 3; animation: ra-flowDash 1s linear infinite; }
+        .refactor-animation-root .val-beam.pass-beam { stroke: var(--string-color); stroke-width: 3; stroke-dasharray: none; opacity: 0.5; }
+        .refactor-animation-root .val-beam.fail-beam { stroke: #ff5f56; stroke-width: 3; stroke-dasharray: none; opacity: 0.8; }
+
+        .refactor-animation-root .val-feedback {
+            position: absolute;
+            top: 50%; left: 75%;
+            transform: translate(-50%, -50%) scale(0);
+            background: rgba(255, 95, 86, 0.15);
+            border: 1px solid #ff5f56;
+            color: #ff5f56;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 11px;
+            z-index: 50;
+            opacity: 0;
+            backdrop-filter: blur(5px);
+            box-shadow: 0 0 15px rgba(255,95,86,0.3);
+            transition: top 1.5s cubic-bezier(0.25, 1, 0.5, 1), left 1.5s cubic-bezier(0.25, 1, 0.5, 1), opacity 0.5s, transform 0.5s;
+        }
+
+        .refactor-animation-root .val-retry-node {
+            position: absolute;
+            top: 20%; left: 20%;
+            transform: translate(-50%, -50%);
+            background: rgba(30, 30, 46, 0.9);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 15px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            color: var(--text-color);
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 11px;
+            transition: all 0.3s ease;
+            z-index: 5;
+        }
+
+        .refactor-animation-root .val-retry-node .badge-icon { font-size: 20px; margin-bottom: 5px; color: var(--keyword-color); }
+        .refactor-animation-root .val-retry-node.active-retry { border-color: #ff5f56; box-shadow: 0 0 25px rgba(255, 95, 86, 0.3); transform: translate(-50%, -50%) scale(1.1); }
+        .refactor-animation-root .val-retry-node.active-retry .badge-icon { color: #ff5f56; animation: ra-spin 2s linear infinite; }
+
+        .refactor-animation-root .validated-package {
+            position: absolute;
+            top: 50%; left: 50%;
+            transform: translate(-50%, -50%) scale(0);
+            background: linear-gradient(90deg, var(--string-color), var(--method-color));
+            color: #111;
+            padding: 15px 30px;
+            border-radius: 30px;
+            font-family: 'JetBrains Mono', monospace;
+            font-weight: bold;
+            font-size: 16px;
+            box-shadow: 0 0 40px rgba(166,227,161,0.5);
+            opacity: 0;
+            z-index: 100;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            transition: all 1s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        .refactor-animation-root .syn-rect { transition: all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
+        .refactor-animation-root .bound-shield { transition: all 0.5s ease; stroke-dasharray: 100; animation: ra-spin 10s linear infinite; transform-origin: center;}
+        .refactor-animation-root .comp-bar { transition: all 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
+      `}</style>
+      <style>{`
+        .refactor-animation-root #scene7-container {
+            position: absolute;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 1s ease-out;
+            z-index: 40;
+            overflow: hidden;
+        }
+
+        .refactor-animation-root #scene7-container.visible {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .refactor-animation-root #model-swap-area {
+            position: absolute;
+            top: 8%; left: 0;
+            width: 100%; height: 80px;
+            z-index: 100;
+        }
+
+        .refactor-animation-root .model-badge.swap-badge {
+            position: absolute;
+            top: 50%; left: 50%;
+            transform: translate(-50%, -50%) scale(0.85);
+            opacity: 0;
+            transition: all 1s cubic-bezier(0.25, 1, 0.5, 1);
+        }
+
+        .refactor-animation-root .model-badge.swap-badge.active-center {
+            opacity: 1;
+            transform: translate(-50%, -50%) scale(1);
+        }
+
+        .refactor-animation-root .model-badge.swap-badge.exit-left {
+            opacity: 0;
+            transform: translate(calc(-50% - 300px), -50%) scale(0.8);
+            filter: blur(5px);
+        }
+
+        .refactor-animation-root .model-badge.swap-badge.enter-right {
+            opacity: 0;
+            transform: translate(calc(-50% + 300px), -50%) scale(0.8);
+            filter: blur(0px);
+        }
+
+        .refactor-animation-root .model-status-text {
+            color: var(--keyword-color);
+            font-weight: bold;
+            font-size: 10px;
+            margin-top: 4px;
+            text-align: center;
+            letter-spacing: 2px;
+            transition: color 0.5s;
+        }
+
+        .refactor-animation-root #s7-compare-area {
+            position: absolute;
+            top: 25%;
+            width: 800px;
+            display: flex;
+            justify-content: space-between;
+            z-index: 10;
+        }
+
+        .refactor-animation-root .s7-code-box {
+            width: 250px; height: 200px;
+            background: rgba(30, 30, 46, 0.85);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            backdrop-filter: blur(10px);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 15px;
+            opacity: 0;
+            transform: translateY(30px);
+            transition: all 1s ease;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.4);
+            position: relative;
+        }
+
+        .refactor-animation-root .s7-code-box.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .refactor-animation-root .s7-box-title {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 12px;
+            color: var(--text-color);
+            margin-bottom: 15px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .refactor-animation-root .s7-ast-visual { width: 100%; height: 100%; }
+
+        .refactor-animation-root #judge-core-container {
+            position: absolute;
+            top: 60%; left: 50%;
+            transform: translate(-50%, -50%) scale(0);
+            width: 160px; height: 160px;
+            z-index: 20;
+            opacity: 0;
+            transition: all 1s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        .refactor-animation-root .judge-sphere {
+            width: 100%; height: 100%;
+            border-radius: 50%;
+            border: 2px solid var(--class-color);
+            background: radial-gradient(circle, rgba(249, 226, 175, 0.1) 0%, rgba(30,30,46,0.9) 70%);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            box-shadow: 0 0 30px rgba(249, 226, 175, 0.2);
+            animation: ra-pulseJudgeCore 4s infinite alternate;
+            position: relative;
+        }
+
+        @keyframes ra-pulseJudgeCore {
+            from { box-shadow: 0 0 20px rgba(249, 226, 175, 0.2); }
+            to { box-shadow: 0 0 50px rgba(249, 226, 175, 0.5); }
+        }
+
+        .refactor-animation-root .judge-crystal {
+            width: 40px; height: 40px;
+            background: var(--class-color);
+            clip-path: polygon(50% 0%, 100% 50%, 50% 100%, 0% 50%);
+            box-shadow: 0 0 20px var(--class-color);
+            transition: all 0.5s ease;
+        }
+
+        .refactor-animation-root .judge-crystal.reject { background: #ff5f56; box-shadow: 0 0 30px #ff5f56; }
+        .refactor-animation-root .judge-crystal.accept { background: var(--string-color); box-shadow: 0 0 30px var(--string-color); }
+
+        .refactor-animation-root #judge-beams-svg {
+            position: absolute;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            pointer-events: none;
+            z-index: 15;
+        }
+
+        .refactor-animation-root .eval-beam {
+            fill: none;
+            stroke: rgba(255,255,255,0.1);
+            stroke-width: 2;
+            stroke-dasharray: 6 6;
+            opacity: 0;
+            transition: all 0.5s ease;
+        }
+
+        .refactor-animation-root .eval-beam.active {
+            opacity: 1;
+            stroke: var(--class-color);
+            animation: ra-flowDashReverse 1s linear infinite;
+        }
+
+        .refactor-animation-root .eval-beam.reject { stroke: #ff5f56; stroke-width: 4; stroke-dasharray: none; animation: none; }
+        .refactor-animation-root .eval-beam.accept { stroke: var(--string-color); stroke-width: 3; stroke-dasharray: none; opacity: 1; animation: none; }
+
+        @keyframes ra-flowDashReverse { to { stroke-dashoffset: 20; } }
+
+        .refactor-animation-root #s7-final-comparison {
+            position: absolute;
+            top: 50%; left: 50%;
+            transform: translate(-50%, -50%) scale(0.85);
+            opacity: 0;
+            width: 88%;
+            max-width: 920px;
+            z-index: 60;
+            transition: all 0.9s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            pointer-events: none;
+        }
+        .refactor-animation-root #s7-final-comparison.visible {
+            opacity: 1;
+            transform: translate(-50%, -50%) scale(1);
+            pointer-events: auto;
+        }
+        .refactor-animation-root .s7-final-title {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 15px;
+            font-weight: bold;
+            color: var(--string-color);
+            text-align: center;
+            margin-bottom: 18px;
+            letter-spacing: 2px;
+            text-shadow: 0 0 20px rgba(166, 227, 161, 0.5);
+        }
+        .refactor-animation-root .s7-final-panels {
+            display: flex;
+            gap: 18px;
+            align-items: stretch;
+        }
+        .refactor-animation-root .s7-code-panel {
+            flex: 1;
+            background: rgba(22, 22, 35, 0.97);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            overflow: hidden;
+            text-align: left;
+            box-shadow: 0 15px 40px rgba(0,0,0,0.5);
+        }
+        .refactor-animation-root .s7-code-panel.original  { border-color: rgba(255, 95, 86, 0.45); box-shadow: 0 0 20px rgba(255,95,86,0.08); }
+        .refactor-animation-root .s7-code-panel.refactored{ border-color: var(--string-color);      box-shadow: 0 0 25px rgba(166,227,161,0.15); }
+        .refactor-animation-root .s7-panel-header {
+            padding: 9px 16px;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 11px;
+            font-weight: bold;
+            letter-spacing: 2px;
+            border-bottom: 1px solid var(--border-color);
+            background: rgba(0,0,0,0.25);
+        }
+        .refactor-animation-root .s7-code-panel.original  .s7-panel-header { color: #ff5f56; }
+        .refactor-animation-root .s7-code-panel.refactored .s7-panel-header { color: var(--string-color); }
+        .refactor-animation-root .s7-panel-code {
+            padding: 14px 18px;
+            font-family: 'JetBrains Mono', 'Courier New', monospace;
+            font-size: 12.5px;
+            line-height: 1.65;
+            color: var(--text-color);
+            margin: 0;
+            white-space: pre;
+            overflow-x: auto;
+            background: transparent;
+        }
+        .refactor-animation-root .s7-panel-arrow {
+            color: var(--string-color);
+            font-size: 30px;
+            display: flex;
+            align-items: center;
+            padding: 0 4px;
+            filter: drop-shadow(0 0 12px var(--string-color));
+            flex-shrink: 0;
+        }
+
+        @keyframes ra-spin {
+            from { transform: rotate(0deg); }
+            to   { transform: rotate(360deg); }
+        }
+        @keyframes ra-spin-reverse {
+            from { transform: rotate(0deg); }
+            to   { transform: rotate(-360deg); }
+        }
+
+        .refactor-animation-root .particle {
+            position: absolute;
+            width: 8px; height: 8px;
+            border-radius: 50%;
+            pointer-events: none;
+            z-index: 95;
+        }
+
+        .refactor-animation-root .baseline-badge {
+            position: absolute;
+            bottom: 8%; left: 50%;
+            transform: translateX(-50%);
+            background: rgba(30, 30, 46, 0.95);
+            border: 2px solid var(--border-color);
+            border-radius: 40px;
+            padding: 12px 28px;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 16px;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            box-shadow: 0 0 30px rgba(166, 227, 161, 0.3);
+            opacity: 0;
+            transition: opacity 0.8s ease, transform 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            z-index: 100;
+            white-space: nowrap;
+        }
+        .refactor-animation-root .baseline-badge.visible {
+            opacity: 1;
+        }
+
+        .refactor-animation-root .beam-label {
+            position: absolute;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 10px;
+            color: var(--class-color);
+            opacity: 0;
+            transition: opacity 0.5s;
+            background: rgba(0,0,0,0.6);
+            padding: 2px 6px;
+            border-radius: 4px;
+        }
+
+        .refactor-animation-root #s7-feedback-packet {
+            position: absolute;
+            top: 60%; left: 50%;
+            transform: translate(-50%, -50%) scale(0);
+            background: rgba(255, 95, 86, 0.15);
+            border: 1px solid #ff5f56;
+            color: #ff5f56;
+            padding: 10px 20px;
+            border-radius: 20px;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 12px;
+            font-weight: bold;
+            z-index: 50;
+            opacity: 0;
+            box-shadow: 0 0 20px rgba(255,95,86,0.4);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 1s cubic-bezier(0.25, 1, 0.5, 1);
+        }
+
+        .refactor-animation-root #s7-iteration-counter {
+            position: absolute;
+            top: 15%;
+            color: rgba(255,255,255,0.4);
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 14px;
+            letter-spacing: 2px;
+            opacity: 0;
+            transition: opacity 0.5s;
+        }
+
+        .refactor-animation-root .fallback-shield {
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            border-radius: 12px;
+            border: 2px solid var(--string-color);
+            background: rgba(166, 227, 161, 0.05);
+            box-shadow: 0 0 40px rgba(166, 227, 161, 0.3), inset 0 0 20px rgba(166, 227, 161, 0.2);
+            opacity: 0;
+            transition: all 1s ease;
+            pointer-events: none;
+            z-index: 5;
+        }
+
+        .refactor-animation-root .fallback-text {
+            position: absolute;
+            bottom: -30px; left: 50%;
+            transform: translateX(-50%);
+            color: var(--string-color);
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 12px;
+            font-weight: bold;
+            white-space: nowrap;
+            opacity: 0;
+            transition: opacity 1s ease;
         }
       `}</style>
 
-      {/* Nav Buttons */}
-      <button
-        id="prev-btn"
-        className="fixed top-1/2 -translate-y-1/2 left-5 w-12 h-12 rounded-full bg-[#1e1e2e]/50 backdrop-blur-md border border-white/10 text-white/50 text-2xl flex items-center justify-center cursor-pointer z-50 transition-all hover:bg-[#28283c]/80 hover:text-white/90 hover:border-white/30 hover:shadow-[0_0_15px_rgba(137,180,250,0.4)] hover:scale-110 active:scale-95 disabled:opacity-20 disabled:cursor-default"
-        onClick={prevScene}
-        disabled={currentScene <= 1}
-      >
-        &larr;
-      </button>
-      <button
-        id="next-btn"
-        className="fixed top-1/2 -translate-y-1/2 right-5 w-12 h-12 rounded-full bg-[#1e1e2e]/50 backdrop-blur-md border border-white/10 text-white/50 text-2xl flex items-center justify-center cursor-pointer z-50 transition-all hover:bg-[#28283c]/80 hover:text-white/90 hover:border-white/30 hover:shadow-[0_0_15px_rgba(137,180,250,0.4)] hover:scale-110 active:scale-95 disabled:opacity-20 disabled:cursor-default"
-        onClick={nextScene}
-        disabled={currentScene >= totalScenes}
-      >
-        &rarr;
-      </button>
+      <button id="prev-btn" className="nav-btn" type="button">←</button>
+      <button id="next-btn" className="nav-btn" type="button">→</button>
 
-      {/* Mouse Cursor */}
-      <div
-        id="mouse-cursor"
-        className={`fixed w-6 h-6 bg-[url('data:image/svg+xml;utf8,<svg_xmlns="http://www.w3.org/2000/svg"_width="24"_height="24"_viewBox="0_0_24_24"_fill="white"_stroke="black"_stroke-width="1.5"><path_d="M3_3l7_19_3-8_8-3z"/></svg>')] pointer-events-none z-[1000] transition-all duration-300 ${
-          s1Mouse.opacity > 0 ? "opacity-100" : "opacity-0"
-        }`}
-        style={{ left: `${s1Mouse.x}px`, top: `${s1Mouse.y}px` }}
-      />
-
-      {/* SCENE 1 CONTAINER */}
-      {currentScene === 1 && (
-        <div
-          id="container"
-          className={`w-[80%] max-w-[1000px] mx-auto my-auto flex flex-col gap-6 transition-all duration-1000 ${
-            s1ContainerVisible ? "opacity-100 scale-100" : "opacity-0 scale-95"
-          }`}
-          style={{ minHeight: "80vh", justifyContent: "center" }}
-        >
-          {/* Code Editor Window */}
-          <div className="bg-[#1e1e2e] rounded-xl border border-white/10 shadow-[0_10px_30px_rgba(0,0,0,0.5),0_0_20px_rgba(137,180,250,0.3)] overflow-hidden relative">
-            <div className="h-9 bg-black/20 border-b border-white/10 flex items-center px-4">
-              <div className="flex gap-2">
-                <div className="w-3 h-3 rounded-full bg-[#ff5f56]" />
-                <div className="w-3 h-3 rounded-full bg-[#ffbd2e]" />
-                <div className="w-3 h-3 rounded-full bg-[#27c93f]" />
-              </div>
-              <div className="ml-4 text-xs text-white/50 font-mono">StudentManager.java</div>
+      {/* Scene 1 Container */}
+      <div id="container" className="scene">
+        <div className="window" id="editor-window">
+          <div className="window-header">
+            <div className="window-controls">
+              <div className="control-dot dot-red"></div>
+              <div className="control-dot dot-yellow"></div>
+              <div className="control-dot dot-green"></div>
             </div>
-            <div className="h-[360px] p-6 font-mono text-base leading-relaxed overflow-y-auto relative">
-              <span dangerouslySetInnerHTML={{ __html: s1CodeText }} />
-              {s1CodeCursor && <span className="blinking-cursor" />}
-            </div>
+            <div className="window-title">StudentManager.java</div>
           </div>
-
-          {/* Request Input Window */}
-          <div className="bg-[#1e1e2e] rounded-xl border border-white/10 shadow-[0_10px_30px_rgba(0,0,0,0.5),0_0_20px_rgba(137,180,250,0.3)] overflow-hidden">
-            <div className="p-5 flex items-center gap-4">
-              <div className="grow bg-black/20 border border-white/10 rounded-lg p-4 min-h-[60px] flex items-center">
-                <span className="text-base text-[#bac2de] whitespace-pre-wrap">{s1RequestText}</span>
-                {s1RequestCursor && <span className="blinking-cursor ml-1" />}
-              </div>
-              <button
-                className="bg-[var(--keyword-color)] text-[#11111b] border-none rounded-lg px-6 py-3 font-bold text-sm cursor-pointer transition-all duration-300 shrink-0"
-                style={{ opacity: s1SubmitBtn.opacity, transform: s1SubmitBtn.transform }}
-              >
-                Refactor
-              </button>
-            </div>
+          <div id="editor-area">
+            <span id="code-content"></span>
+            <span id="code-cursor" className="blinking-cursor"></span>
           </div>
         </div>
-      )}
 
-      {/* SCENE 2 CONTAINER */}
-      {currentScene === 2 && (
-        <div
-          id="scene2-container"
-          className={`absolute inset-0 flex flex-col justify-center items-center transition-opacity duration-1000 z-10 ${
-            s2ContainerVisible ? "opacity-100 pointer-events-auto" : "opacity-0 pointer-events-none"
-          }`}
-        >
-          <svg className="absolute inset-0 w-full h-full pointer-events-none z-0" viewBox="0 0 1000 600">
-            <path d="M 500 120 L 500 240" className={`flow-line ${s2Lines.feWs ? "active" : ""}`} />
-            <path d="M 500 270 C 500 330, 300 330, 300 360" className={`flow-line ${s2Lines.wsBe ? "active" : ""}`} />
-            <path d="M 410 390 L 590 390" className={`flow-line ${s2Lines.beSession ? "active" : ""}`} />
+        <div className="window" id="request-window">
+          <div id="request-area">
+            <div id="request-input-container">
+              <span id="request-text"></span>
+              <span id="request-cursor" className="blinking-cursor" style={{ display: "none" }}></span>
+            </div>
+            <button className="submit-btn" id="submit-btn" type="button">Refactor</button>
+          </div>
+        </div>
+      </div>
+
+      {/* Scene 2 Container */}
+      <div id="scene2-container" className="scene">
+        <svg id="arch-canvas">
+          <path id="line-fe-ws" className="flow-line" d=""></path>
+          <path id="line-ws-be" className="flow-line" d=""></path>
+          <path id="line-be-session" className="flow-line" d=""></path>
+        </svg>
+
+        <div id="node-frontend" className="arch-node">
+          <div className="node-icon">💻</div>
+          <div className="node-title">USER INTERFACE</div>
+        </div>
+
+        <div id="node-ws" className="arch-node">
+          <div className="node-icon">⚡</div>
+          <div className="node-title">WebSocket Connection</div>
+        </div>
+
+        <div id="node-backend" className="arch-node">
+          <div className="node-icon">⚙️</div>
+          <div className="node-title">HorizonAI Backend</div>
+          <div style={{ fontSize: "12px", color: "#bac2de", marginTop: "5px" }}>Orchestrator</div>
+        </div>
+
+        <div id="node-session" className="arch-node">
+          <div className="node-icon">🗄️</div>
+          <div className="node-title">Session Manager</div>
+          <div className="session-details" id="session-info">
+            SESSION<br />
+            #HZN-001<br />
+            <span style={{ color: "var(--string-color)" }}>ACTIVE</span>
+          </div>
+        </div>
+
+        <div className="data-packet" id="data-packet">{"{ Request }"}</div>
+
+        <div id="particle-container"></div>
+
+        <div id="next-phase-indicator">
+          <div className="arrow-down">↓</div>
+          <div className="phase-text">Phase 1: Baseline Analysis</div>
+        </div>
+      </div>
+
+      {/* Scene 3 Container */}
+      <div id="scene3-container" className="scene">
+        <div className="chamber-wrapper" id="chamber-wrapper">
+          <svg id="chamber-svg-layer">
+            <path id="beam-syntax" className="analysis-beam" d="M 500 270 L 240 270" />
+            <path id="beam-semantic" className="analysis-beam" d="M 500 270 L 760 270" />
+            <path id="beam-complexity" className="analysis-beam" d="M 500 270 L 500 450" />
           </svg>
 
-          {/* Particle burst */}
-          <div className="absolute inset-0 pointer-events-none z-10">
-            {s2Particles.map((p) => (
-              <div
-                key={p.id}
-                className="absolute w-2 h-2 rounded-full transition-all duration-800"
-                style={{
-                  left: `${p.left}%`,
-                  top: `${p.top}%`,
-                  backgroundColor: p.bg,
-                  opacity: p.opacity,
-                  transform: `scale(${p.scale})`,
-                }}
-              />
-            ))}
-          </div>
-
-          {/* Node 1: FE */}
-          <div
-            className={`absolute top-[15%] left-1/2 -translate-x-1/2 w-48 bg-[#1e1e2e] border border-white/10 rounded-xl p-5 flex flex-col items-center justify-center text-center shadow-xl transition-all duration-500 z-10 ${
-              s2Nodes.fe ? "opacity-100 scale-100" : "opacity-0 scale-90"
-            }`}
-          >
-            <div className="text-3xl mb-2">💻</div>
-            <div className="text-xs text-[#cdd6f4] font-bold tracking-wider">USER INTERFACE</div>
-          </div>
-
-          {/* Node 2: WS */}
-          <div
-            className={`absolute top-[40%] left-1/2 -translate-x-1/2 w-44 bg-[#1e1e2e]/80 border border-[var(--method-color)] rounded-xl p-5 flex flex-col items-center justify-center text-center transition-all duration-500 z-10 ${
-              s2Nodes.ws ? "opacity-100 scale-100" : "opacity-0 scale-90"
-            }`}
-            style={{ boxShadow: s2WsShadow }}
-          >
-            <div className="text-3xl mb-2">⚡</div>
-            <div className="text-xs text-[#cdd6f4] font-bold tracking-wider">WebSocket Connection</div>
-          </div>
-
-          {/* Node 3: Backend */}
-          <div
-            className={`absolute top-[65%] left-[30%] -translate-x-1/2 w-56 bg-[#1e1e2e] border border-[var(--keyword-color)] rounded-xl p-5 flex flex-col items-center justify-center text-center shadow-xl transition-all duration-500 z-10 ${
-              s2Nodes.be ? "opacity-100 scale-100" : "opacity-0 scale-90"
-            }`}
-          >
-            <div className="text-3xl mb-2">⚙️</div>
-            <div className="text-xs text-[#cdd6f4] font-bold tracking-wider">HorizonAI Backend</div>
-            <div className="text-xs text-[#bac2de] mt-1">Orchestrator</div>
-          </div>
-
-          {/* Node 4: Session Manager */}
-          <div
-            className={`absolute top-[65%] left-[70%] -translate-x-1/2 w-48 bg-[rgba(203,166,247,0.1)] border border-[var(--keyword-color)] rounded-xl p-5 flex flex-col items-center justify-center text-center transition-all duration-500 z-10 ${
-              s2Nodes.session ? "opacity-100 scale-100" : "opacity-0 scale-90"
-            }`}
-            style={{ transform: s2SessionTransform, boxShadow: s2SessionShadow }}
-          >
-            <div className="text-3xl mb-2">🗄️</div>
-            <div className="text-xs text-[#cdd6f4] font-bold tracking-wider">Session Manager</div>
-            <div
-              className={`font-mono text-xs text-[var(--string-color)] mt-2 bg-black/30 p-2 rounded transition-opacity duration-500 ${
-                s2SessionInfoVisible ? "opacity-100" : "opacity-0"
-              }`}
-            >
-              SESSION<br />
-              #HZN-001<br />
-              <span className="text-[var(--string-color)] font-bold">ACTIVE</span>
-            </div>
-          </div>
-
-          {/* Data Packet */}
-          <div
-            className="w-20 h-14 bg-gradient-to-br from-[var(--keyword-color)] to-[var(--method-color)] rounded-lg flex items-center justify-center text-[#11111b] font-bold text-xs shadow-[0_0_20px_var(--glow-color)] absolute z-50"
-            style={{
-              opacity: s2DataPacket.opacity,
-              transform: s2DataPacket.transform,
-              top: s2DataPacket.top,
-              left: s2DataPacket.left,
-              transition: s2DataPacket.transition,
-            }}
-          >
-            &#123; Request &#125;
-          </div>
-
-          {/* Next phase indicator */}
-          <div
-            className={`absolute bottom-[10%] left-1/2 -translate-x-1/2 text-center transition-all duration-1000 ${
-              s2NextPhaseVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-5"
-            }`}
-          >
-            <div className="text-2xl text-[var(--class-color)] animate-bounce">&darr;</div>
-            <div className="text-[var(--class-color)] font-bold text-base tracking-widest mt-2">Phase 1: Baseline Analysis</div>
-          </div>
-        </div>
-      )}
-
-      {/* SCENE 3 CONTAINER */}
-      {currentScene === 3 && (
-        <div
-          id="scene3-container"
-          className={`absolute inset-0 flex flex-col justify-center items-center transition-opacity duration-1000 z-20 ${
-            s3ContainerVisible ? "opacity-100 pointer-events-auto" : "opacity-0 pointer-events-none"
-          }`}
-        >
-          <div
-            className={`relative w-[1000px] h-[600px] transition-all duration-1000 ${
-              s3WrapperVisible ? "opacity-100 scale-100" : "opacity-0 scale-95"
-            }`}
-          >
-            {/* SVG Connecting Beams */}
-            <svg className="absolute inset-0 w-full h-full pointer-events-none z-10" viewBox="0 0 1000 600">
-              <line
-                x1="500" y1="270" x2="240" y2="270"
-                stroke={s3Beams.syn === "active" ? "var(--keyword-color)" : s3Beams.syn === "return" ? "var(--string-color)" : "var(--border-color)"}
-                strokeWidth="2" strokeDasharray="10,10"
-                className={`transition-all duration-500 ${s3Beams.syn === "active" ? "opacity-80 animate-[flowDash_1s_linear_infinite]" : s3Beams.syn === "return" ? "opacity-100 animate-[flowDashReverse_0.8s_linear_infinite]" : "opacity-30"}`}
-              />
-              <line
-                x1="500" y1="270" x2="760" y2="270"
-                stroke={s3Beams.sem === "active" ? "var(--keyword-color)" : s3Beams.sem === "return" ? "var(--string-color)" : "var(--border-color)"}
-                strokeWidth="2" strokeDasharray="10,10"
-                className={`transition-all duration-500 ${s3Beams.sem === "active" ? "opacity-80 animate-[flowDash_1s_linear_infinite]" : s3Beams.sem === "return" ? "opacity-100 animate-[flowDashReverse_0.8s_linear_infinite]" : "opacity-30"}`}
-              />
-              <line
-                x1="500" y1="270" x2="500" y2="450"
-                stroke={s3Beams.comp === "active" ? "var(--keyword-color)" : s3Beams.comp === "return" ? "var(--string-color)" : "var(--border-color)"}
-                strokeWidth="2" strokeDasharray="10,10"
-                className={`transition-all duration-500 ${s3Beams.comp === "active" ? "opacity-80 animate-[flowDash_1s_linear_infinite]" : s3Beams.comp === "return" ? "opacity-100 animate-[flowDashReverse_0.8s_linear_infinite]" : "opacity-30"}`}
-              />
-            </svg>
-
-            {/* Syntax Module */}
-            <div
-              className={`absolute top-[45%] left-[15%] -translate-x-1/2 -translate-y-1/2 w-44 h-44 bg-[#1e1e2e]/80 backdrop-blur-md border rounded-full flex flex-col justify-center items-center z-20 shadow-xl transition-all duration-500 ${
-                s3ModulesVisible.syn ? "opacity-100 scale-100" : "opacity-0 scale-90"
-              } ${s3ModulesComplete.syn ? "border-[var(--string-color)] shadow-[0_0_30px_rgba(166,227,161,0.2)]" : s3ModulesActive.syn ? "border-[var(--keyword-color)] shadow-[0_0_30px_rgba(203,166,247,0.2)]" : "border-white/10"}`}
-            >
-              <div className="absolute -top-6 font-mono text-[11px] text-white/50 tracking-widest uppercase">SYNTAX</div>
-              <svg width="100" height="100" viewBox="0 0 100 100">
-                <line x1="50" y1="20" x2="25" y2="50" stroke="var(--border-color)" strokeWidth="2" />
-                <line x1="50" y1="20" x2="75" y2="50" stroke="var(--border-color)" strokeWidth="2" />
-                <line x1="25" y1="50" x2="25" y2="80" stroke="var(--border-color)" strokeWidth="2" />
-                <line x1="75" y1="50" x2="75" y2="80" stroke="var(--border-color)" strokeWidth="2" />
-                <circle cx="50" cy="20" r="10" fill={s3ModulesActive.syn ? "var(--string-color)" : "var(--editor-bg)"} stroke="var(--border-color)" strokeWidth="2" />
-                <circle cx="25" cy="50" r="10" fill={s3ModulesActive.syn ? "var(--keyword-color)" : "var(--editor-bg)"} stroke="var(--border-color)" strokeWidth="2" />
-                <circle cx="75" cy="50" r="10" fill={s3ModulesActive.syn ? "var(--keyword-color)" : "var(--editor-bg)"} stroke="var(--border-color)" strokeWidth="2" />
-                <circle cx="25" cy="80" r="8" fill={s3ModulesActive.syn ? "var(--method-color)" : "var(--editor-bg)"} stroke="var(--border-color)" strokeWidth="2" />
-                <circle cx="75" cy="80" r="8" fill={s3ModulesActive.syn ? "var(--method-color)" : "var(--editor-bg)"} stroke="var(--border-color)" strokeWidth="2" />
-              </svg>
-            </div>
-
-            {/* Semantic Module */}
-            <div
-              className={`absolute top-[45%] left-[85%] -translate-x-1/2 -translate-y-1/2 w-44 h-44 bg-[#1e1e2e]/80 backdrop-blur-md border rounded-full flex flex-col justify-center items-center z-20 shadow-xl transition-all duration-500 ${
-                s3ModulesVisible.sem ? "opacity-100 scale-100" : "opacity-0 scale-90"
-              } ${s3ModulesComplete.sem ? "border-[var(--string-color)] shadow-[0_0_30px_rgba(166,227,161,0.2)]" : s3ModulesActive.sem ? "border-[var(--keyword-color)] shadow-[0_0_30px_rgba(203,166,247,0.2)]" : "border-white/10"}`}
-            >
-              <div className="absolute -top-6 font-mono text-[11px] text-white/50 tracking-widest uppercase">SEMANTIC</div>
-              <svg width="120" height="120" viewBox="0 0 120 120">
-                <circle cx="60" cy="60" r="45" stroke={s3ModulesActive.sem ? "var(--class-color)" : "var(--border-color)"} strokeWidth={s3ModulesActive.sem ? 2 : 1} strokeDasharray="4 4" fill="none" className="animate-[spin_10s_linear_infinite]" />
-                <path d="M 45 45 L 35 60 L 45 75 M 75 45 L 85 60 L 75 75" fill="none" stroke={s3ModulesActive.sem ? "var(--class-color)" : "rgba(255,255,255,0.2)"} strokeWidth="4" strokeLinecap="round" strokeLinejoin="round" />
-                <circle cx="60" cy="60" r="8" fill={s3ModulesActive.sem ? "var(--class-color)" : "rgba(255,255,255,0.2)"} />
-              </svg>
-            </div>
-
-            {/* Complexity Module */}
-            <div
-              className={`absolute top-[85%] left-1/2 -translate-x-1/2 -translate-y-1/2 w-56 h-32 bg-[#1e1e2e]/80 backdrop-blur-md border rounded-2xl flex flex-col justify-center items-center z-20 shadow-xl transition-all duration-500 ${
-                s3ModulesVisible.comp ? "opacity-100 scale-100" : "opacity-0 scale-90"
-              } ${s3ModulesComplete.comp ? "border-[var(--string-color)] shadow-[0_0_30px_rgba(166,227,161,0.2)]" : s3ModulesActive.comp ? "border-[var(--keyword-color)] shadow-[0_0_30px_rgba(203,166,247,0.2)]" : "border-white/10"}`}
-            >
-              <div className="absolute -top-5 font-mono text-[11px] text-white/50 tracking-widest uppercase">COMPLEXITY</div>
-              <svg width="140" height="80" viewBox="0 0 140 80">
-                <path d="M 20 70 A 50 50 0 0 1 120 70" fill="none" stroke="rgba(0,0,0,0.5)" strokeWidth="8" strokeLinecap="round" />
-                <path d="M 20 70 A 50 50 0 0 1 120 70" fill="none" stroke="var(--class-color)" strokeWidth="8" strokeLinecap="round" strokeDasharray="200" strokeDashoffset={s3ModulesActive.comp ? "70" : "200"} className="transition-all duration-1500" />
-                <text x="70" y="55" fill="var(--text-color)" fontFamily="monospace" fontSize="20" fontWeight="bold" textAnchor="middle" dominantBaseline="middle" opacity={s3ModulesActive.comp ? 1 : 0}>
-                  O(N)
-                </text>
-              </svg>
-            </div>
-
-            {/* Center Code Core */}
-            <div
-              className={`absolute top-[45%] left-1/2 -translate-x-1/2 -translate-y-1/2 w-80 bg-[#1e1e2e] border border-white/10 rounded-xl p-5 shadow-2xl z-30 font-mono text-xs leading-relaxed text-white/60 overflow-hidden transition-all duration-800 ${
-                s3CoreState.scanning ? "shadow-[0_10px_40px_rgba(0,0,0,0.6),0_0_30px_rgba(137,180,250,0.3)] border-[var(--method-color)]" : ""
-              }`}
-              style={{ opacity: s3CoreState.opacity, transform: s3CoreState.transform }}
-            >
-              <div className="absolute left-0 w-full h-[2px] bg-[var(--method-color)] shadow-[0_0_15px_5px_rgba(137,180,250,0.5)] z-40" style={{ opacity: s3LaserState.opacity, top: s3LaserState.top, transition: s3LaserState.transition }} />
-              <div className={`px-1 rounded ${s3CodeScanned[0] ? "text-[var(--text-color)]" : ""}`}>public class StudentManager &#123;</div>
-              <div>&nbsp;</div>
-              <div className={`px-1 rounded ${s3CodeScanned[2] ? "text-[var(--text-color)]" : ""}`}>&nbsp;&nbsp;private List&lt;Student&gt; students;</div>
-              <div>&nbsp;</div>
-              <div className={`px-1 rounded ${s3CodeScanned[4] ? "text-[var(--text-color)]" : ""}`}>&nbsp;&nbsp;public void addStudent(Student s) &#123;</div>
-              <div className={`px-1 rounded ${s3CodeScanned[5] ? "text-[var(--text-color)]" : ""}`}>&nbsp;&nbsp;&nbsp;&nbsp;students.add(s);</div>
-              <div className={`px-1 rounded ${s3CodeScanned[6] ? "text-[var(--text-color)]" : ""}`}>&nbsp;&nbsp;&#125;</div>
-              <div>&nbsp;</div>
-              <div className={`px-1 rounded ${s3CodeTarget ? "text-[var(--class-color)] bg-[rgba(249,226,175,0.15)]" : s3CodeScanned[8] ? "text-[var(--text-color)]" : ""}`}>&nbsp;&nbsp;public void displayStudents() &#123;</div>
-              <div className={`px-1 rounded ${s3CodeTarget ? "text-[var(--class-color)] bg-[rgba(249,226,175,0.15)]" : s3CodeScanned[9] ? "text-[var(--text-color)]" : ""}`}>&nbsp;&nbsp;&nbsp;&nbsp;for (Student s : students) &#123;</div>
-              <div className={`px-1 rounded ${s3CodeTarget ? "text-[var(--class-color)] bg-[rgba(249,226,175,0.15)]" : s3CodeScanned[10] ? "text-[var(--text-color)]" : ""}`}>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;System.out.println(s.getName());</div>
-              <div className={`px-1 rounded ${s3CodeScanned[11] ? "text-[var(--text-color)]" : ""}`}>&nbsp;&nbsp;&nbsp;&nbsp;&#125;</div>
-              <div className={`px-1 rounded ${s3CodeScanned[12] ? "text-[var(--text-color)]" : ""}`}>&nbsp;&nbsp;&#125;</div>
-              <div className={`px-1 rounded ${s3CodeScanned[13] ? "text-[var(--text-color)]" : ""}`}>&#125;</div>
-            </div>
-
-            {/* Baseline Profile Artifact */}
-            <div
-              className={`absolute top-[45%] left-1/2 -translate-x-1/2 -translate-y-1/2 w-60 bg-[#1e1e2e]/95 border-2 border-[var(--string-color)] rounded-2xl p-5 flex flex-col items-center shadow-[0_0_40px_rgba(166,227,161,0.3)] backdrop-blur-md z-40 transition-all duration-800 ${
-                s3ArtifactVisible ? "opacity-100 scale-100" : "opacity-0 scale-0"
-              }`}
-            >
-              <div className="font-mono text-sm text-[var(--string-color)] font-bold tracking-widest mb-4">BASELINE PROFILE</div>
-              <div className="flex gap-4">
-                <div className="flex flex-col items-center gap-1.5 font-mono text-[9px] text-white/50 uppercase">
-                  <div className={`w-3.5 h-3.5 rounded-full border-2 border-[var(--border-color)] bg-[var(--editor-bg)] transition-all ${s3Dots.syn ? "bg-[var(--string-color)] border-[var(--string-color)] shadow-[0_0_10px_var(--string-color)]" : ""}`} />
-                  SYN
-                </div>
-                <div className="flex flex-col items-center gap-1.5 font-mono text-[9px] text-white/50 uppercase">
-                  <div className={`w-3.5 h-3.5 rounded-full border-2 border-[var(--border-color)] bg-[var(--editor-bg)] transition-all ${s3Dots.sem ? "bg-[var(--string-color)] border-[var(--string-color)] shadow-[0_0_10px_var(--string-color)]" : ""}`} />
-                  SEM
-                </div>
-                <div className="flex flex-col items-center gap-1.5 font-mono text-[9px] text-white/50 uppercase">
-                  <div className={`w-3.5 h-3.5 rounded-full border-2 border-[var(--border-color)] bg-[var(--editor-bg)] transition-all ${s3Dots.comp ? "bg-[var(--class-color)] border-[var(--class-color)] shadow-[0_0_10px_var(--class-color)]" : ""}`} />
-                  CMP
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <div
-            className={`absolute bottom-[5%] left-1/2 -translate-x-1/2 text-center transition-all duration-1000 z-10 ${
-              s3NextPhaseVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-5"
-            }`}
-          >
-            <div className="text-2xl text-[var(--keyword-color)] animate-bounce">&darr;</div>
-            <div className="text-[var(--keyword-color)] font-bold text-base tracking-widest mt-2">Phase 2: Strategy Block</div>
-          </div>
-        </div>
-      )}
-
-      {/* SCENE 4 CONTAINER */}
-      {currentScene === 4 && (
-        <div
-          id="scene4-container"
-          className={`absolute inset-0 flex justify-center items-center transition-opacity duration-1000 z-25 overflow-hidden ${
-            s4ContainerVisible ? "opacity-100 pointer-events-auto" : "opacity-0 pointer-events-none"
-          }`}
-        >
-          {/* Planner Model Badge */}
-          <div
-            className={`absolute left-1/2 -translate-x-1/2 bg-[#1e1e2e]/85 border border-[var(--keyword-color)] rounded-full px-6 py-2 flex items-center gap-3 backdrop-blur-md z-[100] transition-all duration-800 animate-[pulsePlanner_3s_infinite_alternate_ease-in-out] ${
-              s4BadgeVisible ? "top-[30px] opacity-100" : "-top-[80px] opacity-0"
-            }`}
-          >
-            <div className="text-2xl text-[var(--keyword-color)]">🧠</div>
-            <div className="flex flex-col font-mono">
-              <div className="text-[10px] text-[var(--keyword-color)] font-bold tracking-widest">PLANNER ENGINE</div>
-              <div className="text-sm text-[#cdd6f4] font-bold font-sans">Qwen2.5-Coder-3B-Instruct</div>
-              <div className="text-[9px] text-white/50 uppercase">Small Language Model</div>
-            </div>
-          </div>
-
-          {/* Incoming Inputs */}
-          <div
-            className="w-24 h-8 bg-[#1e1e2e] border border-white/10 text-[#cdd6f4] font-mono text-[10px] rounded flex items-center justify-center absolute z-[100] transition-all duration-800"
-            style={{ opacity: s4InputBaseline.opacity, top: s4InputBaseline.top, transform: s4InputBaseline.transform, left: "40%" }}
-          >
-            [Baseline Code]
-          </div>
-          <div
-            className="w-24 h-8 bg-[rgba(166,227,161,0.2)] border border-[var(--string-color)] text-[var(--string-color)] font-mono text-[10px] rounded flex items-center justify-center absolute z-[100] transition-all duration-800"
-            style={{ opacity: s4InputInstruction.opacity, top: s4InputInstruction.top, transform: s4InputInstruction.transform, left: "60%" }}
-          >
-            &quot;Refactor...&quot;
-          </div>
-
-          {/* Planner Core Background Rings */}
-          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] transition-opacity duration-1000 z-0 pointer-events-none" style={{ opacity: s4CoreOpacity }}>
-            <svg viewBox="0 0 500 500" width="100%" height="100%">
-              <circle cx="250" cy="250" r="220" fill="none" stroke="rgba(137, 180, 250, 0.2)" strokeWidth="2" strokeDasharray="20 30" className="animate-[spin_20s_linear_infinite] origin-center" />
-              <circle cx="250" cy="250" r="160" fill="none" stroke="rgba(249, 226, 175, 0.2)" strokeWidth="2" strokeDasharray="10 15" className="animate-[spin-reverse_15s_linear_infinite] origin-center" />
-              <circle cx="250" cy="250" r="100" fill="none" stroke={s4InnerRingStyle.stroke} strokeWidth={s4InnerRingStyle.strokeWidth} strokeDasharray="5 10" className="animate-[spin_10s_linear_infinite] origin-center transition-all" />
+          <div className="chamber-module mod-syntax" id="mod-syntax">
+            <div className="module-label">SYNTAX</div>
+            <svg width="100" height="100" viewBox="0 0 100 100">
+              <line x1="50" y1="20" x2="25" y2="50" className="syn-edge" />
+              <line x1="50" y1="20" x2="75" y2="50" className="syn-edge" />
+              <line x1="25" y1="50" x2="25" y2="80" className="syn-edge" />
+              <line x1="75" y1="50" x2="75" y2="80" className="syn-edge" />
+              <circle cx="50" cy="20" r="10" className="syn-node a1" />
+              <circle cx="25" cy="50" r="10" className="syn-node a2" />
+              <circle cx="75" cy="50" r="10" className="syn-node a2" />
+              <circle cx="25" cy="80" r="8" className="syn-node a3" />
+              <circle cx="75" cy="80" r="8" className="syn-node a3" />
             </svg>
           </div>
 
-          {/* Intent Packet */}
-          <div
-            className="absolute w-20 h-20 bg-[radial-gradient(circle,rgba(166,227,161,0.3)_0%,transparent_70%)] border-2 border-[var(--string-color)] rounded-full flex items-center justify-center text-[var(--string-color)] text-2xl shadow-[0_0_30px_var(--string-color)] z-10 transition-all duration-1000"
-            style={{ opacity: s4IntentPacket.opacity, transform: s4IntentPacket.transform, top: s4IntentPacket.top, left: s4IntentPacket.left }}
-          >
-            🎯
-          </div>
-
-          {/* Structural AST Map */}
-          <div
-            className="absolute top-1/2 left-1/2 w-[500px] h-[350px] bg-[#1e1e2e]/80 border border-white/10 rounded-xl shadow-2xl backdrop-blur-sm z-10 transition-all duration-1000"
-            style={{ opacity: s4AstContainer.opacity, transform: s4AstContainer.transform }}
-          >
-            <svg width="100%" height="100%" viewBox="0 0 500 350">
-              <path d="M 250 80 L 150 180" className={`stroke-white/20 stroke-2 fill-none transition-all ${s4AstHighlight.dim ? "opacity-20" : ""}`} />
-              <path d="M 250 80 L 350 180" className={`stroke-white/20 stroke-2 fill-none transition-all ${s4AstHighlight.dim ? "opacity-20" : ""}`} />
-              <path d="M 350 180 L 350 280" className={`transition-all fill-none ${s4AstHighlight.target ? "stroke-[#ff5f56] stroke-[3px] stroke-dasharray-[5_5] animate-[flowDash_1s_linear_infinite]" : "stroke-white/20 stroke-2"}`} />
-
-              <g className={`transition-all ${s4AstHighlight.dim ? "opacity-20" : ""}`}>
-                <rect x="170" y="40" width="160" height="40" fill="var(--editor-bg)" stroke="rgba(255,255,255,0.3)" strokeWidth="2" rx="4" />
-                <text x="250" y="65" fill="var(--text-color)" fontFamily="JetBrains Mono" fontSize="12" textAnchor="middle">class StudentManager</text>
-              </g>
-              <g className={`transition-all ${s4AstHighlight.dim ? "opacity-20" : ""}`}>
-                <rect x="70" y="160" width="160" height="40" fill="var(--editor-bg)" stroke="rgba(255,255,255,0.3)" strokeWidth="2" rx="4" />
-                <text x="150" y="185" fill="var(--text-color)" fontFamily="JetBrains Mono" fontSize="12" textAnchor="middle">method addStudent()</text>
-              </g>
-              <g className={`transition-all ${s4AstHighlight.target ? "" : s4AstHighlight.dim ? "opacity-20" : ""}`}>
-                <rect x="270" y="160" width="160" height="40" fill="var(--editor-bg)" stroke="rgba(255,255,255,0.3)" strokeWidth="2" rx="4" />
-                <text x="350" y="185" fill="var(--text-color)" fontFamily="JetBrains Mono" fontSize="12" textAnchor="middle">method displayStudents()</text>
-              </g>
-              <g className={`transition-all ${s4AstHighlight.target ? "text-[#ff5f56]" : ""}`}>
-                <rect x="270" y="260" width="160" height="40" fill={s4AstHighlight.target ? "rgba(255,95,86,0.15)" : "var(--editor-bg)"} stroke={s4AstHighlight.target ? "#ff5f56" : "rgba(255,255,255,0.3)"} strokeWidth="2" rx="4" />
-                <text x="350" y="285" fill={s4AstHighlight.target ? "#ff5f56" : "var(--text-color)"} fontFamily="JetBrains Mono" fontSize="12" fontWeight={s4AstHighlight.target ? "bold" : "normal"} textAnchor="middle">loop for(Student s)</text>
-              </g>
+          <div className="chamber-module mod-semantic" id="mod-semantic">
+            <div className="module-label">SEMANTIC</div>
+            <svg width="120" height="120" viewBox="0 0 120 120">
+              <circle cx="60" cy="60" r="45" className="sem-target-ring" />
+              <circle cx="60" cy="60" r="25" className="sem-pulse" />
+              <path
+                d="M 45 45 L 35 60 L 45 75 M 75 45 L 85 60 L 75 75"
+                className="sem-icon"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="4"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+              <circle cx="60" cy="60" r="8" className="sem-icon" />
             </svg>
           </div>
 
-          {/* Synthesis Sphere */}
-          <div
-            className="absolute top-1/2 left-1/2 w-36 h-36 rounded-full bg-[radial-gradient(circle,rgba(203,166,247,0.8)_0%,transparent_70%)] shadow-[0_0_60px_var(--keyword-color)] z-20 transition-all duration-1000"
-            style={{ opacity: s4SynthSphere.opacity, transform: s4SynthSphere.transform }}
-          />
-
-          {/* Blueprint Artifact */}
-          <div
-            className="absolute top-1/2 left-1/2 flex items-center gap-4 z-30 transition-all duration-1000"
-            style={{ opacity: s4Blueprint.opacity, transform: s4Blueprint.transform }}
-          >
-            <div className={`bg-[#1e1e2e]/95 border border-white/10 border-t-4 border-t-[var(--class-color)] rounded-xl p-4 w-32 flex flex-col items-center text-center shadow-xl transition-all duration-500 ${s4BpCards.c1 ? "opacity-100 translate-y-0" : "opacity-0 translate-y-5"}`}>
-              <div className="text-2xl mb-2 text-[#ff5f56]">🎯</div>
-              <div className="font-mono text-[11px] font-bold text-[var(--text-color)] uppercase">Target Loop</div>
-            </div>
-            <div className={`text-[var(--class-color)] text-2xl transition-all duration-300 ${s4BpCards.a1 ? "opacity-100 translate-x-0" : "opacity-0 -translate-x-2"}`}>&rarr;</div>
-            <div className={`bg-[#1e1e2e]/95 border border-white/10 border-t-4 border-t-[var(--class-color)] rounded-xl p-4 w-32 flex flex-col items-center text-center shadow-xl transition-all duration-500 ${s4BpCards.c2 ? "opacity-100 translate-y-0" : "opacity-0 translate-y-5"}`}>
-              <div className="text-2xl mb-2 text-[var(--keyword-color)]">✂️</div>
-              <div className="font-mono text-[11px] font-bold text-[var(--text-color)] uppercase">Extract Logic</div>
-            </div>
-            <div className={`text-[var(--class-color)] text-2xl transition-all duration-300 ${s4BpCards.a2 ? "opacity-100 translate-x-0" : "opacity-0 -translate-x-2"}`}>&rarr;</div>
-            <div className={`bg-[#1e1e2e]/95 border border-white/10 border-t-4 border-t-[var(--class-color)] rounded-xl p-4 w-32 flex flex-col items-center text-center shadow-xl transition-all duration-500 ${s4BpCards.c3 ? "opacity-100 translate-y-0" : "opacity-0 translate-y-5"}`}>
-              <div className="text-2xl mb-2 text-[var(--string-color)]">✨</div>
-              <div className="font-mono text-[11px] font-bold text-[var(--text-color)] uppercase">Generate Stream</div>
-            </div>
+          <div className="chamber-module mod-complexity" id="mod-complexity">
+            <div className="module-label">COMPLEXITY</div>
+            <svg width="140" height="80" viewBox="0 0 140 80">
+              <path d="M 20 70 A 50 50 0 0 1 120 70" className="comp-track" />
+              <path d="M 20 70 A 50 50 0 0 1 120 70" className="comp-fill" />
+              <text x="70" y="55" className="comp-text">O(N)</text>
+            </svg>
           </div>
 
-          {/* Execution Package Output */}
-          <div
-            className="absolute left-1/2 w-52 h-14 bg-gradient-to-r from-[var(--keyword-color)] to-[var(--class-color)] rounded-full flex items-center justify-center text-[#11111b] font-mono font-bold text-sm shadow-[0_0_40px_rgba(203,166,247,0.6)] z-40 transition-all duration-800"
-            style={{ opacity: s4ExecPack.opacity, transform: s4ExecPack.transform, top: s4ExecPack.top }}
-          >
-            [ EXECUTION PLAN ]
+          <div className="chamber-core" id="chamber-core">
+            <div className="core-laser" id="core-laser"></div>
+            <div className="code-row">public class StudentManager {"{"}</div>
+            <div className="code-row">&nbsp;</div>
+            <div className="code-row">&nbsp;&nbsp;&nbsp;&nbsp;private List&lt;Student&gt; students;</div>
+            <div className="code-row">&nbsp;</div>
+            <div className="code-row">&nbsp;&nbsp;&nbsp;&nbsp;public void addStudent(Student s) {"{"}</div>
+            <div className="code-row">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;students.add(s);</div>
+            <div className="code-row">&nbsp;&nbsp;&nbsp;&nbsp;{"}"}</div>
+            <div className="code-row">&nbsp;</div>
+            <div className="code-row" id="core-target-row">&nbsp;&nbsp;&nbsp;&nbsp;public void displayStudents() {"{"}</div>
+            <div className="code-row" id="core-target-row2">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;for (Student s : students) {"{"}</div>
+            <div className="code-row" id="core-target-row3">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;System.out.println(s.getName());</div>
+            <div className="code-row">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{"}"}</div>
+            <div className="code-row">&nbsp;&nbsp;&nbsp;&nbsp;{"}"}</div>
+            <div className="code-row">{"}"}</div>
+          </div>
+
+          <div className="baseline-artifact-s3" id="baseline-artifact-s3">
+            <div className="art-title">BASELINE PROFILE</div>
+            <div className="art-indicators">
+              <div className="art-dot-group">
+                <div className="art-dot" id="dot-syn"></div>
+                <div className="art-label">SYN</div>
+              </div>
+              <div className="art-dot-group">
+                <div className="art-dot" id="dot-sem"></div>
+                <div className="art-label">SEM</div>
+              </div>
+              <div className="art-dot-group">
+                <div className="art-dot" id="dot-comp"></div>
+                <div className="art-label">CMP</div>
+              </div>
+            </div>
           </div>
         </div>
-      )}
 
-      {/* SCENE 5 CONTAINER */}
-      {currentScene === 5 && (
-        <div
-          id="scene5-container"
-          className={`absolute inset-0 flex flex-col justify-center items-center transition-opacity duration-1000 z-30 ${
-            s5ContainerVisible ? "opacity-100 pointer-events-auto" : "opacity-0 pointer-events-none"
-          }`}
-        >
-          {/* Generator Badge */}
-          <div
-            className={`absolute left-1/2 -translate-x-1/2 bg-[#1e1e2e]/85 border border-[var(--string-color)] rounded-full px-6 py-2 flex items-center gap-3 backdrop-blur-md z-[100] transition-all duration-800 animate-[pulseGenerator_3s_infinite_alternate_ease-in-out] ${
-              s5BadgeVisible ? "top-[30px] opacity-100" : "-top-[80px] opacity-0"
-            }`}
-          >
-            <div className="text-2xl text-[var(--string-color)]">⚡</div>
-            <div className="flex flex-col font-mono">
-              <div className="text-[10px] text-[var(--string-color)] font-bold tracking-widest">GENERATOR ENGINE</div>
-              <div className="text-sm text-[#cdd6f4] font-bold font-sans">Qwen2.5-Coder-3B-Instruct</div>
-              <div className="text-[9px] text-white/50 uppercase">Small Language Model</div>
-            </div>
-          </div>
+        <div id="next-phase-indicator-2">
+          <div className="arrow-down">↓</div>
+          <div className="phase-text" style={{ color: "var(--keyword-color)" }}>Phase 2: Strategy Block</div>
+        </div>
+      </div>
 
-          <div className="absolute top-[15%] text-[var(--string-color)] font-mono text-sm tracking-wider z-[100] font-bold transition-opacity duration-500 shadow-[0_0_10px_rgba(166,227,161,0.5)]" style={{ opacity: s5Status.opacity }}>
-            {s5Status.text}
-          </div>
-
-          {/* Incoming Blueprint */}
-          <div
-            className="absolute w-52 h-14 bg-gradient-to-r from-[var(--string-color)] to-[var(--method-color)] rounded-full flex items-center justify-center text-[#11111b] font-mono font-bold text-sm shadow-[0_0_40px_rgba(166,227,161,0.6)] z-40 transition-all duration-800"
-            style={{ top: s5IncomingBlueprint.top, opacity: s5IncomingBlueprint.opacity, transform: s5IncomingBlueprint.transform, left: "50%" }}
-          >
-            [ EXECUTION PLAN ]
-          </div>
-
-          {/* Generator Engine Core */}
-          <div
-            className="absolute left-1/2 w-36 h-36 z-50 transition-all duration-1000"
-            style={{ opacity: s5Engine.opacity, transform: s5Engine.transform, top: s5Engine.top }}
-          >
-            <div className="absolute inset-0 rounded-full border-2 border-transparent border-t-[var(--string-color)] border-b-[var(--string-color)] animate-[spin_6s_linear_infinite] shadow-[0_0_30px_rgba(166,227,161,0.2)]" />
-            <div className="absolute inset-0 rounded-full border-2 border-transparent border-l-[var(--method-color)] border-r-[var(--method-color)] animate-[spin-reverse_4s_linear_infinite] scale-85" />
-            <div className="absolute inset-0 rounded-full border-2 border-dashed border-[var(--keyword-color)] animate-[spin_8s_linear_infinite] scale-70" />
-            <div className={`absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-16 h-16 bg-[rgba(166,227,161,0.05)] border-2 border-[var(--string-color)] clip-path-hex transition-all ${s5Engine.hexActive ? "bg-[rgba(166,227,161,0.3)] shadow-[0_0_30px_var(--string-color)] animate-[pulseHexFast_0.5s_infinite_alternate]" : "animate-[pulseHex_3s_infinite_alternate]"}`} />
-            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-4xl">⚙️</div>
-          </div>
-
-          {/* Code Split View */}
-          <div
-            className="flex gap-5 w-[90%] max-w-[1100px] h-[450px] mt-20 z-10 transition-all duration-1000"
-            style={{ opacity: s5CodeCompare.opacity, transform: s5CodeCompare.transform }}
-          >
-            <div className="flex-1 bg-[#1e1e2e] border border-white/10 rounded-xl overflow-hidden flex flex-col opacity-60 grayscale-[0.5] shadow-xl">
-              <div className="h-10 bg-black/30 border-b border-white/10 flex items-center px-4 font-mono text-sm text-white/70 font-bold">
-                Original (Imperative)
-              </div>
-              <pre className="p-5 font-mono text-sm leading-relaxed overflow-y-auto text-[#cdd6f4] whitespace-pre-wrap flex-grow">
-                <code>
-                  {`public class StudentManager {\n\n    private List<Student> students;\n\n    public void addStudent(Student s) {\n        students.add(s);\n    }\n\n    public void displayStudents() {`}
-                  <span className={`transition-all duration-500 ${s5OldLoopHighlight ? "bg-[rgba(255,95,86,0.15)] border-l-3 border-l-[#ff5f56] rounded px-1" : ""}`}>
-                    {`\n        for (Student s : students) {\n            System.out.println(s.getName());\n        }`}
-                  </span>
-                  {`\n    }\n}`}
-                </code>
-              </pre>
-            </div>
-
-            <div className="flex-1 bg-[#1e1e2e] border border-[rgba(166,227,161,0.5)] rounded-xl overflow-hidden flex flex-col shadow-[0_0_25px_rgba(166,227,161,0.15)]">
-              <div className="h-10 bg-black/30 border-b border-white/10 flex items-center px-4 font-mono text-sm text-[var(--string-color)] font-bold">
-                Refactored (Declarative Stream)
-              </div>
-              <pre className="p-5 font-mono text-sm leading-relaxed overflow-y-auto text-[#cdd6f4] whitespace-pre-wrap flex-grow">
-                <code dangerouslySetInnerHTML={{ __html: s5NewCodeHtml }} />
-              </pre>
-            </div>
-          </div>
-
-          {/* Refactor Complete Badge */}
-          <div
-            className={`absolute bottom-[8%] left-1/2 -translate-x-1/2 bg-[#1e1e2e]/95 border-2 border-[var(--string-color)] text-[var(--string-color)] rounded-full px-7 py-3 font-mono text-base font-bold flex items-center gap-2 shadow-[0_0_30px_rgba(166,227,161,0.3)] z-[100] transition-all duration-800 ${
-              s5RefactorComplete ? "opacity-100 scale-100" : "opacity-0 scale-90"
-            }`}
-          >
-            <span className="text-2xl">✨</span> REFACTORING COMPLETE
+      {/* Scene 4 Container */}
+      <div id="scene4-container" className="scene">
+        <div id="planner-model-badge" className="model-badge badge-planner">
+          <div className="badge-icon">🧠</div>
+          <div className="badge-details">
+            <div className="badge-title">PLANNER ENGINE</div>
+            <div className="badge-model">Qwen2.5-Coder-3B-Instruct</div>
+            <div className="badge-type">Small Language Model</div>
           </div>
         </div>
-      )}
 
-      {/* SCENE 6 CONTAINER */}
-      {currentScene === 6 && (
         <div
-          id="scene6-container"
-          className={`absolute inset-0 flex flex-col justify-center items-center transition-opacity duration-1000 z-35 ${
-            s6ContainerVisible ? "opacity-100 pointer-events-auto" : "opacity-0 pointer-events-none"
-          }`}
+          id="input-baseline"
+          className="data-packet"
+          style={{
+            width: "100px",
+            fontSize: "10px",
+            zIndex: 100,
+            background: "var(--editor-bg)",
+            border: "1px solid var(--border-color)",
+            color: "var(--text-color)",
+            position: "absolute",
+            top: "-50px",
+            left: "40%",
+            transform: "translateX(-50%)",
+            transition: "top 0.8s ease",
+            opacity: 0,
+          }}
         >
-          <div className="absolute top-[5%] text-white/40 font-mono text-sm tracking-widest uppercase">PHASE 4: DETERMINISTIC VALIDATION</div>
+          [Baseline Code]
+        </div>
+        <div
+          id="input-instruction"
+          className="data-packet"
+          style={{
+            width: "100px",
+            fontSize: "10px",
+            zIndex: 100,
+            background: "rgba(166, 227, 161, 0.2)",
+            border: "1px solid var(--string-color)",
+            color: "var(--string-color)",
+            position: "absolute",
+            top: "-50px",
+            left: "60%",
+            transform: "translateX(-50%)",
+            transition: "top 0.8s ease",
+            opacity: 0,
+          }}
+        >
+          "Refactor..."
+        </div>
 
-          <svg className="absolute inset-0 w-full h-full pointer-events-none z-10" viewBox="0 0 1000 600">
-            <line x1="500" y1="300" x2="500" y2="150" className={`stroke-white/10 stroke-2 stroke-dasharray-[5_5] transition-all duration-500 ${s6Beams.syn === "active-beam" ? "stroke-[var(--keyword-color)] stroke-[3px] animate-[flowDash_1s_linear_infinite]" : s6Beams.syn === "pass-beam" ? "stroke-[var(--string-color)] stroke-[3px] opacity-50" : s6Beams.syn === "fail-beam" ? "stroke-[#ff5f56] stroke-[3px] opacity-80" : ""}`} />
-            <line x1="500" y1="300" x2="250" y2="300" className={`stroke-white/10 stroke-2 stroke-dasharray-[5_5] transition-all duration-500 ${s6Beams.bound === "active-beam" ? "stroke-[var(--keyword-color)] stroke-[3px] animate-[flowDash_1s_linear_infinite]" : s6Beams.bound === "pass-beam" ? "stroke-[var(--string-color)] stroke-[3px] opacity-50" : s6Beams.bound === "fail-beam" ? "stroke-[#ff5f56] stroke-[3px] opacity-80" : ""}`} />
-            <line x1="500" y1="300" x2="750" y2="300" className={`stroke-white/10 stroke-2 stroke-dasharray-[5_5] transition-all duration-500 ${s6Beams.comp === "active-beam" ? "stroke-[var(--keyword-color)] stroke-[3px] animate-[flowDash_1s_linear_infinite]" : s6Beams.comp === "pass-beam" ? "stroke-[var(--string-color)] stroke-[3px] opacity-50" : s6Beams.comp === "fail-beam" ? "stroke-[#ff5f56] stroke-[3px] opacity-80" : ""}`} />
+        <div id="planner-core">
+          <svg viewBox="0 0 500 500" width="100%" height="100%">
+            <circle cx="250" cy="250" r="220" className="core-ring core-ring-outer" />
+            <circle cx="250" cy="250" r="160" className="core-ring core-ring-middle" />
+            <circle cx="250" cy="250" r="100" className="core-ring core-ring-inner" />
           </svg>
+        </div>
 
-          {/* Retry Node */}
-          <div
-            className={`absolute top-[20%] left-[20%] -translate-x-1/2 -translate-y-1/2 bg-[#1e1e2e]/90 border border-white/10 rounded-xl p-4 flex flex-col items-center font-mono text-xs z-20 transition-all duration-300 ${
-              s6RetryNode.active ? "border-[#ff5f56] shadow-[0_0_25px_rgba(255,95,86,0.3)] scale-110" : ""
-            }`}
-          >
-            <div className={`text-xl mb-1 ${s6RetryNode.active ? "text-[#ff5f56] animate-[spin_2s_linear_infinite]" : "text-[var(--keyword-color)]"}`}>⚙️</div>
-            <div className="font-bold mb-1">Generator Revision</div>
-            <div className="text-white/50">Attempt: {s6RetryNode.attempt}</div>
+        <div id="intent-packet">🎯</div>
+
+        <div id="ast-container">
+          <svg id="ast-svg" width="100%" height="100%" viewBox="0 0 500 350">
+            <path id="ast-edge-left" className="ast-edge" d="M 250 80 L 150 180" />
+            <path id="ast-edge-right" className="ast-edge" d="M 250 80 L 350 180" />
+            <path id="ast-edge-target" className="ast-edge" d="M 350 180 L 350 280" />
+
+            <g id="ast-root" className="ast-node-group">
+              <rect x="170" y="40" width="160" height="40" className="ast-rect" />
+              <text x="250" y="65" className="ast-text">class StudentManager</text>
+            </g>
+
+            <g id="ast-var" className="ast-node-group">
+              <rect x="70" y="160" width="160" height="40" className="ast-rect" />
+              <text x="150" y="185" className="ast-text">method addStudent()</text>
+            </g>
+
+            <g id="ast-branch-r" className="ast-node-group">
+              <rect x="270" y="160" width="160" height="40" className="ast-rect" />
+              <text x="350" y="185" className="ast-text">method displayStudents()</text>
+            </g>
+
+            <g id="ast-issue" className="ast-node-group">
+              <rect x="270" y="260" width="160" height="40" className="ast-rect" />
+              <text x="350" y="285" className="ast-text">loop for(Student s)</text>
+            </g>
+          </svg>
+        </div>
+
+        <div id="synthesis-sphere"></div>
+
+        <div id="blueprint-artifact">
+          <div className="bp-card" id="bp-card1">
+            <div className="bp-icon-large" style={{ color: "#ff5f56" }}>🎯</div>
+            <div className="bp-card-title">Target Loop</div>
           </div>
 
-          {/* Syntax Module */}
-          <div
-            className={`absolute top-[25%] left-1/2 -translate-x-1/2 -translate-y-1/2 bg-[#1e1e2e]/85 border border-white/10 rounded-xl w-32 h-36 flex flex-col items-center justify-center backdrop-blur-md shadow-xl z-20 transition-all duration-500 ${
-              s6Modules.syn === "processing" ? "border-[var(--keyword-color)] shadow-[0_0_20px_rgba(203,166,247,0.3)]" : s6Modules.syn === "pass" ? "border-[var(--string-color)] shadow-[0_0_20px_rgba(166,227,161,0.3)]" : s6Modules.syn === "fail" ? "border-[#ff5f56] shadow-[0_0_20px_rgba(255,95,86,0.4)]" : ""
-            }`}
-          >
-            <div className="font-mono text-[11px] text-[var(--text-color)] mb-2 uppercase font-bold">Syntax Check</div>
-            <svg width="60" height="60" viewBox="0 0 100 100">
-              <rect x={s6TokensX.t1} y="20" width="40" height="10" fill="var(--keyword-color)" rx="2" className="transition-all duration-500" />
-              <rect x={s6TokensX.t2} y="45" width="50" height="10" fill="var(--string-color)" rx="2" className="transition-all duration-500" />
-              <rect x={s6TokensX.t3} y="70" width="30" height="10" fill="var(--class-color)" rx="2" className="transition-all duration-500" />
-            </svg>
+          <div className="bp-arrow" id="bp-arrow1">→</div>
+
+          <div className="bp-card" id="bp-card2">
+            <div className="bp-icon-large" style={{ color: "var(--keyword-color)" }}>✂️</div>
+            <div className="bp-card-title">Extract Logic</div>
           </div>
 
-          {/* Boundary Module */}
-          <div
-            className={`absolute top-[50%] left-[25%] -translate-x-1/2 -translate-y-1/2 bg-[#1e1e2e]/85 border border-white/10 rounded-xl w-32 h-36 flex flex-col items-center justify-center backdrop-blur-md shadow-xl z-20 transition-all duration-500 ${
-              s6Modules.bound === "processing" ? "border-[var(--keyword-color)] shadow-[0_0_20px_rgba(203,166,247,0.3)]" : s6Modules.bound === "pass" ? "border-[var(--string-color)] shadow-[0_0_20px_rgba(166,227,161,0.3)]" : s6Modules.bound === "fail" ? "border-[#ff5f56] shadow-[0_0_20px_rgba(255,95,86,0.4)]" : ""
-            }`}
-          >
-            <div className="font-mono text-[11px] text-[var(--text-color)] mb-2 uppercase font-bold">Boundary Check</div>
-            <svg width="60" height="60" viewBox="0 0 100 100">
-              <circle cx="50" cy="50" r="15" fill="var(--editor-bg)" stroke="var(--text-color)" strokeWidth="2" />
-              <path d="M 20 50 A 30 30 0 1 1 80 50 A 30 30 0 1 1 20 50" fill="none" stroke={s6BoundShield.stroke} strokeWidth="4" opacity={s6BoundShield.opacity} className="transition-all duration-500 animate-[spin_10s_linear_infinite] origin-center" />
-            </svg>
-          </div>
+          <div className="bp-arrow" id="bp-arrow2">→</div>
 
-          {/* Complexity Module */}
-          <div
-            className={`absolute top-[50%] left-[75%] -translate-x-1/2 -translate-y-1/2 bg-[#1e1e2e]/85 border border-white/10 rounded-xl w-32 h-36 flex flex-col items-center justify-center backdrop-blur-md shadow-xl z-20 transition-all duration-500 ${
-              s6Modules.comp === "processing" ? "border-[var(--keyword-color)] shadow-[0_0_20px_rgba(203,166,247,0.3)]" : s6Modules.comp === "pass" ? "border-[var(--string-color)] shadow-[0_0_20px_rgba(166,227,161,0.3)]" : s6Modules.comp === "fail" ? "border-[#ff5f56] shadow-[0_0_20px_rgba(255,95,86,0.4)]" : ""
-            }`}
-          >
-            <div className="font-mono text-[11px] text-[var(--text-color)] mb-2 uppercase font-bold">Complexity Check</div>
-            <svg width="60" height="60" viewBox="0 0 100 100">
-              <text x="25" y="95" fill="rgba(255,255,255,0.4)" fontSize="10" fontFamily="monospace">BASE</text>
-              <rect x="25" y="50" width="15" height="35" fill="var(--text-color)" opacity="0.4" rx="2" />
-              <text x="60" y="95" fill="rgba(255,255,255,0.4)" fontSize="10" fontFamily="monospace">GEN</text>
-              <rect x="60" y={s6CompBar.y} width="15" height={s6CompBar.height} fill="var(--class-color)" rx="2" className="transition-all duration-800" />
-            </svg>
-          </div>
-
-          {/* Center Code Core */}
-          <div
-            className={`absolute top-1/2 left-1/2 bg-[#1e1e2e] border border-white/10 rounded-xl p-5 font-mono text-xs leading-relaxed shadow-2xl text-white/80 z-20 transition-all duration-800 ${
-              s6Core.fail ? "border-[#ff5f56] text-[#ff5f56] shadow-[0_0_30px_rgba(255,95,86,0.2)] animate-[shake_0.5s]" : ""
-            }`}
-            style={{ opacity: s6Core.opacity, transform: s6Core.transform }}
-          >
-            <span className="kw">students</span>.stream()<br />
-            &nbsp;&nbsp;.map(...)<br />
-            &nbsp;&nbsp;.forEach(...)
-          </div>
-
-          {/* Feedback Packet */}
-          <div
-            className="absolute bg-[rgba(255,95,86,0.15)] border border-[#ff5f56] text-[#ff5f56] px-4 py-2 rounded-full font-mono text-xs z-50 backdrop-blur-md shadow-[0_0_15px_rgba(255,95,86,0.3)] transition-all duration-1000"
-            style={{ opacity: s6Feedback.opacity, transform: s6Feedback.transform, top: s6Feedback.top, left: s6Feedback.left }}
-          >
-            ⚠️ O(N²) Detected
-          </div>
-
-          {/* Validated Package */}
-          <div
-            className="absolute top-1/2 bg-gradient-to-r from-[var(--string-color)] to-[var(--method-color)] text-[#111] px-8 py-4 rounded-full font-mono font-bold text-base shadow-[0_0_40px_rgba(166,227,161,0.5)] z-[100] flex items-center gap-2 transition-all duration-1000"
-            style={{ opacity: s6ValidatedPackage.opacity, transform: s6ValidatedPackage.transform, left: s6ValidatedPackage.left }}
-          >
-            <span className="text-xl">✅</span> VALIDATED CODE
+          <div className="bp-card" id="bp-card3">
+            <div className="bp-icon-large" style={{ color: "var(--string-color)" }}>✨</div>
+            <div className="bp-card-title">Generate Stream</div>
           </div>
         </div>
-      )}
 
-      {/* SCENE 7 CONTAINER */}
-      {currentScene === 7 && (
+        <div id="execution-package" className="execution-package">
+          [ EXECUTION PLAN ]
+        </div>
+      </div>
+
+      {/* Scene 5 Container */}
+      <div id="scene5-container" className="scene">
+        <div id="generator-model-badge" className="model-badge badge-generator">
+          <div className="badge-icon">⚡</div>
+          <div className="badge-details">
+            <div className="badge-title">GENERATOR ENGINE</div>
+            <div className="badge-model">Qwen2.5-Coder-3B-Instruct</div>
+            <div className="badge-type">Small Language Model</div>
+          </div>
+        </div>
+
         <div
-          id="scene7-container"
-          className={`absolute inset-0 flex flex-col justify-center items-center transition-opacity duration-1000 z-40 overflow-hidden ${
-            s7ContainerVisible ? "opacity-100 pointer-events-auto" : "opacity-0 pointer-events-none"
-          }`}
+          id="gen-status"
+          style={{
+            position: "absolute",
+            top: "15%",
+            color: "var(--string-color)",
+            fontFamily: "'JetBrains Mono', monospace",
+            fontSize: "14px",
+            letterSpacing: "1px",
+            opacity: 0,
+            transition: "opacity 0.5s",
+            zIndex: 100,
+            fontWeight: "bold",
+            textShadow: "0 0 10px rgba(166, 227, 161, 0.5)",
+          }}
         >
-          <div className="absolute top-[15%] text-white/40 font-mono text-sm tracking-widest transition-all duration-500 font-bold" style={{ opacity: s7IterCounter.opacity, color: s7IterCounter.color }}>
-            {s7IterCounter.text}
+          RECEIVING EXECUTION PACKAGE...
+        </div>
+
+        <div
+          id="incoming-blueprint"
+          className="execution-package"
+          style={{
+            top: "-100px",
+            transform: "translateX(-50%)",
+            boxShadow: "0 0 40px rgba(166, 227, 161, 0.6)",
+            background: "linear-gradient(90deg, var(--string-color), var(--method-color))",
+          }}
+        >
+          [ EXECUTION PLAN ]
+        </div>
+
+        <div id="generator-engine">
+          <div className="gen-ring outer"></div>
+          <div className="gen-ring middle"></div>
+          <div className="gen-ring inner"></div>
+          <div className="gen-core-hex" id="gen-core-hex"></div>
+          <div className="gen-center">⚙️</div>
+        </div>
+
+        <div id="code-compare-container">
+          <div className="code-pane old-pane">
+            <div className="pane-header">Original (Imperative)</div>
+            <div id="old-code-content" className="pane-content"></div>
           </div>
-
-          {/* Model Swap Area */}
-          <div className="absolute top-[8%] left-0 w-full h-20 z-[100]">
-            <div
-              className={`model-badge badge-planner absolute top-1/2 left-1/2 bg-[#1e1e2e]/85 border border-[var(--keyword-color)] rounded-full px-6 py-2 flex items-center gap-3 backdrop-blur-md transition-all duration-1000 ${
-                s7QwenBadge.activeCenter ? "opacity-100 -translate-x-1/2 -translate-y-1/2 scale-100" : s7QwenBadge.exitLeft ? "opacity-0 -translate-x-[calc(50%+300px)] -translate-y-1/2 scale-80 blur-sm" : "opacity-0 -translate-x-1/2 -translate-y-1/2 scale-85"
-              }`}
-            >
-              <div className="text-2xl text-[var(--keyword-color)]">⚙️</div>
-              <div className="flex flex-col font-mono">
-                <div className="text-[10px] text-[var(--keyword-color)] font-bold">GENERATOR ENGINE</div>
-                <div className="text-sm font-bold font-sans">Qwen2.5-Coder-3B-Instruct</div>
-                <div className="text-[10px] font-bold text-center tracking-widest" style={{ color: s7QwenBadge.statusColor }}>{s7QwenBadge.status}</div>
-              </div>
-            </div>
-
-            <div
-              className={`model-badge badge-judge absolute top-1/2 left-1/2 bg-[#1e1e2e]/85 border border-[var(--class-color)] rounded-full px-6 py-2 flex items-center gap-3 backdrop-blur-md transition-all duration-1000 ${
-                s7LlamaBadge.activeCenter ? "opacity-100 -translate-x-1/2 -translate-y-1/2 scale-100" : s7LlamaBadge.enterRight ? "opacity-0 translate-x-[calc(-50%+300px)] -translate-y-1/2 scale-80" : "opacity-0 -translate-x-1/2 -translate-y-1/2 scale-85"
-              }`}
-              style={{ opacity: s7LlamaBadge.opacity }}
-            >
-              <div className="text-2xl text-[var(--class-color)]">⚖️</div>
-              <div className="flex flex-col font-mono">
-                <div className="text-[10px] text-[var(--class-color)] font-bold">EVALUATION ENGINE</div>
-                <div className="text-sm font-bold font-sans">Llama-3.2-3B-Instruct</div>
-                <div className="text-[10px] font-bold text-center tracking-widest" style={{ color: s7LlamaBadge.statusColor }}>{s7LlamaBadge.status}</div>
-              </div>
-            </div>
+          <div className="code-pane new-pane">
+            <div className="pane-header" style={{ color: "var(--string-color)" }}>Refactored (Declarative Stream)</div>
+            <div id="new-code-content" className="pane-content"></div>
           </div>
+        </div>
 
-          {/* Code Comparison Panels */}
-          <div className="absolute top-[25%] w-[800px] flex justify-between z-10">
-            <div
-              className={`w-[250px] h-[200px] bg-[#1e1e2e]/85 border border-white/10 rounded-xl backdrop-blur-md flex flex-col items-center p-4 shadow-2xl relative transition-all duration-1000 ${
-                s7Boxes.original ? "opacity-100 translate-y-0" : "opacity-0 translate-y-8"
-              }`}
-            >
-              <div className="font-mono text-xs text-[var(--text-color)] mb-4 uppercase tracking-wider font-bold">Original Structure</div>
-              <svg className="w-full h-full" viewBox="0 0 100 100">
-                <path d="M 50 10 L 20 40 L 40 70 L 60 70 L 80 40 Z" fill="none" stroke="rgba(255,255,255,0.2)" strokeWidth="2" />
-                <path d="M 20 40 L 80 40 M 40 70 L 80 40 M 20 40 L 60 70" fill="none" stroke="rgba(255,255,255,0.2)" strokeWidth="1" />
-                <circle cx="50" cy="10" r="4" fill="var(--text-color)" />
-                <circle cx="20" cy="40" r="4" fill="#ff5f56" />
-                <circle cx="80" cy="40" r="4" fill="var(--text-color)" />
-                <circle cx="40" cy="70" r="4" fill="#ff5f56" />
-                <circle cx="60" cy="70" r="4" fill="var(--text-color)" />
-              </svg>
-            </div>
+        <div
+          id="refactor-complete"
+          className="baseline-badge"
+          style={{ borderColor: "var(--string-color)", color: "var(--string-color)" }}
+        >
+          <span style={{ fontSize: "24px" }}>✨</span> REFACTORING COMPLETE
+        </div>
+      </div>
 
-            <div
-              className="w-[250px] h-[200px] bg-[#1e1e2e]/85 border border-white/10 rounded-xl backdrop-blur-md flex flex-col items-center p-4 shadow-2xl relative transition-all duration-1000"
-              style={{
-                opacity: s7Boxes.refactored ? s7Boxes.refactoredOpacity : 0,
-                transform: s7Boxes.refactored ? `translateY(${s7Boxes.refactoredY})` : "translateY(30px)",
-              }}
-            >
-              <div className="font-mono text-xs text-[var(--string-color)] mb-4 uppercase tracking-wider font-bold">Generated Candidate</div>
-              <svg className="w-full h-full" viewBox="0 0 100 100">
-                <path d="M 50 10 L 50 40 L 50 70 L 50 90" fill="none" stroke="var(--string-color)" strokeWidth="2" />
-                <circle cx="50" cy="10" r="4" fill="var(--string-color)" />
-                <circle cx="50" cy="40" r="4" fill="var(--string-color)" />
-                <circle cx="50" cy="70" r="4" fill="var(--string-color)" />
-                <circle cx="50" cy="90" r="4" fill="var(--string-color)" />
-              </svg>
-            </div>
-          </div>
+      {/* Scene 6 Container */}
+      <div id="scene6-container" className="scene">
+        <div className="val-title">PHASE 4: DETERMINISTIC VALIDATION</div>
 
-          {/* Judge Core */}
-          <div
-            className="absolute top-[60%] left-1/2 -translate-x-1/2 -translate-y-1/2 w-40 h-40 z-20 transition-all duration-1000"
-            style={{ opacity: s7JudgeCore.opacity, transform: s7JudgeCore.transform, transition: s7JudgeCore.transition }}
-          >
-            <div className="w-full h-full rounded-full border-2 border-[var(--class-color)] bg-[radial-gradient(circle,rgba(249,226,175,0.1)_0%,rgba(30,30,46,0.9)_70%)] flex items-center justify-center shadow-[0_0_30px_rgba(249,226,175,0.2)] animate-[pulseJudgeCore_4s_infinite_alternate] relative">
-              <div
-                className={`w-10 h-10 bg-[var(--class-color)] clip-path-diamond shadow-[0_0_20px_var(--class-color)] transition-all duration-500 ${
-                  s7JudgeCrystal.state === "reject" ? "bg-[#ff5f56] shadow-[0_0_30px_#ff5f56]" : s7JudgeCrystal.state === "accept" ? "bg-[var(--string-color)] shadow-[0_0_30px_var(--string-color)]" : ""
-                }`}
-              />
-            </div>
-          </div>
+        <svg
+          id="val-svg-layer"
+          style={{ position: "absolute", width: "100%", height: "100%", top: 0, left: 0, zIndex: 1, pointerEvents: "none" }}
+        >
+          <line x1="50%" y1="50%" x2="50%" y2="25%" id="val-beam-syntax" className="val-beam" />
+          <line x1="50%" y1="50%" x2="25%" y2="50%" id="val-beam-boundary" className="val-beam" />
+          <line x1="50%" y1="50%" x2="75%" y2="50%" id="val-beam-complexity" className="val-beam" />
+        </svg>
 
-          {/* Evaluation Beams SVG */}
-          <svg className="absolute inset-0 w-full h-full pointer-events-none z-15" style={{ opacity: s7Beams.opacity }}>
-            <line x1="50%" y1="60%" x2="70%" y2="35%" className={`fill-none stroke-2 stroke-dasharray-[6_6] opacity-0 transition-all duration-500 ${s7Beams.state === "active" ? "opacity-100 stroke-[var(--class-color)] animate-[flowDashReverse_1s_linear_infinite]" : s7Beams.state === "reject" ? "stroke-[#ff5f56] stroke-[4px] opacity-100" : s7Beams.state === "accept" ? "stroke-[var(--string-color)] stroke-[3px] opacity-100" : ""}`} />
-            <line x1="50%" y1="60%" x2="70%" y2="45%" className={`fill-none stroke-2 stroke-dasharray-[6_6] opacity-0 transition-all duration-500 ${s7Beams.state === "active" ? "opacity-100 stroke-[var(--class-color)] animate-[flowDashReverse_1s_linear_infinite]" : s7Beams.state === "reject" ? "stroke-[#ff5f56] stroke-[4px] opacity-100" : s7Beams.state === "accept" ? "stroke-[var(--string-color)] stroke-[3px] opacity-100" : ""}`} />
-            <line x1="50%" y1="60%" x2="70%" y2="55%" className={`fill-none stroke-2 stroke-dasharray-[6_6] opacity-0 transition-all duration-500 ${s7Beams.state === "active" ? "opacity-100 stroke-[var(--class-color)] animate-[flowDashReverse_1s_linear_infinite]" : s7Beams.state === "reject" ? "stroke-[#ff5f56] stroke-[4px] opacity-100" : s7Beams.state === "accept" ? "stroke-[var(--string-color)] stroke-[3px] opacity-100" : ""}`} />
+        <div id="val-retry-node" className="val-retry-node">
+          <div className="badge-icon">⚙️</div>
+          <div style={{ fontWeight: "bold", marginBottom: "4px" }}>Generator Revision</div>
+          <div id="val-attempt" style={{ color: "rgba(255,255,255,0.5)" }}>Attempt: 1</div>
+        </div>
+
+        <div id="val-syntax" className="val-module syntax-mod">
+          <div className="val-mod-title">Syntax Check</div>
+          <svg width="60" height="60" viewBox="0 0 100 100">
+            <rect id="syn-token-1" className="syn-rect" x="10" y="20" width="40" height="10" fill="var(--keyword-color)" rx="2" />
+            <rect id="syn-token-2" className="syn-rect" x="40" y="45" width="50" height="10" fill="var(--string-color)" rx="2" />
+            <rect id="syn-token-3" className="syn-rect" x="20" y="70" width="30" height="10" fill="var(--class-color)" rx="2" />
           </svg>
+        </div>
 
-          <div className="absolute top-[45%] left-[60%] font-mono text-[10px] text-[var(--class-color)] bg-black/60 px-1.5 py-0.5 rounded transition-all duration-500 z-20" style={{ opacity: s7Labels.opacity, color: s7Labels.color }}>Logic Consistency</div>
-          <div className="absolute top-[50%] left-[62%] font-mono text-[10px] text-[var(--class-color)] bg-black/60 px-1.5 py-0.5 rounded transition-all duration-500 z-20" style={{ opacity: s7Labels.opacity, color: s7Labels.color }}>Structural Change</div>
-          <div className="absolute top-[55%] left-[64%] font-mono text-[10px] text-[var(--class-color)] bg-black/60 px-1.5 py-0.5 rounded transition-all duration-500 z-20" style={{ opacity: s7Labels.opacity, color: s7Labels.color }}>Refactoring Quality</div>
+        <div id="val-boundary" className="val-module boundary-mod">
+          <div className="val-mod-title">Boundary Check</div>
+          <svg width="60" height="60" viewBox="0 0 100 100">
+            <circle cx="50" cy="50" r="15" fill="var(--editor-bg)" stroke="var(--text-color)" strokeWidth="2" />
+            <path
+              id="bound-shield"
+              className="bound-shield"
+              d="M 20 50 A 30 30 0 1 1 80 50 A 30 30 0 1 1 20 50"
+              fill="none"
+              stroke="var(--method-color)"
+              strokeWidth="4"
+              opacity="0.2"
+            />
+          </svg>
+        </div>
 
-          {/* Feedback Packet */}
-          <div
-            className="absolute top-[60%] bg-[rgba(255,95,86,0.15)] border border-[#ff5f56] text-[#ff5f56] px-5 py-2.5 rounded-full font-mono text-xs font-bold z-50 shadow-[0_0_20px_rgba(255,95,86,0.4)] flex items-center gap-2 transition-all duration-1000"
-            style={{ opacity: s7Feedback.opacity, transform: s7Feedback.transform, left: s7Feedback.left }}
-          >
-            <span>⚠️</span> REFACTORING QUALITY DEGRADATION
+        <div id="val-complexity" className="val-module complexity-mod">
+          <div className="val-mod-title">Complexity Check</div>
+          <svg width="60" height="60" viewBox="0 0 100 100">
+            <text x="25" y="95" fill="rgba(255,255,255,0.4)" fontSize="10" fontFamily="monospace">BASE</text>
+            <rect x="25" y="50" width="15" height="35" fill="var(--text-color)" opacity="0.4" rx="2" />
+
+            <text x="60" y="95" fill="rgba(255,255,255,0.4)" fontSize="10" fontFamily="monospace">GEN</text>
+            <rect id="comp-bar-gen" className="comp-bar" x="60" y="75" width="15" height="10" fill="var(--class-color)" rx="2" />
+          </svg>
+        </div>
+
+        <div id="val-core" className="val-core">
+          <span className="kw">students</span>.stream()<br />
+          &nbsp;&nbsp;.map(...)<br />
+          &nbsp;&nbsp;.forEach(...)
+        </div>
+
+        <div id="val-feedback" className="val-feedback">
+          ⚠️ O(N²) Detected
+        </div>
+
+        <div id="validated-package" className="validated-package">
+          <span style={{ fontSize: "20px" }}>✅</span> VALIDATED CODE
+        </div>
+      </div>
+
+      {/* Scene 7 Container */}
+      <div id="scene7-container" className="scene">
+        <div id="s7-iteration-counter">STRATEGY ITERATION: 1</div>
+
+        <div id="model-swap-area">
+          <div id="s7-qwen-badge" className="model-badge badge-planner swap-badge">
+            <div className="badge-icon">⚙️</div>
+            <div className="badge-details">
+              <div className="badge-title">GENERATOR ENGINE</div>
+              <div className="badge-model">Qwen2.5-Coder-3B-Instruct</div>
+              <div id="qwen-status" className="model-status-text">ACTIVE</div>
+            </div>
           </div>
 
-          {/* Final Side-by-Side Comparison Panel */}
-          <div
-            className={`absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[88%] max-w-[920px] z-60 transition-all duration-900 ${
-              s7FinalCompVisible ? "opacity-100 scale-100 pointer-events-auto" : "opacity-0 scale-85 pointer-events-none"
-            }`}
-          >
-            <div className="font-mono text-base font-bold text-[var(--string-color)] text-center mb-4 tracking-widest shadow-[0_0_20px_rgba(166,227,161,0.5)]">
-              ✅ VALIDATED OUTPUT &mdash; ITERATION 2 APPROVED
+          <div id="s7-llama-badge" className="model-badge badge-judge swap-badge enter-right">
+            <div className="badge-icon">⚖️</div>
+            <div className="badge-details">
+              <div className="badge-title">EVALUATION ENGINE</div>
+              <div className="badge-model">Llama-3.2-3B-Instruct</div>
+              <div id="llama-status" className="model-status-text" style={{ color: "var(--class-color)" }}>STANDBY</div>
             </div>
-            <div className="flex gap-4 items-stretch">
-              <div className="flex-1 bg-[rgba(22,22,35,0.97)] border border-red-500/45 rounded-xl overflow-hidden shadow-[0_0_20px_rgba(255,95,86,0.08)]">
-                <div className="px-4 py-2 font-mono text-xs font-bold tracking-widest border-b border-white/10 bg-black/25 text-[#ff5f56]">
-                  ⚠ ORIGINAL &mdash; IMPERATIVE LOOP
-                </div>
-                <pre className="p-4 font-mono text-xs leading-relaxed text-[#cdd6f4] whitespace-pre overflow-x-auto">
-{`public class StudentManager {
+          </div>
+        </div>
+
+        <div id="s7-compare-area">
+          <div id="s7-box-original" className="s7-code-box">
+            <div className="s7-box-title">Original Structure</div>
+            <svg className="s7-ast-visual" viewBox="0 0 100 100">
+              <path d="M 50 10 L 20 40 L 40 70 L 60 70 L 80 40 Z" fill="none" stroke="rgba(255,255,255,0.2)" strokeWidth="2" />
+              <path d="M 20 40 L 80 40 M 40 70 L 80 40 M 20 40 L 60 70" fill="none" stroke="rgba(255,255,255,0.2)" strokeWidth="1" />
+              <circle cx="50" cy="10" r="4" fill="var(--text-color)" />
+              <circle cx="20" cy="40" r="4" fill="#ff5f56" />
+              <circle cx="80" cy="40" r="4" fill="var(--text-color)" />
+              <circle cx="40" cy="70" r="4" fill="#ff5f56" />
+              <circle cx="60" cy="70" r="4" fill="var(--text-color)" />
+            </svg>
+            <div id="fallback-shield" className="fallback-shield"></div>
+            <div id="fallback-text" className="fallback-text">SAFE ORIGINAL VERSION RESTORED</div>
+          </div>
+
+          <div id="s7-box-refactored" className="s7-code-box">
+            <div className="s7-box-title" style={{ color: "var(--string-color)" }}>Generated Candidate</div>
+            <svg className="s7-ast-visual" viewBox="0 0 100 100">
+              <path d="M 50 10 L 50 40 L 50 70 L 50 90" fill="none" stroke="var(--string-color)" strokeWidth="2" />
+              <circle cx="50" cy="10" r="4" fill="var(--string-color)" />
+              <circle cx="50" cy="40" r="4" fill="var(--string-color)" />
+              <circle cx="50" cy="70" r="4" fill="var(--string-color)" />
+              <circle cx="50" cy="90" r="4" fill="var(--string-color)" />
+            </svg>
+          </div>
+        </div>
+
+        <div id="judge-core-container">
+          <div className="judge-sphere">
+            <div id="judge-crystal" className="judge-crystal"></div>
+          </div>
+        </div>
+
+        <svg id="judge-beams-svg">
+          <line id="s7-beam-logic" className="eval-beam" x1="50%" y1="60%" x2="70%" y2="35%" />
+          <line id="s7-beam-struct" className="eval-beam" x1="50%" y1="60%" x2="70%" y2="45%" />
+          <line id="s7-beam-quality" className="eval-beam" x1="50%" y1="60%" x2="70%" y2="55%" />
+        </svg>
+
+        <div id="s7-label-logic" className="beam-label" style={{ top: "45%", left: "60%" }}>Logic Consistency</div>
+        <div id="s7-label-struct" className="beam-label" style={{ top: "50%", left: "62%" }}>Structural Change</div>
+        <div id="s7-label-quality" className="beam-label" style={{ top: "55%", left: "64%" }}>Refactoring Quality</div>
+
+        <div id="s7-feedback-packet">
+          <span>⚠️</span> REFACTORING QUALITY DEGRADATION
+        </div>
+
+        <div id="s7-final-comparison">
+          <div className="s7-final-title">✅ VALIDATED OUTPUT — ITERATION 2 APPROVED</div>
+          <div className="s7-final-panels">
+            <div className="s7-code-panel original">
+              <div className="s7-panel-header">⚠ ORIGINAL — IMPERATIVE LOOP</div>
+              <pre className="s7-panel-code">{`public class StudentManager {
 
     private List<Student> students;
 
@@ -1638,37 +3865,31 @@ export default function PhasesPage() {
             System.out.println(s.getName());
         }
     }
-}`}
-                </pre>
-              </div>
-
-              <div className="text-[var(--string-color)] text-3xl flex items-center px-1 shrink-0 drop-shadow-[0_0_12px_var(--string-color)]">&rarr;</div>
-
-              <div className="flex-1 bg-[rgba(22,22,35,0.97)] border border-[var(--string-color)] rounded-xl overflow-hidden shadow-[0_0_25px_rgba(166,227,161,0.15)]">
-                <div className="px-4 py-2 font-mono text-xs font-bold tracking-widest border-b border-white/10 bg-black/25 text-[var(--string-color)]">
-                  ✅ REFACTORED &mdash; DECLARATIVE STREAM
-                </div>
-                <pre className="p-4 font-mono text-xs leading-relaxed text-[#cdd6f4] whitespace-pre overflow-x-auto">
-{`public class StudentManager {
+}`}</pre>
+            </div>
+            <div className="s7-panel-arrow">→</div>
+            <div className="s7-code-panel refactored">
+              <div className="s7-panel-header">✅ REFACTORED — DECLARATIVE STREAM</div>
+              <pre className="s7-panel-code">{`public class StudentManager {
 
     private List<Student> students;
 
-    public void addStudent(Student s) {
-        students.add(s);
+    public void addStudent(Student student) {
+        students.add(student);
     }
 
     public void displayStudents() {
         students.stream()
                 .map(Student::getName)
-                .forEach(System::println);
+                .forEach(System.out::println);
     }
-}`}
-                </pre>
-              </div>
+}`}</pre>
             </div>
           </div>
         </div>
-      )}
+      </div>
+
+      <div id="mouse-cursor"></div>
     </div>
-  )
+  );
 }
