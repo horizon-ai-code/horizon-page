@@ -1,4 +1,5 @@
 import React from "react";
+import { ChevronDown } from "lucide-react";
 
 export function Phase3Analysis() {
   return (
@@ -90,7 +91,9 @@ export function Phase3Analysis() {
       </div>
 
       <div id="next-phase-indicator-2">
-        <div className="arrow-down">↓</div>
+        <div className="arrow-down">
+          <ChevronDown className="w-6 h-6 inline-block" />
+        </div>
         <div className="phase-text" style={{ color: "var(--keyword-color)" }}>Phase 2: Strategy Block</div>
       </div>
     </div>

@@ -1,10 +1,13 @@
 import React from "react";
+import { Zap, Settings, Sparkles } from "lucide-react";
 
 export function Phase5Generation() {
   return (
     <div id="scene5-container" className="scene">
       <div id="generator-model-badge" className="model-badge badge-generator">
-        <div className="badge-icon">⚡</div>
+        <div className="badge-icon">
+          <Zap className="w-6 h-6 text-green-400" />
+        </div>
         <div className="badge-details">
           <div className="badge-title">GENERATOR ENGINE</div>
           <div className="badge-model">Qwen2.5-Coder-3B-Instruct</div>
@@ -49,7 +52,9 @@ export function Phase5Generation() {
         <div className="gen-ring middle"></div>
         <div className="gen-ring inner"></div>
         <div className="gen-core-hex" id="gen-core-hex"></div>
-        <div className="gen-center">⚙️</div>
+        <div className="gen-center flex items-center justify-center">
+          <Settings className="w-8 h-8 text-emerald-400 animate-spin" />
+        </div>
       </div>
 
       <div id="code-compare-container">
@@ -65,10 +70,10 @@ export function Phase5Generation() {
 
       <div
         id="refactor-complete"
-        className="baseline-badge"
+        className="baseline-badge flex items-center gap-2"
         style={{ borderColor: "var(--string-color)", color: "var(--string-color)" }}
       >
-        <span style={{ fontSize: "24px" }}>✨</span> REFACTORING COMPLETE
+        <Sparkles className="w-6 h-6 text-emerald-400" /> REFACTORING COMPLETE
       </div>
     </div>
   );

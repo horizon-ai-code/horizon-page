@@ -1,10 +1,13 @@
 import React from "react";
+import { Brain, Target, Scissors, Sparkles, ArrowRight } from "lucide-react";
 
 export function Phase4Decomposition() {
   return (
     <div id="scene4-container" className="scene">
       <div id="planner-model-badge" className="model-badge badge-planner">
-        <div className="badge-icon">🧠</div>
+        <div className="badge-icon">
+          <Brain className="w-6 h-6 text-purple-400" />
+        </div>
         <div className="badge-details">
           <div className="badge-title">PLANNER ENGINE</div>
           <div className="badge-model">Qwen2.5-Coder-3B-Instruct</div>
@@ -61,7 +64,9 @@ export function Phase4Decomposition() {
         </svg>
       </div>
 
-      <div id="intent-packet">🎯</div>
+      <div id="intent-packet">
+        <Target className="w-8 h-8 text-emerald-400" />
+      </div>
 
       <div id="ast-container">
         <svg id="ast-svg" width="100%" height="100%" viewBox="0 0 500 350">
@@ -95,21 +100,31 @@ export function Phase4Decomposition() {
 
       <div id="blueprint-artifact">
         <div className="bp-card" id="bp-card1">
-          <div className="bp-icon-large" style={{ color: "#ff5f56" }}>🎯</div>
+          <div className="bp-icon-large" style={{ color: "#ff5f56" }}>
+            <Target className="w-6 h-6 inline-block" />
+          </div>
           <div className="bp-card-title">Target Loop</div>
         </div>
 
-        <div className="bp-arrow" id="bp-arrow1">→</div>
+        <div className="bp-arrow" id="bp-arrow1">
+          <ArrowRight className="w-6 h-6 inline-block" />
+        </div>
 
         <div className="bp-card" id="bp-card2">
-          <div className="bp-icon-large" style={{ color: "var(--keyword-color)" }}>✂️</div>
+          <div className="bp-icon-large" style={{ color: "var(--keyword-color)" }}>
+            <Scissors className="w-6 h-6 inline-block" />
+          </div>
           <div className="bp-card-title">Extract Logic</div>
         </div>
 
-        <div className="bp-arrow" id="bp-arrow2">→</div>
+        <div className="bp-arrow" id="bp-arrow2">
+          <ArrowRight className="w-6 h-6 inline-block" />
+        </div>
 
         <div className="bp-card" id="bp-card3">
-          <div className="bp-icon-large" style={{ color: "var(--string-color)" }}>✨</div>
+          <div className="bp-icon-large" style={{ color: "var(--string-color)" }}>
+            <Sparkles className="w-6 h-6 inline-block" />
+          </div>
           <div className="bp-card-title">Generate Stream</div>
         </div>
       </div>

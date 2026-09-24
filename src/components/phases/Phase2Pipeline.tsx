@@ -1,4 +1,5 @@
 import React from "react";
+import { Monitor, Zap, Cpu, Database, ChevronDown } from "lucide-react";
 
 export function Phase2Pipeline() {
   return (
@@ -10,17 +11,23 @@ export function Phase2Pipeline() {
       </svg>
 
       <div id="node-frontend" className="arch-node">
-        <div className="node-icon">💻</div>
+        <div className="node-icon">
+          <Monitor className="w-8 h-8 text-blue-400" />
+        </div>
         <div className="node-title">USER INTERFACE</div>
       </div>
 
       <div id="node-ws" className="arch-node">
-        <div className="node-icon">⚡</div>
+        <div className="node-icon">
+          <Zap className="w-8 h-8 text-yellow-400" />
+        </div>
         <div className="node-title">WebSocket Connection</div>
       </div>
 
       <div id="node-backend" className="arch-node">
-        <div className="node-icon">⚙️</div>
+        <div className="node-icon">
+          <Cpu className="w-8 h-8 text-purple-400" />
+        </div>
         <div className="node-title">HorizonAI Backend</div>
         <div style={{ fontSize: "12px", color: "#bac2de", marginTop: "5px" }}>
           Orchestrator
@@ -28,7 +35,9 @@ export function Phase2Pipeline() {
       </div>
 
       <div id="node-session" className="arch-node">
-        <div className="node-icon">🗄️</div>
+        <div className="node-icon">
+          <Database className="w-8 h-8 text-emerald-400" />
+        </div>
         <div className="node-title">Session Manager</div>
         <div className="session-details" id="session-info">
           SESSION<br />
@@ -44,7 +53,9 @@ export function Phase2Pipeline() {
       <div id="particle-container"></div>
 
       <div id="next-phase-indicator">
-        <div className="arrow-down">↓</div>
+        <div className="arrow-down">
+          <ChevronDown className="w-6 h-6 inline-block" />
+        </div>
         <div className="phase-text">Phase 1: Baseline Analysis</div>
       </div>
     </div>

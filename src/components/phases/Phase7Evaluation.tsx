@@ -1,4 +1,5 @@
 import React from "react";
+import { Cpu, Scale, AlertTriangle, CheckCircle2, ArrowRight } from "lucide-react";
 
 export function Phase7Evaluation() {
   return (
@@ -7,7 +8,9 @@ export function Phase7Evaluation() {
 
       <div id="model-swap-area">
         <div id="s7-qwen-badge" className="model-badge badge-planner swap-badge">
-          <div className="badge-icon">⚙️</div>
+          <div className="badge-icon">
+            <Cpu className="w-5 h-5 text-purple-400" />
+          </div>
           <div className="badge-details">
             <div className="badge-title">GENERATOR ENGINE</div>
             <div className="badge-model">Qwen2.5-Coder-3B-Instruct</div>
@@ -16,7 +19,9 @@ export function Phase7Evaluation() {
         </div>
 
         <div id="s7-llama-badge" className="model-badge badge-judge swap-badge enter-right">
-          <div className="badge-icon">⚖️</div>
+          <div className="badge-icon">
+            <Scale className="w-5 h-5 text-amber-400" />
+          </div>
           <div className="badge-details">
             <div className="badge-title">EVALUATION ENGINE</div>
             <div className="badge-model">Llama-3.2-3B-Instruct</div>
@@ -69,15 +74,22 @@ export function Phase7Evaluation() {
       <div id="s7-label-struct" className="beam-label" style={{ top: "50%", left: "62%" }}>Structural Change</div>
       <div id="s7-label-quality" className="beam-label" style={{ top: "55%", left: "64%" }}>Refactoring Quality</div>
 
-      <div id="s7-feedback-packet">
-        <span>⚠️</span> REFACTORING QUALITY DEGRADATION
+      <div id="s7-feedback-packet" className="flex items-center gap-2">
+        <AlertTriangle className="w-4 h-4 text-red-400" />
+        <span>REFACTORING QUALITY DEGRADATION</span>
       </div>
 
       <div id="s7-final-comparison">
-        <div className="s7-final-title">✅ VALIDATED OUTPUT — ITERATION 2 APPROVED</div>
+        <div className="s7-final-title flex items-center justify-center gap-2">
+          <CheckCircle2 className="w-5 h-5 text-emerald-400" />
+          <span>VALIDATED OUTPUT — ITERATION 2 APPROVED</span>
+        </div>
         <div className="s7-final-panels">
           <div className="s7-code-panel original">
-            <div className="s7-panel-header">⚠ ORIGINAL — IMPERATIVE LOOP</div>
+            <div className="s7-panel-header flex items-center gap-1.5">
+              <AlertTriangle className="w-4 h-4 text-red-400" />
+              <span>ORIGINAL — IMPERATIVE LOOP</span>
+            </div>
             <pre className="s7-panel-code">{`public class StudentManager {
 
     private List<Student> students;
@@ -93,9 +105,14 @@ export function Phase7Evaluation() {
     }
 }`}</pre>
           </div>
-          <div className="s7-panel-arrow">→</div>
+          <div className="s7-panel-arrow">
+            <ArrowRight className="w-8 h-8 text-emerald-400" />
+          </div>
           <div className="s7-code-panel refactored">
-            <div className="s7-panel-header">✅ REFACTORED — DECLARATIVE STREAM</div>
+            <div className="s7-panel-header flex items-center gap-1.5">
+              <CheckCircle2 className="w-4 h-4 text-emerald-400" />
+              <span>REFACTORED — DECLARATIVE STREAM</span>
+            </div>
             <pre className="s7-panel-code">{`public class StudentManager {
 
     private List<Student> students;

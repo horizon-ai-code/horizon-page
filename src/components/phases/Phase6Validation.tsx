@@ -1,4 +1,5 @@
 import React from "react";
+import { RefreshCw, AlertTriangle, CheckCircle2 } from "lucide-react";
 
 export function Phase6Validation() {
   return (
@@ -15,7 +16,9 @@ export function Phase6Validation() {
       </svg>
 
       <div id="val-retry-node" className="val-retry-node">
-        <div className="badge-icon">⚙️</div>
+        <div className="badge-icon">
+          <RefreshCw className="w-5 h-5 text-purple-400" />
+        </div>
         <div style={{ fontWeight: "bold", marginBottom: "4px" }}>Generator Revision</div>
         <div id="val-attempt" style={{ color: "rgba(255,255,255,0.5)" }}>Attempt: 1</div>
       </div>
@@ -62,12 +65,12 @@ export function Phase6Validation() {
         &nbsp;&nbsp;.forEach(...)
       </div>
 
-      <div id="val-feedback" className="val-feedback">
-        ⚠️ O(N²) Detected
+      <div id="val-feedback" className="val-feedback flex items-center gap-1">
+        <AlertTriangle className="w-4 h-4 text-red-400" /> O(N²) Detected
       </div>
 
-      <div id="validated-package" className="validated-package">
-        <span style={{ fontSize: "20px" }}>✅</span> VALIDATED CODE
+      <div id="validated-package" className="validated-package flex items-center gap-2">
+        <CheckCircle2 className="w-5 h-5 text-emerald-400" /> VALIDATED CODE
       </div>
     </div>
   );
