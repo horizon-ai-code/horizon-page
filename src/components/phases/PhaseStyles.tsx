@@ -1711,7 +1711,7 @@ export function PhaseStyles() {
 
         .refactor-animation-root #s7-iteration-counter {
             position: absolute;
-            top: 130px;
+            top: 155px;
             left: 50%;
             transform: translateX(-50%);
             color: rgba(255,255,255,0.4);
