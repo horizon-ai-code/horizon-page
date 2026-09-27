@@ -1162,7 +1162,7 @@ export function PhaseStyles() {
             width: 90%;
             max-width: 1100px;
             height: 450px;
-            margin-top: 80px;
+            margin-top: 195px;
             opacity: 0;
             transform: translateY(40px);
             transition: all 1s cubic-bezier(0.175, 0.885, 0.32, 1.275);
@@ -1454,7 +1454,7 @@ export function PhaseStyles() {
 
         .refactor-animation-root #s7-compare-area {
             position: absolute;
-            top: 25%;
+            top: 195px;
             width: 800px;
             display: flex;
             justify-content: space-between;
@@ -1711,7 +1711,7 @@ export function PhaseStyles() {
 
         .refactor-animation-root #s7-iteration-counter {
             position: absolute;
-            top: 155px;
+            top: 130px;
             left: 50%;
             transform: translateX(-50%);
             color: rgba(255,255,255,0.4);
