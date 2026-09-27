@@ -1179,7 +1179,7 @@ export default function RefactorAnimation() {
       if (currentScene !== 7) return;
 
       iterCounter.style.color = "var(--string-color)";
-      iterCounter.textContent = "✅ VALIDATION SUCCESSFUL — OUTPUT APPROVED";
+      iterCounter.textContent = "VALIDATION SUCCESSFUL — OUTPUT APPROVED";
 
       await delayAsync(1400, 7);
       if (currentScene !== 7) return;
