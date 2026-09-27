@@ -256,8 +256,8 @@ export function PhaseStyles() {
             font-size: 12px;
             box-shadow: 0 0 20px var(--glow-color);
             position: absolute;
-            top: 50%;
-            left: 50%;
+            top: 15%;
+            left: 15%;
             transform: translate(-50%, -50%) scale(0);
             opacity: 0;
             z-index: 100;

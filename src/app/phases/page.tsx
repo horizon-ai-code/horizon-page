@@ -308,56 +308,65 @@ export default function RefactorAnimation() {
       if (currentScene !== 2) return;
 
       window.addEventListener("resize", updateAllLines);
-      updateAllLines();
 
       scene2Container.classList.add("visible");
 
-      await delayAsync(200, 2);
-      if (currentScene !== 2) return;
-      createParticles();
-
-      await delayAsync(600, 2);
-      if (currentScene !== 2) return;
-      dataPacket.style.transition = "all 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275), opacity 0.5s ease";
-      dataPacket.style.opacity = "1";
-      dataPacket.style.transform = "translate(-50%, -50%) scale(1)";
-
-      await delayAsync(1000, 2);
-      if (currentScene !== 2) return;
-
+      // 1. Reveal architecture nodes first so WebSocket Connection is immediately visible
       nodeFE.classList.add("visible");
-      await delayAsync(400, 2);
+      await delayAsync(200, 2);
       if (currentScene !== 2) return;
 
       nodeWS.classList.add("visible");
-      await delayAsync(400, 2);
+      await delayAsync(200, 2);
       if (currentScene !== 2) return;
 
       nodeBE.classList.add("visible");
-      await delayAsync(400, 2);
+      await delayAsync(200, 2);
       if (currentScene !== 2) return;
 
       nodeSession.classList.add("visible");
+      updateAllLines();
+
+      await delayAsync(300, 2);
+      if (currentScene !== 2) return;
+
+      createParticles();
+
+      // 2. Spawn request at top-left
+      dataPacket.style.transition = "none";
+      dataPacket.style.top = "15%";
+      dataPacket.style.left = "15%";
+      dataPacket.style.opacity = "0";
+      dataPacket.style.transform = "translate(-50%, -50%) scale(0.5)";
+
+      // Force reflow
+      void dataPacket.offsetWidth;
+
+      dataPacket.style.transition = "opacity 0.6s ease, transform 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275)";
+      dataPacket.style.opacity = "1";
+      dataPacket.style.transform = "translate(-50%, -50%) scale(1)";
 
       await delayAsync(800, 2);
       if (currentScene !== 2) return;
 
+      // 3. Slide smoothly from top-left to USER INTERFACE (nodeFE)
       const feRect = nodeFE.getBoundingClientRect();
-      dataPacket.style.transition = "top 0.5s ease, left 0.5s ease";
+      dataPacket.style.transition = "top 0.8s cubic-bezier(0.25, 1, 0.5, 1), left 0.8s cubic-bezier(0.25, 1, 0.5, 1)";
       dataPacket.style.top = feRect.top + feRect.height / 2 + "px";
       dataPacket.style.left = feRect.left + feRect.width / 2 + "px";
 
-      await delayAsync(600, 2);
+      await delayAsync(950, 2);
       if (currentScene !== 2) return;
 
+      // 4. Flow from USER INTERFACE to WebSocket Connection
       lineFeWs.classList.add("active");
 
       const wsRect = nodeWS.getBoundingClientRect();
-      dataPacket.style.transition = "top 1s ease-in-out, left 1s ease-in-out";
+      dataPacket.style.transition = "top 0.8s ease-in-out, left 0.8s ease-in-out";
       dataPacket.style.top = wsRect.top + wsRect.height / 2 + "px";
       dataPacket.style.left = wsRect.left + wsRect.width / 2 + "px";
 
-      await delayAsync(1000, 2);
+      await delayAsync(900, 2);
       if (currentScene !== 2) return;
 
       dataPacket.style.transform = "translate(-50%, -50%) scale(1.2)";
@@ -368,13 +377,14 @@ export default function RefactorAnimation() {
 
       if (currentScene !== 2) return;
 
+      // 5. Flow to HorizonAI Backend
       lineWsBe.classList.add("active");
 
       const beRect = nodeBE.getBoundingClientRect();
       dataPacket.style.top = beRect.top + beRect.height / 2 + "px";
       dataPacket.style.left = beRect.left + beRect.width / 2 + "px";
 
-      await delayAsync(1000, 2);
+      await delayAsync(900, 2);
       if (currentScene !== 2) return;
 
       dataPacket.style.transform = "translate(-50%, -50%) scale(0.5)";
@@ -383,6 +393,7 @@ export default function RefactorAnimation() {
       await delayAsync(600, 2);
       if (currentScene !== 2) return;
 
+      // 6. Flow to Session Manager
       lineBeSession.classList.add("active");
 
       const sessionRect = nodeSession.getBoundingClientRect();
@@ -1329,8 +1340,8 @@ export default function RefactorAnimation() {
       scene2Container.style.opacity = "";
       dataPacket.style.opacity = "0";
       dataPacket.style.transform = "translate(-50%, -50%) scale(0)";
-      dataPacket.style.top = "50%";
-      dataPacket.style.left = "50%";
+      dataPacket.style.top = "15%";
+      dataPacket.style.left = "15%";
 
       nodeFE.classList.remove("visible");
       nodeWS.classList.remove("visible");
