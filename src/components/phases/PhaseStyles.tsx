@@ -490,18 +490,18 @@ export function PhaseStyles() {
 
         .refactor-animation-root .chamber-core {
             position: absolute;
-            top: 45%; left: 50%;
+            top: 38%; left: 50%;
             transform: translate(-50%, -50%);
-            width: 320px;
+            width: 290px;
             background-color: var(--editor-bg);
             border: 1px solid var(--border-color);
             border-radius: 12px;
-            padding: 20px;
+            padding: 12px 14px;
             box-shadow: 0 10px 40px rgba(0, 0, 0, 0.6), 0 0 20px rgba(137, 180, 250, 0.1);
             z-index: 10;
             font-family: 'JetBrains Mono', monospace;
-            font-size: 13px;
-            line-height: 1.6;
+            font-size: 11px;
+            line-height: 1.4;
             color: rgba(255,255,255,0.6);
             transition: all 0.8s ease;
             overflow: hidden;
@@ -548,9 +548,9 @@ export function PhaseStyles() {
         .refactor-animation-root .chamber-module.active { border-color: var(--keyword-color); box-shadow: 0 0 30px rgba(203, 166, 247, 0.2); }
         .refactor-animation-root .chamber-module.complete { border-color: var(--string-color); box-shadow: 0 0 30px rgba(166, 227, 161, 0.2); }
 
-        .refactor-animation-root .chamber-module.mod-syntax { top: 45%; left: 15%; }
-        .refactor-animation-root .chamber-module.mod-semantic { top: 45%; left: 85%; }
-        .refactor-animation-root .chamber-module.mod-complexity { top: 85%; left: 50%; width: 220px; height: 120px; border-radius: 16px; }
+        .refactor-animation-root .chamber-module.mod-syntax { top: 38%; left: 15%; }
+        .refactor-animation-root .chamber-module.mod-semantic { top: 38%; left: 85%; }
+        .refactor-animation-root .chamber-module.mod-complexity { top: 82%; left: 50%; width: 200px; height: 100px; border-radius: 16px; }
 
         .refactor-animation-root .module-label {
             position: absolute;

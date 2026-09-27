@@ -56,18 +56,15 @@ export function Phase3Analysis() {
         <div className="chamber-core" id="chamber-core">
           <div className="core-laser" id="core-laser"></div>
           <div className="code-row">public class StudentManager {"{"}</div>
-          <div className="code-row">&nbsp;</div>
-          <div className="code-row">&nbsp;&nbsp;&nbsp;&nbsp;private List&lt;Student&gt; students;</div>
-          <div className="code-row">&nbsp;</div>
-          <div className="code-row">&nbsp;&nbsp;&nbsp;&nbsp;public void addStudent(Student s) {"{"}</div>
-          <div className="code-row">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;students.add(s);</div>
+          <div className="code-row">&nbsp;&nbsp;private List&lt;Student&gt; students;</div>
+          <div className="code-row">&nbsp;&nbsp;public void addStudent(Student s) {"{"}</div>
+          <div className="code-row">&nbsp;&nbsp;&nbsp;&nbsp;students.add(s);</div>
+          <div className="code-row">&nbsp;&nbsp;{"}"}</div>
+          <div className="code-row" id="core-target-row">&nbsp;&nbsp;public void displayStudents() {"{"}</div>
+          <div className="code-row" id="core-target-row2">&nbsp;&nbsp;&nbsp;&nbsp;for (Student s : students) {"{"}</div>
+          <div className="code-row" id="core-target-row3">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;System.out.println(s.getName());</div>
           <div className="code-row">&nbsp;&nbsp;&nbsp;&nbsp;{"}"}</div>
-          <div className="code-row">&nbsp;</div>
-          <div className="code-row" id="core-target-row">&nbsp;&nbsp;&nbsp;&nbsp;public void displayStudents() {"{"}</div>
-          <div className="code-row" id="core-target-row2">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;for (Student s : students) {"{"}</div>
-          <div className="code-row" id="core-target-row3">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;System.out.println(s.getName());</div>
-          <div className="code-row">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{"}"}</div>
-          <div className="code-row">&nbsp;&nbsp;&nbsp;&nbsp;{"}"}</div>
+          <div className="code-row">&nbsp;&nbsp;{"}"}</div>
           <div className="code-row">{"}"}</div>
         </div>
 
