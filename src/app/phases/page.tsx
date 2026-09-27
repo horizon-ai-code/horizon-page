@@ -823,8 +823,8 @@ export default function RefactorAnimation() {
       await delayAsync(600, 5);
       if (currentScene !== 5) return;
 
-      engine.style.top = "155px";
-      engine.style.transform = "translate(-50%, -50%) scale(0.45)";
+      engine.style.opacity = "0";
+      engine.style.transform = "translate(-50%, -50%) scale(0)";
 
       codeView.style.opacity = "1";
       codeView.style.transform = "translateY(0)";

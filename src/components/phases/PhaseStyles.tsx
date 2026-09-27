@@ -1160,9 +1160,9 @@ export function PhaseStyles() {
             display: flex;
             gap: 20px;
             width: 90%;
-            max-width: 960px;
-            height: 320px;
-            margin-top: 245px;
+            max-width: 1100px;
+            height: 450px;
+            margin-top: 80px;
             opacity: 0;
             transform: translateY(40px);
             transition: all 1s cubic-bezier(0.175, 0.885, 0.32, 1.275);
@@ -1184,23 +1184,23 @@ export function PhaseStyles() {
         .refactor-animation-root .new-pane { border-color: rgba(166, 227, 161, 0.5); box-shadow: 0 0 25px rgba(166, 227, 161, 0.15); }
 
         .refactor-animation-root .pane-header {
-            height: 32px;
+            height: 40px;
             background: rgba(0,0,0,0.3);
             border-bottom: 1px solid var(--border-color);
             display: flex;
             align-items: center;
-            padding: 0 14px;
+            padding: 0 16px;
             font-family: monospace;
-            font-size: 12px;
+            font-size: 14px;
             color: rgba(255,255,255,0.7);
             font-weight: bold;
         }
 
         .refactor-animation-root .pane-content {
-            padding: 12px 14px;
+            padding: 20px;
             font-family: 'JetBrains Mono', 'Courier New', monospace;
-            font-size: 12px;
-            line-height: 1.45;
+            font-size: 14.5px;
+            line-height: 1.6;
             overflow-y: auto;
             color: var(--text-color);
             white-space: pre-wrap;
