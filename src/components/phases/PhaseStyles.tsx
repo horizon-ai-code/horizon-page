@@ -1162,7 +1162,7 @@ export function PhaseStyles() {
             width: 90%;
             max-width: 1100px;
             height: 450px;
-            margin-top: 80px;
+            margin-top: 120px;
             opacity: 0;
             transform: translateY(40px);
             transition: all 1s cubic-bezier(0.175, 0.885, 0.32, 1.275);
