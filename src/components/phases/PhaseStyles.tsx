@@ -1161,8 +1161,8 @@ export function PhaseStyles() {
             gap: 20px;
             width: 90%;
             max-width: 960px;
-            height: 330px;
-            margin-top: 215px;
+            height: 320px;
+            margin-top: 245px;
             opacity: 0;
             transform: translateY(40px);
             transition: all 1s cubic-bezier(0.175, 0.885, 0.32, 1.275);
