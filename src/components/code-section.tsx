@@ -96,6 +96,7 @@ export function CodeSection() {
         <div className="mt-8">
           <Link
             href="/phases"
+            prefetch={true}
             className="group inline-flex items-center gap-2.5 border border-foreground/20 px-6 py-3 font-mono text-xs uppercase tracking-widest text-foreground hover:border-accent hover:text-accent hover:bg-accent/5 transition-all duration-200 rounded-md shadow-sm"
           >
             <span>See how</span>

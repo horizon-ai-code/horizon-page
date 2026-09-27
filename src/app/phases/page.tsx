@@ -21,13 +21,6 @@ export default function RefactorAnimation() {
   const rootRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    // Google Fonts (JetBrains Mono) — load once
-    const fontLink = document.createElement("link");
-    fontLink.href =
-      "https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&display=swap";
-    fontLink.rel = "stylesheet";
-    document.head.appendChild(fontLink);
-
     const root = rootRef.current;
     if (!root) return undefined;
 
@@ -1603,7 +1596,6 @@ export default function RefactorAnimation() {
       prevBtnEl.removeEventListener("click", prevScene);
       nextBtnEl.removeEventListener("click", nextScene);
       particleContainer.innerHTML = "";
-      if (fontLink.parentNode) fontLink.parentNode.removeChild(fontLink);
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
@@ -1616,6 +1608,7 @@ export default function RefactorAnimation() {
 
       <Link
         href="/"
+        prefetch={true}
         className="fixed top-6 left-6 z-[2500] group flex items-center gap-2.5 px-4 py-2 rounded-full bg-[#1e1e2e]/75 backdrop-blur-md border border-white/10 text-white/70 hover:text-white hover:bg-[#28283c]/90 hover:border-cyan-500/50 hover:shadow-[0_0_20px_rgba(137,180,250,0.35)] transition-all duration-300"
       >
         <ArrowLeft className="w-4 h-4 text-cyan-400 group-hover:text-cyan-300 transition-transform duration-300 group-hover:-translate-x-1" />

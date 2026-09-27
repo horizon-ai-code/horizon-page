@@ -130,6 +130,7 @@ export function PipelineSection() {
         </div>
         <Link
           href="/phases"
+          prefetch={true}
           className="group inline-flex items-center gap-2.5 border border-accent/40 bg-accent/10 px-6 py-3 rounded-lg font-mono text-xs uppercase tracking-widest text-accent hover:bg-accent hover:text-accent-foreground transition-all duration-300 shadow-lg"
         >
           <span>Explore 6-Phase Architecture</span>

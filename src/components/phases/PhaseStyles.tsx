@@ -34,6 +34,22 @@ export function PhaseStyles() {
             position: relative;
         }
 
+        .refactor-animation-root #container,
+        .refactor-animation-root #scene2-container,
+        .refactor-animation-root #scene3-container,
+        .refactor-animation-root #scene4-container,
+        .refactor-animation-root #scene5-container,
+        .refactor-animation-root #scene6-container,
+        .refactor-animation-root #scene7-container,
+        .refactor-animation-root .nav-btn,
+        .refactor-animation-root .mod-card,
+        .refactor-animation-root .s7-code-box,
+        .refactor-animation-root .model-badge {
+            will-change: opacity, transform;
+            transform-style: preserve-3d;
+            backface-visibility: hidden;
+        }
+
         .refactor-animation-root #container {
             width: 80%;
             max-width: 1000px;
