@@ -103,7 +103,7 @@ export function Phase4Decomposition() {
           <div className="bp-icon-large" style={{ color: "#ff5f56" }}>
             <Target className="w-6 h-6 inline-block" />
           </div>
-          <div className="bp-card-title">Target Loop</div>
+          <div className="bp-card-title">Classify Intent</div>
         </div>
 
         <div className="bp-arrow" id="bp-arrow1">
@@ -114,7 +114,7 @@ export function Phase4Decomposition() {
           <div className="bp-icon-large" style={{ color: "var(--keyword-color)" }}>
             <Scissors className="w-6 h-6 inline-block" />
           </div>
-          <div className="bp-card-title">Extract Logic</div>
+          <div className="bp-card-title">Map Code Structure</div>
         </div>
 
         <div className="bp-arrow" id="bp-arrow2">
@@ -125,7 +125,7 @@ export function Phase4Decomposition() {
           <div className="bp-icon-large" style={{ color: "var(--string-color)" }}>
             <Sparkles className="w-6 h-6 inline-block" />
           </div>
-          <div className="bp-card-title">Generate Stream</div>
+          <div className="bp-card-title">Synthesize Plan</div>
         </div>
       </div>
 

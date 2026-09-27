@@ -861,7 +861,9 @@ export function PhaseStyles() {
             border-top: 3px solid var(--class-color);
             border-radius: 12px;
             padding: 15px;
-            width: 130px;
+            min-width: 130px;
+            width: max-content;
+            max-width: 160px;
             display: flex;
             flex-direction: column;
             align-items: center;
