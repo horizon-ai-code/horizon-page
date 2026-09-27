@@ -1454,7 +1454,7 @@ export function PhaseStyles() {
 
         .refactor-animation-root #s7-compare-area {
             position: absolute;
-            top: 195px;
+            top: 210px;
             width: 800px;
             display: flex;
             justify-content: space-between;
@@ -1711,7 +1711,7 @@ export function PhaseStyles() {
 
         .refactor-animation-root #s7-iteration-counter {
             position: absolute;
-            top: 130px;
+            top: 150px;
             left: 50%;
             transform: translateX(-50%);
             color: rgba(255,255,255,0.4);
