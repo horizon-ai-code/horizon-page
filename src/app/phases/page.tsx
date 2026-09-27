@@ -1,6 +1,8 @@
 'use client';
 
 import React, { useEffect, useRef } from "react";
+import Link from "next/link";
+import { ArrowLeft } from "lucide-react";
 import { NoiseOverlay } from "@/components/noise-overlay";
 import { HorizonGlow } from "@/components/horizon-glow";
 import {
@@ -1611,6 +1613,14 @@ export default function RefactorAnimation() {
       <div className="grid-bg fixed inset-0 opacity-25 pointer-events-none" aria-hidden="true" />
       <NoiseOverlay opacity={0.03} />
       <HorizonGlow glowPosition="center" glowColor="mixed" sparkleCount={10} showHorizonLine={true} />
+
+      <Link
+        href="/"
+        className="fixed top-6 left-6 z-[2500] group flex items-center gap-2.5 px-4 py-2 rounded-full bg-[#1e1e2e]/75 backdrop-blur-md border border-white/10 text-white/70 hover:text-white hover:bg-[#28283c]/90 hover:border-cyan-500/50 hover:shadow-[0_0_20px_rgba(137,180,250,0.35)] transition-all duration-300"
+      >
+        <ArrowLeft className="w-4 h-4 text-cyan-400 group-hover:text-cyan-300 transition-transform duration-300 group-hover:-translate-x-1" />
+        <span className="text-xs font-mono font-bold tracking-widest uppercase">BACK</span>
+      </Link>
 
       <div ref={rootRef} className="refactor-animation-root min-h-screen relative z-10">
         <PhaseStyles />
