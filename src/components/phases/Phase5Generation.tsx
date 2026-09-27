@@ -19,16 +19,20 @@ export function Phase5Generation() {
         id="gen-status"
         style={{
           position: "absolute",
-          top: "15%",
+          top: "100px",
+          left: "50%",
+          transform: "translateX(-50%)",
           color: "var(--string-color)",
           fontFamily: "'JetBrains Mono', monospace",
-          fontSize: "14px",
-          letterSpacing: "1px",
+          fontSize: "13px",
+          letterSpacing: "1.5px",
           opacity: 0,
           transition: "opacity 0.5s",
           zIndex: 100,
           fontWeight: "bold",
           textShadow: "0 0 10px rgba(166, 227, 161, 0.5)",
+          textAlign: "center",
+          whiteSpace: "nowrap",
         }}
       >
         RECEIVING EXECUTION PACKAGE...
