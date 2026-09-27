@@ -1711,13 +1711,18 @@ export function PhaseStyles() {
 
         .refactor-animation-root #s7-iteration-counter {
             position: absolute;
-            top: 15%;
+            top: 130px;
+            left: 50%;
+            transform: translateX(-50%);
             color: rgba(255,255,255,0.4);
             font-family: 'JetBrains Mono', monospace;
             font-size: 14px;
             letter-spacing: 2px;
             opacity: 0;
             transition: opacity 0.5s;
+            white-space: nowrap;
+            text-align: center;
+            z-index: 100;
         }
 
         .refactor-animation-root .fallback-shield {
