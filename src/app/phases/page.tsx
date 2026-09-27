@@ -15,33 +15,6 @@ import {
   Phase7Evaluation,
 } from "@/components/phases";
 
-/**
- * RefactorAnimation
- * -------------------------------------------------------------------------
- * Faithful React + Tailwind port of the original 7-scene "AI refactor"
- * animation (StudentManager.java walkthrough).
- *
- * Why this isn't 100% Tailwind utility classes:
- * The original relies heavily on CSS custom properties, keyframe
- * animations, cubic-bezier transitions, radial/linear gradients, and
- * absolute-positioned SVG diagrams that are driven by imperative
- * getBoundingClientRect() math in JS. Tailwind has no equivalent for
- * custom keyframes, CSS variables, or JS-computed positions, so — to
- * guarantee the design is pixel-identical, as requested — the original
- * CSS is kept verbatim in a scoped <style> block (this is the standard,
- * supported way to combine Tailwind with bespoke CSS; Tailwind's own
- * utilities are layered on top for the parts that map cleanly, e.g.
- * fixed/absolute positioning helpers are left as the original classes
- * so nothing shifts by a pixel). All class names, ids, and structure are
- * unchanged from the source so the JS animation logic (which selects
- * elements by id) works exactly as before.
- *
- * All the original imperative timeline logic (typeText, moveMouse,
- * delayAsync, the 7 runScene* functions, nextScene/prevScene, and
- * resetSceneState) is preserved as-is inside a single useEffect that
- * mounts once, with a cleanup function that clears all pending timers
- * and event listeners on unmount.
- */
 export default function RefactorAnimation() {
   const rootRef = useRef<HTMLDivElement>(null);
 
