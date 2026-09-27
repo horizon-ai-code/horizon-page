@@ -895,6 +895,11 @@ export default function RefactorAnimation() {
       hex.classList.remove("active");
 
       completeBadge.classList.add("visible");
+
+      await delayAsync(1500, 5);
+      if (currentScene === 5) {
+        nextScene();
+      }
     }
 
     async function runScene6() {
