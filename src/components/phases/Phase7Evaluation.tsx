@@ -65,14 +65,14 @@ export function Phase7Evaluation() {
       </div>
 
       <svg id="judge-beams-svg">
-        <line id="s7-beam-logic" className="eval-beam" x1="50%" y1="60%" x2="70%" y2="35%" />
-        <line id="s7-beam-struct" className="eval-beam" x1="50%" y1="60%" x2="70%" y2="45%" />
-        <line id="s7-beam-quality" className="eval-beam" x1="50%" y1="60%" x2="70%" y2="55%" />
+        <line id="s7-beam-logic" className="eval-beam" x1="70%" y1="41%" x2="50%" y2="60%" />
+        <line id="s7-beam-struct" className="eval-beam" x1="70%" y1="47.5%" x2="50%" y2="60%" />
+        <line id="s7-beam-quality" className="eval-beam" x1="70%" y1="54%" x2="50%" y2="60%" />
       </svg>
 
-      <div id="s7-label-logic" className="beam-label" style={{ top: "45%", left: "60%" }}>Logic Consistency</div>
-      <div id="s7-label-struct" className="beam-label" style={{ top: "50%", left: "62%" }}>Structural Change</div>
-      <div id="s7-label-quality" className="beam-label" style={{ top: "55%", left: "64%" }}>Refactoring Quality</div>
+      <div id="s7-label-logic" className="beam-label" style={{ top: "47%", left: "59%" }}>Logic Consistency</div>
+      <div id="s7-label-struct" className="beam-label" style={{ top: "52%", left: "60%" }}>Structural Change</div>
+      <div id="s7-label-quality" className="beam-label" style={{ top: "57%", left: "61%" }}>Refactoring Quality</div>
 
       <div id="s7-feedback-packet" className="flex items-center gap-2">
         <AlertTriangle className="w-4 h-4 text-red-400" />
