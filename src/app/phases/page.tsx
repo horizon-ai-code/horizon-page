@@ -271,9 +271,10 @@ export default function RefactorAnimation() {
       lineBeSession.setAttribute("d", pathBeSession);
     }
 
-    function createParticles() {
-      const centerX = window.innerWidth / 2;
-      const centerY = window.innerHeight / 2;
+    function createParticles(targetElem?: HTMLElement | null) {
+      const packetRect = targetElem ? targetElem.getBoundingClientRect() : null;
+      const centerX = packetRect ? packetRect.left + packetRect.width / 2 : window.innerWidth / 2;
+      const centerY = packetRect ? packetRect.top + packetRect.height / 2 : window.innerHeight / 2;
 
       for (let i = 0; i < 30; i++) {
         const particle = document.createElement("div");
@@ -330,8 +331,6 @@ export default function RefactorAnimation() {
       await delayAsync(300, 2);
       if (currentScene !== 2) return;
 
-      createParticles();
-
       // 2. Spawn request at top-left
       dataPacket.style.transition = "none";
       dataPacket.style.top = "15%";
@@ -345,6 +344,9 @@ export default function RefactorAnimation() {
       dataPacket.style.transition = "opacity 0.6s ease, transform 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275)";
       dataPacket.style.opacity = "1";
       dataPacket.style.transform = "translate(-50%, -50%) scale(1)";
+
+      // Sparkles pop out together at the exact position of the request
+      createParticles(dataPacket);
 
       await delayAsync(800, 2);
       if (currentScene !== 2) return;
